@@ -1,0 +1,3 @@
+[submodule "Native/DirectX.Net"]
+	path = Native/DirectX.Net
+	url = https://github.com/curin/DirectX.Net.git
