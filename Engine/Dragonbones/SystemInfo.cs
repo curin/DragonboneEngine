@@ -15,7 +15,7 @@ namespace Dragonbones
         /// <param name="name">the system's name</param>
         /// <param name="type">the type of the system</param>
         /// <param name="priority">the priority of the system</param>
-        public SystemInfo(string name, SystemType type, long priority, bool active = true)
+        public SystemInfo(string name, SystemType type, int priority, bool active = true)
         {
             _name = name;
             _id = -1;
@@ -33,7 +33,7 @@ namespace Dragonbones
         /// <param name="name">the system's name</param>
         /// <param name="type">the type of the system</param>
         /// <param name="runReccurrenceInterval">the frame interval between runs</param>
-        public SystemInfo(string name, SystemType type, int runReccurrenceInterval, bool active = true)
+        public SystemInfo(string name, int runReccurrenceInterval, SystemType type, bool active = true)
         {
             _name = name;
             _id = -1;
@@ -46,7 +46,7 @@ namespace Dragonbones
         }
 
         string _name;
-        long _id;
+        int _id;
         /// <summary>
         /// The type of system, which defines when it is run
         /// </summary>
@@ -58,7 +58,7 @@ namespace Dragonbones
         /// <summary>
         /// The ID for the system
         /// </summary>
-        public long ID => _id;
+        public int ID => _id;
         /// <summary>
         /// Is this system currently active?
         /// </summary>
@@ -66,7 +66,7 @@ namespace Dragonbones
         /// <summary>
         /// The priority of the system, used to determine which systems should be run less frequently in order to maintain framerate
         /// </summary>
-        public long Priority { get; }
+        public int Priority { get; }
         /// <summary>
         /// If Set to 0, will run based on priority system.
         /// Otherwise, it represents the number of frames finished between each run
@@ -85,7 +85,7 @@ namespace Dragonbones
         /// ID as set by System Registry
         /// </summary>
         /// <param name="id">the system's ID</param>
-        public void SetID(long id)
+        public void SetID(int id)
         {
             _id = id;
         }

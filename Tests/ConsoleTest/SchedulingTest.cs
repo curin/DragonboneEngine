@@ -11,10 +11,10 @@ namespace ConsoleTest
         Random random = new Random();
         bool[] activeRand = new bool[10] { true, true, true, true, true, true, true, false, false, false };
         int[] runReccurenceRand = new int[20] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 5, 5 };
-        long[] priorityRand = new long[20] { 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 5, 6 };
+        int[] priorityRand = new int[20] { 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 5, 6 };
         SystemType[] typeRand = new SystemType[10] { SystemType.Logic, SystemType.Logic, SystemType.Logic, SystemType.Logic, SystemType.Logic,
             SystemType.Logic, SystemType.Render, SystemType.Render, SystemType.Render, SystemType.Render};
-        long nextID = 0;
+        int nextID = 0;
 
         public void Run(int SystemCount)
         {
@@ -34,8 +34,8 @@ namespace ConsoleTest
             }
 
             Console.WriteLine("Logic = " + logic.ToString() + "/" + systems.Count.ToString());
-            List<long> systemsRun = new List<long>();
-            List<long> runSystems = new List<long>();
+            List<int> systemsRun = new List<int>();
+            List<int> runSystems = new List<int>();
 
             char run = 'y';
             int runIndex = 1;
@@ -83,10 +83,10 @@ namespace ConsoleTest
                     Console.WriteLine("     Systems run previously not run this time");
                     Console.WriteLine("--------------------------------------------------");
 
-                    foreach (long id in systemsRun)
+                    foreach (int id in systemsRun)
                     {
                         if (!runSystems.Contains(id))
-                            Console.WriteLine(systems[(int)id].ToString());
+                            Console.WriteLine(systems[id].ToString());
                     }
 
                     Console.WriteLine();
@@ -115,9 +115,9 @@ namespace ConsoleTest
                 Console.WriteLine();
                 Console.WriteLine();
                 Console.WriteLine("Run Order");
-                foreach (long ID in systemsRun)
+                foreach (int ID in systemsRun)
                 {
-                    Console.WriteLine(systems[(int)ID].ToString());
+                    Console.WriteLine(systems[ID].ToString());
                 }
                 systemsRun.Clear();
                 Console.WriteLine();
@@ -146,7 +146,7 @@ namespace ConsoleTest
             }
             else
             {
-                inf = new SystemInfo(RandomString(random.Next(8, 12)), typeRand[random.Next(9)], runReccurenceRand[random.Next(19)], activeRand[random.Next(9)])
+                inf = new SystemInfo(RandomString(random.Next(8, 12)), runReccurenceRand[random.Next(19)], typeRand[random.Next(9)], activeRand[random.Next(9)])
                 {
                     lastRunTime = random.Next(100, 10000) / (double)Stopwatch.Frequency,
                 };
