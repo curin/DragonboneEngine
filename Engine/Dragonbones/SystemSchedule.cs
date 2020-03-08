@@ -8,13 +8,15 @@ namespace Dragonbones
     {
         public SystemSchedule()
         {
-            SystemSchedule = new List<SystemInfo>();
+            Systems = new List<SystemInfo>();
         }
 
         public List<SystemInfo> Systems;
         int place;
 
         public bool Finished => place >= Systems.Count;
+
+        public long Count => Systems.Count;
 
         public bool NextSystem(out SystemInfo system)
         {

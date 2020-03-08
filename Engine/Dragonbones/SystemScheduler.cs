@@ -27,7 +27,7 @@ namespace Dragonbones
             for(int i = 0; i < Systems.Count; i++)
             {
                 SystemInfo sysInf = Systems[i];
-                if (sysInf.Type != _type)
+                if (sysInf.Type != _type || !sysInf.Active)
                     continue;
                 if (!RunLengths.ContainsKey(sysInf.ID))
                     RunLengths.Add(sysInf.ID, Enumerable.Repeat(sysInf.lastRunTime, _runLengthSize).ToArray());

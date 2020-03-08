@@ -20,5 +20,9 @@ namespace Dragonbones
         /// Resets Schedule to start
         /// </summary>
         void Reset();
+        /// <summary>
+        /// The number of systems in this schedule
+        /// </summary>
+        long Count { get; }
     }
 }

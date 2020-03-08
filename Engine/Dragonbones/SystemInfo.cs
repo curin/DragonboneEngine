@@ -15,15 +15,16 @@ namespace Dragonbones
         /// <param name="name">the system's name</param>
         /// <param name="type">the type of the system</param>
         /// <param name="priority">the priority of the system</param>
-        public SystemInfo(string name, SystemType type, long priority)
+        public SystemInfo(string name, SystemType type, long priority, bool active = true)
         {
             _name = name;
             _id = -1;
-            Active = true;
+            Active = active;
             Priority = priority;
             Type = type;
             Running = false;
             RunReccurenceInterval = 0;
+            lastRunTime = 0;
         }
 
         /// <summary>
@@ -32,15 +33,16 @@ namespace Dragonbones
         /// <param name="name">the system's name</param>
         /// <param name="type">the type of the system</param>
         /// <param name="runReccurrenceInterval">the frame interval between runs</param>
-        public SystemInfo(string name, SystemType type, int runReccurrenceInterval)
+        public SystemInfo(string name, SystemType type, int runReccurrenceInterval, bool active = true)
         {
             _name = name;
             _id = -1;
-            Active = true;
+            Active = active;
             Priority = 0;
             Type = type;
             Running = false;
             RunReccurenceInterval = runReccurrenceInterval;
+            lastRunTime = 0;
         }
 
         string _name;
@@ -86,6 +88,11 @@ namespace Dragonbones
         public void SetID(long id)
         {
             _id = id;
+        }
+
+        public override string ToString()
+        {
+            return ID.ToString() + "\t" + Name.ToString() + "\t" +"Type:" + Type.ToString() + "   Active:" + Active.ToString() + "   Priority:" + Priority.ToString() + "   RRInterval:" + RunReccurenceInterval.ToString() + "   lastRunTime:" + lastRunTime.ToString();
         }
     }
 }

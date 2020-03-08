@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Diagnostics;
+using Dragonbones;
 
 namespace ConsoleTest
 {
@@ -6,7 +10,8 @@ namespace ConsoleTest
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            SchedulingTest test = new SchedulingTest();
+            test.Run(100);
         }
     }
 }
