@@ -11,18 +11,37 @@ namespace Dragonbones
         /// </summary>
         bool Finished { get; }
         /// <summary>
-        /// Gives the next system to run
+        /// Gives the next batch of systems to run
         /// </summary>
-        /// <param name="system">the info of the next system to run</param>
-        /// <returns>if there is another system to run</returns>
-        bool NextSystem(out SystemInfo system);
+        /// <param name="system">the info of the next batch of systems to run</param>
+        /// <returns>if thereare more systems to run</returns>
+        bool NextBatch(out ISystemBatch systemBatch);
+        /// <summary>
+        /// Add the next batch of systems to the schedule
+        /// </summary>
+        /// <param name="systemBatch">the batch of systems</param>
+        /// <param name="batchSize">how many systems are in this batch</param>
+        void Add(ISystemBatch systemBatch);
+        /// <summary>
+        /// adds a range of system batches to the schedule
+        /// </summary>
+        /// <param name="batches">batches to add</param>
+        void AddRange(IEnumerable<ISystemBatch> batches);
         /// <summary>
         /// Resets Schedule to start
         /// </summary>
         void Reset();
         /// <summary>
+        /// Clears the Schedule
+        /// </summary>
+        void Clear();
+        /// <summary>
         /// The number of systems in this schedule
         /// </summary>
-        long Count { get; }
+        int Count { get; }
+        /// <summary>
+        /// The number of system batches in this schedule
+        /// </summary>
+        int BatchCount { get; }
     }
 }

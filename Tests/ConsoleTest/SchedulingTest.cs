@@ -20,7 +20,7 @@ namespace ConsoleTest
         {
             Stopwatch watch = new Stopwatch();
             double longestTime = 0;
-            SystemScheduler scheduler = new SystemScheduler(10, 1 / 120.0, SystemType.Logic);
+            SystemScheduler scheduler = new SystemScheduler(10, 1 / 120.0, 6, SystemType.Logic);
             ISystemSchedule schedule;
 
             int logic = 0;
@@ -56,15 +56,21 @@ namespace ConsoleTest
                     watch.Start();
                     schedule = scheduler.Schedule(systems, 1 / 60f);
                     watch.Stop();
-                    while (schedule.NextSystem(out SystemInfo inf))
-                    {
-                        Console.WriteLine(inf.ToString());
-                        totalRunTime += inf.lastRunTime;
-                        if (!systemsRun.Contains(inf.ID))
-                            systemsRun.Add(inf.ID);
-                        runSystems.Add(inf.ID);
 
-                    }
+
+                    ///
+                    //TODO FIX THIS
+                    ///
+
+                    //while (schedule.NextSystem(out SystemInfo inf))
+                    //{
+                    //    Console.WriteLine(inf.ToString());
+                    //    totalRunTime += inf.lastRunTime;
+                    //    if (!systemsRun.Contains(inf.ID))
+                    //        systemsRun.Add(inf.ID);
+                    //    runSystems.Add(inf.ID);
+
+                    //}
 
                     Console.WriteLine("Run = " + schedule.Count.ToString() + "/" + logic.ToString());
                     Console.WriteLine("RunToDate = " + systemsRun.Count.ToString() + "/" + logic.ToString());

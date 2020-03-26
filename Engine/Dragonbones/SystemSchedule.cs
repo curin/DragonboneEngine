@@ -6,36 +6,47 @@ namespace Dragonbones
 {
     public class SystemSchedule : ISystemSchedule
     {
-        public SystemSchedule()
+        int _count = 0;
+        List<ISystemBatch> _systemBatchs = new List<ISystemBatch>();
+        int _place = 0;
+        public bool Finished => _place == _systemBatchs.Count;
+
+        public int Count => _count;
+
+        public int BatchCount => _systemBatchs.Count;
+
+        public void Add(ISystemBatch systemBatch)
         {
-            Systems = new List<SystemInfo>();
+            _systemBatchs.Add(systemBatch);
         }
 
-        public List<SystemInfo> Systems;
-        int place;
-
-        public bool Finished => place >= Systems.Count;
-
-        public long Count => Systems.Count;
-
-        public bool NextSystem(out SystemInfo system)
+        public void AddRange(IEnumerable<ISystemBatch> batches)
         {
-            if (place < Systems.Count)
+            _systemBatchs.AddRange(batches);
+        }
+
+        public void Clear()
+        {
+            _place = 0;
+            _count = 0;
+            _systemBatchs.Clear();
+        }
+
+        public bool NextBatch(out ISystemBatch systemBatch)
+        {
+            if (_place >= _systemBatchs.Count)
             {
-                lock (Systems)
-                {
-                    system = Systems[place];
-                    place++;
-                }
-                return true;
+                systemBatch = default;
+                return false;
             }
-            system = default;
-            return false;
+            systemBatch = _systemBatchs[_place];
+            _place++;
+            return true;
         }
 
         public void Reset()
         {
-            place = 0;
+            _place = 0;
         }
     }
 }
