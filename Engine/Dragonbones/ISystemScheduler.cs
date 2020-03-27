@@ -6,6 +6,6 @@ namespace Dragonbones
 {
     public interface ISystemScheduler
     {
-        public ISystemSchedule Schedule(List<SystemInfo> Systems, float deltaTime);
+        public ISystemSchedule Schedule(List<SystemInfo> Systems);
     }
 }

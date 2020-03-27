@@ -20,17 +20,22 @@ namespace ConsoleTest
         {
             Stopwatch watch = new Stopwatch();
             double longestTime = 0;
-            SystemScheduler scheduler = new SystemScheduler(10, 1 / 120.0, 6, SystemType.Logic);
-            ISystemSchedule schedule;
+            SystemScheduler scheduler = new SystemScheduler(6, SystemType.Logic);
+            ISystemSchedule schedule = null;
 
             int logic = 0;
+            int largestRunRecurrence = 0;
             List<SystemInfo> systems = new List<SystemInfo>();
             for (int i = 0; i < SystemCount; i++)
             {
                 systems.Add(RandomSystem());
-                Console.WriteLine(systems[i].ToString());
+                //Console.WriteLine(systems[i].ToString());
                 if (systems[i].Type == SystemType.Logic)
+                {
                     logic++;
+                    if (systems[i].RunReccurenceInterval > largestRunRecurrence)
+                        largestRunRecurrence = systems[i].RunReccurenceInterval;
+                }
             }
 
             Console.WriteLine("Logic = " + logic.ToString() + "/" + systems.Count.ToString());
@@ -53,25 +58,26 @@ namespace ConsoleTest
                     Console.WriteLine("==================================================");
                     Console.WriteLine("                     Run " + runIndex.ToString());
                     Console.WriteLine("==================================================");
-                    watch.Start();
-                    schedule = scheduler.Schedule(systems, 1 / 60f);
-                    watch.Stop();
+                    for (int a = 0; a < 100; a++)
+                    {
+                        watch.Start();
+                        schedule = scheduler.Schedule(systems);
+                        watch.Stop();
+                    }
 
+                    double place = 0;
+                    int batchNum = 0;
 
-                    ///
-                    //TODO FIX THIS
-                    ///
+                    while (schedule.NextSystem(out SystemInfo sysInf))
+                    {
+                        sysInf.Age = 0;
+                        Console.WriteLine(sysInf.ToString());
+                        if (!systemsRun.Contains(sysInf.ID))
+                            systemsRun.Add(sysInf.ID);
+                        runSystems.Add(sysInf.ID);
+                    }
 
-                    //while (schedule.NextSystem(out SystemInfo inf))
-                    //{
-                    //    Console.WriteLine(inf.ToString());
-                    //    totalRunTime += inf.lastRunTime;
-                    //    if (!systemsRun.Contains(inf.ID))
-                    //        systemsRun.Add(inf.ID);
-                    //    runSystems.Add(inf.ID);
-
-                    //}
-
+                    Console.WriteLine("Batches Run : " + batchNum.ToString() + "/" + schedule.BatchCount.ToString());
                     Console.WriteLine("Run = " + schedule.Count.ToString() + "/" + logic.ToString());
                     Console.WriteLine("RunToDate = " + systemsRun.Count.ToString() + "/" + logic.ToString());
                     Console.WriteLine("Time = " + totalRunTime.ToString() + "/" + (1 / 120.0).ToString());
@@ -128,6 +134,7 @@ namespace ConsoleTest
                 systemsRun.Clear();
                 Console.WriteLine();
                 Console.WriteLine("Longest Scheduling Time : " + longestTime.ToString());
+                Console.WriteLine("Runs to Complete : " + runIndex.ToString());
                 longestTime = 0;
                 Console.WriteLine();
                 Console.WriteLine();
@@ -145,18 +152,17 @@ namespace ConsoleTest
             SystemInfo inf;
             if (random.Next(2) == 0)
             {
-                inf = new SystemInfo(RandomString(random.Next(8, 12)), typeRand[random.Next(9)], priorityRand[random.Next(19)], activeRand[random.Next(9)])
-                {
-                    lastRunTime = random.Next(100, 10000) / (double)Stopwatch.Frequency,
-                };
+                inf = new SystemInfo(RandomString(random.Next(8, 12)), typeRand[random.Next(9)], priorityRand[random.Next(19)], true);// activeRand[random.Next(9)]);
             }
             else
             {
-                inf = new SystemInfo(RandomString(random.Next(8, 12)), runReccurenceRand[random.Next(19)], typeRand[random.Next(9)], activeRand[random.Next(9)])
-                {
-                    lastRunTime = random.Next(100, 10000) / (double)Stopwatch.Frequency,
-                };
+                inf = new SystemInfo(RandomString(random.Next(8, 12)), runReccurenceRand[random.Next(19)], priorityRand[random.Next(19)], typeRand[random.Next(9)], true);// activeRand[random.Next(9)]);
             }
+            int[] components = new int[random.Next(1, 3)];
+            for (int i = 0; i < components.Length; i++)
+                components[i] = random.Next(0, 100);
+            inf.UpdateAverage(random.Next(1, 100) / (double)Stopwatch.Frequency);
+            inf.SetComponentIDs(components);
             inf.SetID(nextID);
             nextID++;
             return inf;
@@ -164,9 +170,9 @@ namespace ConsoleTest
 
         SystemInfo SystemUpdate(SystemInfo inf)
         {
-            if (!activeRand[random.Next(9)])
-                inf.Active = !inf.Active;
-            inf.lastRunTime = (random.Next(75, 125) / 100.0) * inf.lastRunTime;
+            //if (!activeRand[random.Next(9)])
+            //    inf.Active = !inf.Active;
+            inf.UpdateAverage((random.Next(95, 105) / 100.0) * inf.AverageRunTime);
             return inf;
         }
 

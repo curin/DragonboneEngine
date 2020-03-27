@@ -7,7 +7,7 @@ namespace Dragonbones
     public class SystemSchedule : ISystemSchedule
     {
         int _count = 0;
-        List<ISystemBatch> _systemBatchs = new List<ISystemBatch>();
+        List<SystemInfo> _systemBatchs = new List<SystemInfo>();
         int _place = 0;
         public bool Finished => _place == _systemBatchs.Count;
 
@@ -15,14 +15,9 @@ namespace Dragonbones
 
         public int BatchCount => _systemBatchs.Count;
 
-        public void Add(ISystemBatch systemBatch)
+        public void Add(SystemInfo systemBatch)
         {
             _systemBatchs.Add(systemBatch);
-        }
-
-        public void AddRange(IEnumerable<ISystemBatch> batches)
-        {
-            _systemBatchs.AddRange(batches);
         }
 
         public void Clear()
@@ -32,7 +27,7 @@ namespace Dragonbones
             _systemBatchs.Clear();
         }
 
-        public bool NextBatch(out ISystemBatch systemBatch)
+        public bool NextSystem(out SystemInfo systemBatch)
         {
             if (_place >= _systemBatchs.Count)
             {
@@ -47,6 +42,11 @@ namespace Dragonbones
         public void Reset()
         {
             _place = 0;
+        }
+
+        public void Sort(Comparison<SystemInfo> comparer)
+        {
+            _systemBatchs.Sort(comparer);
         }
     }
 }

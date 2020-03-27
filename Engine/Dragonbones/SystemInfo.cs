@@ -24,7 +24,8 @@ namespace Dragonbones
             Type = type;
             Running = false;
             RunReccurenceInterval = 0;
-            lastRunTime = 0;
+            AverageRunTime = 0;
+            RunCount = 0;
             ComponentsUsed = componentsUsed;
             _componentIDs = new int[componentsUsed.Length];
             Age = 0;
@@ -36,16 +37,17 @@ namespace Dragonbones
         /// <param name="name">the system's name</param>
         /// <param name="type">the type of the system</param>
         /// <param name="runReccurrenceInterval">the frame interval between runs</param>
-        public SystemInfo(string name, int runReccurrenceInterval, SystemType type, bool active = true, params string[] componentsUsed)
+        public SystemInfo(string name, int runReccurrenceInterval, int priority, SystemType type, bool active = true, params string[] componentsUsed)
         {
             _name = name;
             _id = -1;
             Active = active;
-            Priority = 0;
+            Priority = priority;
             Type = type;
             Running = false;
             RunReccurenceInterval = runReccurrenceInterval;
-            lastRunTime = 0;
+            AverageRunTime = 0;
+            RunCount = 0;
             ComponentsUsed = componentsUsed;
             _componentIDs = new int[componentsUsed.Length];
             Age = 0;
@@ -93,14 +95,21 @@ namespace Dragonbones
         /// </summary>
         public bool Running { get; set; }
         /// <summary>
-        /// What was the length for the last run of this system
-        /// this is used in scheduling
+        /// The average time it takes to run this system
         /// </summary>
-        public double lastRunTime { get; set; }
+        public double AverageRunTime { get; private set; }
+        /// <summary>
+        /// A variable to count the number of times a system runs
+        /// </summary>
+        public long RunCount { get; private set; }
         /// <summary>
         /// How many frames have passed since last execution
         /// </summary>
         public int Age { get; set; }
+        /// <summary>
+        /// A Space to store a priority composite variable
+        /// </summary>
+        public int PriorityComposite { get; set; }
         /// <summary>
         /// ID as set by System Registry
         /// </summary>
@@ -113,15 +122,21 @@ namespace Dragonbones
         /// Method so system can set the component ids from the names
         /// </summary>
         /// <param name="ids"></param>
-        public void GetComponentIDs(int[] ids)
+        public void SetComponentIDs(int[] ids)
         {
             _componentIDs = ids;
         }
 
         public override string ToString()
         {
-            return ID.ToString() + "\t" + Name.ToString() + "\t" + "Type:" + Type.ToString() + "   Active:" + Active.ToString() + "   Priority:" + Priority.ToString() + "   RRInterval:" + RunReccurenceInterval.ToString() + "   lastRunTime:" + lastRunTime.ToString();
+            return ID + "\t" + Name + "\t" + "Type:" + Type.ToString() + "   Active:" + Active + "   Priority:" + Priority + "   RRInterval:" + RunReccurenceInterval + "   Average Time:" + AverageRunTime;
         }
 
+
+        public void UpdateAverage(double newTime)
+        {
+            RunCount++;
+            AverageRunTime = MathHelper.MovingAverage(AverageRunTime, newTime, RunCount);
+        }
     }
 }
