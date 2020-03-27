@@ -11,7 +11,7 @@ namespace ConsoleTest
         Random random = new Random();
         bool[] activeRand = new bool[10] { true, true, true, true, true, true, true, false, false, false };
         int[] runReccurenceRand = new int[20] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 5, 5 };
-        int[] priorityRand = new int[20] { 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 5, 6 };
+        int[] priorityRand = new int[20] { 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 5, 6 };
         SystemType[] typeRand = new SystemType[10] { SystemType.Logic, SystemType.Logic, SystemType.Logic, SystemType.Logic, SystemType.Logic,
             SystemType.Logic, SystemType.Render, SystemType.Render, SystemType.Render, SystemType.Render};
         int nextID = 0;
@@ -20,8 +20,8 @@ namespace ConsoleTest
         {
             Stopwatch watch = new Stopwatch();
             double longestTime = 0;
-            SystemScheduler scheduler = new SystemScheduler(SystemType.Logic);
-            ISystemSchedule schedule = null;
+            SystemScheduler scheduler = new SystemScheduler(SystemType.Logic, 6);
+            SystemSchedule schedule = null;
 
             int logic = 0;
             int largestRunRecurrence = 0;
@@ -38,7 +38,7 @@ namespace ConsoleTest
                 }
             }
 
-            Console.WriteLine("Logic = " + logic.ToString() + "/" + systems.Count.ToString());
+            Console.WriteLine("Logic = " + logic + "/" + systems.Count);
             List<int> systemsRun = new List<int>();
             List<int> runSystems = new List<int>();
 
@@ -56,32 +56,56 @@ namespace ConsoleTest
                     runSystems.Clear();
                     double totalRunTime = 0;
                     Console.WriteLine("==================================================");
-                    Console.WriteLine("                     Run " + runIndex.ToString());
+                    Console.WriteLine("                     Run " + runIndex);
                     Console.WriteLine("==================================================");
 
                         watch.Reset();
                         watch.Start();
-                        schedule = scheduler.Schedule(systems);
+                        schedule = (SystemSchedule)scheduler.Schedule(systems);
                         watch.Stop();
 
                     double place = 0;
-                    int batchNum = 0;
 
-                    while (schedule.NextSystem(out SystemInfo sysInf))
+                    watch.Reset();
+                    watch.Start();
+                    while (schedule.NextSystem(0, out SystemInfo sysInf) != ScheduleResult.Finished)
                     {
-                        sysInf.Age = 0;
+                        //Handle Conflict;
+                        watch.Stop();
                         Console.WriteLine(sysInf.ToString());
+                        sysInf.Age = 0;
                         if (!systemsRun.Contains(sysInf.ID))
                             systemsRun.Add(sysInf.ID);
                         runSystems.Add(sysInf.ID);
                     }
+                    watch.Stop();
 
-                    Console.WriteLine("Batches Run : " + batchNum.ToString() + "/" + schedule.BatchCount.ToString());
-                    Console.WriteLine("Run = " + schedule.Count.ToString() + "/" + logic.ToString());
-                    Console.WriteLine("RunToDate = " + systemsRun.Count.ToString() + "/" + logic.ToString());
-                    Console.WriteLine("Time = " + totalRunTime.ToString() + "/" + (1 / 120.0).ToString());
+                    Console.WriteLine("Run = " + schedule.Count + "/" + logic);
+                    Console.WriteLine("RunToDate = " + systemsRun.Count + "/" + logic);
+                    Console.WriteLine("Time = " + totalRunTime + "/" + (1 / 120.0));
                     temp = watch.ElapsedTicks / (double)Stopwatch.Frequency;
-                    Console.WriteLine("ScheduleTime = " + (temp).ToString());
+                    Console.WriteLine("ScheduleTime = " + (temp));
+
+                    for (int i = 0; i < systems.Count; i++)
+                    {
+                        systems[i].Age += i;
+                        SystemUpdate(systems[i]);
+                    }
+
+                    schedule.Sort();
+                    schedule.Reset();
+                    Console.WriteLine("==================================================");
+
+                    while (schedule.NextSystem(0, out SystemInfo sysInf) != ScheduleResult.Finished)
+                    {
+                        //Handle Conflict;
+                        watch.Stop();
+                        Console.WriteLine(sysInf.ToString());
+                        sysInf.Age = 0;
+                        if (!systemsRun.Contains(sysInf.ID))
+                            systemsRun.Add(sysInf.ID);
+                        runSystems.Add(sysInf.ID);
+                    }
 
                     if (temp > longestTime)
                         longestTime = temp;
@@ -119,7 +143,7 @@ namespace ConsoleTest
                     runIndex++;
                     for (int i = 0; i < systems.Count; i++)
                     {
-                        systems[i] = SystemUpdate(systems[i]);
+                        SystemUpdate(systems[i]);
                     }
                 }
 
@@ -159,20 +183,22 @@ namespace ConsoleTest
             }
             int[] components = new int[random.Next(1, 3)];
             for (int i = 0; i < components.Length; i++)
-                components[i] = random.Next(0, 100);
-            inf.UpdateAverage(random.Next(1, 100) / (double)Stopwatch.Frequency);
+                components[i] = random.Next(1, 3);
+            inf.Update(random.Next(1, 100) / (double)Stopwatch.Frequency);
             inf.SetComponentIDs(components);
             inf.SetID(nextID);
             nextID++;
             return inf;
         }
 
-        SystemInfo SystemUpdate(SystemInfo inf)
+        void SystemUpdate(SystemInfo inf)
         {
             //if (!activeRand[random.Next(9)])
             //    inf.Active = !inf.Active;
-            inf.UpdateAverage((random.Next(95, 105) / 100.0) * inf.AverageRunTime);
-            return inf;
+            inf.PriorityComposite = inf.Age * inf.Priority;
+            inf.Update((random.Next(95, 105) / 100.0) * inf.AverageRunTime);
+            if (inf.Active)
+                inf.Age++;
         }
 
         string RandomString(int length)

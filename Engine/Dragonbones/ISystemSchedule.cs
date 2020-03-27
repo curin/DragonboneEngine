@@ -14,19 +14,19 @@ namespace Dragonbones
         /// Gives the system to run
         /// </summary>
         /// <param name="system">the info of the system to run</param>
+        /// <param name="systemLaneID">The id of system lane to provide a system for</param>
         /// <returns>if thereare more systems to run</returns>
-        bool NextSystem(out SystemInfo systemBatch);
+        ScheduleResult NextSystem(int systemLaneID, out SystemInfo systemBatch);
         /// <summary>
         /// Add the next system to the schedule
         /// </summary>
         /// <param name="systemBatch">the batch of systems</param>
-        /// <param name="batchSize">how many systems are in this batch</param>
-        void Add(SystemInfo systemBatch);
+        void Add( SystemInfo systemBatch);
         /// <summary>
-        /// Sorts the schedule by the comparer function
+        /// Sets a lane to finished
         /// </summary>
-        /// <param name="comparer"></param>
-        void Sort(Comparison<SystemInfo> comparer);
+        /// <param name="systemLaneID">the id of the lane to finish</param>
+        void FinishLane(int systemLaneID);
         /// <summary>
         /// Resets Schedule to start
         /// </summary>
@@ -39,9 +39,22 @@ namespace Dragonbones
         /// The number of systems in this schedule
         /// </summary>
         int Count { get; }
+    }
+
+    public enum ScheduleResult
+    {
         /// <summary>
-        /// The number of system batches in this schedule
+        /// A new system was supplied
         /// </summary>
-        int BatchCount { get; }
+        Supplied,
+        /// <summary>
+        /// The Schedule is finished
+        /// </summary>
+        Finished,
+        /// <summary>
+        /// No system supplied due to conflicts
+        /// retry soon
+        /// </summary>
+        Conflict
     }
 }

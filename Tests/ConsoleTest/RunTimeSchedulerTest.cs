@@ -9,7 +9,7 @@ namespace ConsoleTest
 {
     public class RunTimeSchedulerTest
     {
-        Random random = new Random();
+        readonly Random random = new Random();
         int nextID = 0;
         bool[] activeRand = new bool[10] { true, true, true, true, true, true, true, false, false, false };
         int[] runReccurenceRand = new int[20] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 5, 5 };
@@ -102,7 +102,7 @@ namespace ConsoleTest
 
                             for (int i = 0; i < _systemLanes; i++)
                                 if (Lanes[i].EndTime > time)
-                                    if (data.GetComponentsTypeIDs().Any((id) => { return Lanes[i].System.ComponentsUsedIDs.Contains(id); }))
+                                    if (data.GetComponentsTypeIDs().Any((id) => { return Lanes[i].System.GetComponentsUsedIDs().Contains(id); }))
                                     {
                                         sa = true;
                                         setAside.Add(data);
@@ -123,7 +123,7 @@ namespace ConsoleTest
                             for (int i = 0; i < _systemLanes; i++)
                             {
                                 if (Lanes[i].EndTime > time)
-                                    if (priorityData[top].GetComponentsTypeIDs().Any((id) => { return Lanes[i].System.ComponentsUsedIDs.Contains(id); }))
+                                    if (priorityData[top].GetComponentsTypeIDs().Any((id) => { return Lanes[i].System.GetComponentsUsedIDs().Contains(id); }))
                                     {
                                         setAside.Add(priorityData[top]);
                                         sa = true;
@@ -161,11 +161,11 @@ namespace ConsoleTest
                             running = false;
                     }
 
-                    Console.WriteLine("Run = " + top + "/" + logic.ToString());
-                    Console.WriteLine("RunToDate = " + systemsRun.Count.ToString() + "/" + logic.ToString());
-                    Console.WriteLine("Time = " + totalRunTime.ToString() + "/" + (1 / 120.0).ToString());
+                    Console.WriteLine("Run = " + top + "/" + logic);
+                    Console.WriteLine("RunToDate = " + systemsRun.Count + "/" + logic);
+                    Console.WriteLine("Time = " + totalRunTime + "/" + (1 / 120.0));
                     temp = watch.ElapsedTicks / (double)Stopwatch.Frequency;
-                    Console.WriteLine("ScheduleTime = " + (temp).ToString());
+                    Console.WriteLine("ScheduleTime = " + (temp));
                     Console.WriteLine("Total Time: " + totalTemp);
 
                     Console.ReadLine();
@@ -219,8 +219,8 @@ namespace ConsoleTest
                 }
                 systemsRun.Clear();
                 Console.WriteLine();
-                Console.WriteLine("Longest Scheduling Time : " + longestTime.ToString());
-                Console.WriteLine("Runs to Complete : " + runIndex.ToString());
+                Console.WriteLine("Longest Scheduling Time : " + longestTime);
+                Console.WriteLine("Runs to Complete : " + runIndex);
                 longestTime = 0;
                 Console.WriteLine();
                 Console.WriteLine();
@@ -273,7 +273,7 @@ namespace ConsoleTest
 
                 //Create a schedule data with the average runlength, priority composite with age, the runRecurrence, and the components the system use
                 ScheduleData data = new ScheduleData(i, sysInf.AverageRunTime,
-                    sysInf.Priority * sysInf.Age, sysInf.RunReccurenceInterval == 0 ? int.MaxValue : sysInf.RunReccurenceInterval, sysInf.ComponentsUsedIDs);
+                    sysInf.Priority * sysInf.Age, sysInf.RunReccurenceInterval == 0 ? int.MaxValue : sysInf.RunReccurenceInterval, sysInf.GetComponentsUsedIDs());
 
                 //add this to the priority data
                 priorityData.Add(data);
@@ -297,7 +297,7 @@ namespace ConsoleTest
             int[] components = new int[random.Next(1, 20)];
             for (int i = 0; i < components.Length; i++)
                 components[i] = random.Next(0, 100);
-            inf.UpdateAverage(random.Next(1, 100) / (double)Stopwatch.Frequency);
+            inf.Update(random.Next(1, 100) / (double)Stopwatch.Frequency);
             inf.SetComponentIDs(components);
             inf.SetID(nextID);
             nextID++;
@@ -308,7 +308,7 @@ namespace ConsoleTest
         {
             //if (!activeRand[random.Next(9)])
             //    inf.Active = !inf.Active;
-            inf.UpdateAverage((random.Next(95, 105) / 100.0) * inf.AverageRunTime);
+            inf.Update((random.Next(95, 105) / 100.0) * inf.AverageRunTime);
             return inf;
         }
 
@@ -394,7 +394,7 @@ namespace ConsoleTest
 
             public bool Equals(ScheduleData other)
             {
-                return this.ArrayIndex == other.ArrayIndex;
+                return ArrayIndex == other.ArrayIndex;
             }
         }
     }

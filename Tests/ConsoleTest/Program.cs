@@ -11,7 +11,7 @@ namespace ConsoleTest
         static void Main(string[] args)
         {
             SchedulingTest test = new SchedulingTest();
-            test.Run(10000);
+            test.Run(10);
         }
     }
 }

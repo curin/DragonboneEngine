@@ -26,7 +26,7 @@ namespace Dragonbones
             RunReccurenceInterval = 0;
             AverageRunTime = 0;
             RunCount = 0;
-            ComponentsUsed = componentsUsed;
+            _componentsUsed = componentsUsed;
             _componentIDs = new int[componentsUsed.Length];
             Age = 0;
         }
@@ -48,12 +48,12 @@ namespace Dragonbones
             RunReccurenceInterval = runReccurrenceInterval;
             AverageRunTime = 0;
             RunCount = 0;
-            ComponentsUsed = componentsUsed;
+            _componentsUsed = componentsUsed;
             _componentIDs = new int[componentsUsed.Length];
             Age = 0;
         }
 
-        string _name;
+        readonly string _name;
         int _id;
         int[] _componentIDs;
         /// <summary>
@@ -68,14 +68,25 @@ namespace Dragonbones
         /// The ID for the system
         /// </summary>
         public int ID => _id;
+
         /// <summary>
         /// The ids of the component types used by this system
         /// </summary>
-        public int[] ComponentsUsedIDs => _componentIDs;
+        public int[] GetComponentsUsedIDs()
+        {
+            return _componentIDs;
+        }
+
+        private readonly string[] _componentsUsed;
+
         /// <summary>
         /// The types of components this system uses
         /// </summary>
-        public string[] ComponentsUsed { get; }
+        public string[] GetComponentsUsed()
+        {
+            return _componentsUsed;
+        }
+
         /// <summary>
         /// Is this system currently active?
         /// </summary>
@@ -104,12 +115,18 @@ namespace Dragonbones
         public long RunCount { get; private set; }
         /// <summary>
         /// How many frames have passed since last execution
+        /// Used in Sheduling
         /// </summary>
         public int Age { get; set; }
         /// <summary>
         /// A Space to store a priority composite variable
         /// </summary>
         public int PriorityComposite { get; set; }
+        /// <summary>
+        /// Whether this system was run this frame
+        /// Used in scheduling
+        /// </summary>
+        public bool Run { get; set; }
         /// <summary>
         /// ID as set by System Registry
         /// </summary>
@@ -129,17 +146,29 @@ namespace Dragonbones
 
         public override string ToString()
         {
-            return ID + "\t" + Name + "\t" + "Type:" + Type.ToString() + "   Active:" + Active + "   Priority:" + Priority + "   RRInterval:" + RunReccurenceInterval + "   Average Time:" + AverageRunTime;
+            return ID + "\t" + Name + "\t" + "Type:" + Type.ToString() + "   Active:" + Active + "   Priority Composite:" + PriorityComposite + "   RRInterval:" + RunReccurenceInterval + "   Average Time:" + AverageRunTime;
         }
 
 
-        public void UpdateAverage(double newTime)
+        public void Update(double newTime)
         {
             RunCount++;
             AverageRunTime = MathHelper.MovingAverage(AverageRunTime, newTime, RunCount);
+            PriorityComposite = Age * Priority;
+            Run = false;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Performance")]
         public int Compare(SystemInfo x, SystemInfo y)
+        {
+            int result = x.RunReccurenceInterval - y.RunReccurenceInterval;
+            if (result == 0)
+                return (y.PriorityComposite - x.PriorityComposite);
+            return result;
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Performance")]
+        public static int Sort(SystemInfo x, SystemInfo y)
         {
             int result = x.RunReccurenceInterval - y.RunReccurenceInterval;
             if (result == 0)

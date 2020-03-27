@@ -9,12 +9,14 @@ namespace Dragonbones
 {
     public class SystemScheduler : ISystemScheduler
     {
-        public SystemScheduler(SystemType type)
+        public SystemScheduler(SystemType type, int laneCount)
         {
             _type = type;
+            _laneCount = laneCount;
         }
-        
-        SystemType _type;
+
+        readonly int _laneCount;
+        readonly SystemType _type;
 
         public ISystemSchedule Schedule(List<SystemInfo> Systems)
         {
@@ -23,13 +25,13 @@ namespace Dragonbones
                 throw new ArgumentNullException(nameof(Systems));
 
             //start systemschedule
-            SystemSchedule schedule = new SystemSchedule();
+            SystemSchedule schedule = new SystemSchedule(_laneCount, 10);
 
             //Determine the runlengths, the Aging of a system and compile it into the priority data
             Setup(Systems, schedule);
 
             //Sort Schedule by priority descending, and runRecurrence descending (with 0 put at the end)
-            schedule.Sort(Sort);
+            //schedule.Sort(SystemInfo.Sort);
 
             return schedule;
         }
@@ -44,32 +46,20 @@ namespace Dragonbones
             //for each system
             for (int i = 0; i < Systems.Count; i++)
             {
+                
                 SystemInfo sysInf = Systems[i];
                 //if the system is of the wrong type or not active skip it
-                if (sysInf.Type != _type || !sysInf.Active)
+                if (sysInf.Type != _type)
                     continue;
 
                 //age the system
                 sysInf.Age++;
 
-                // if the system age is less than its runRecurrence skip it
-                if (sysInf.Age < sysInf.RunReccurenceInterval - 1)
-                    continue;
-
                 sysInf.PriorityComposite = sysInf.Age * sysInf.Priority;
-                sysInf.PriorityComposite = sysInf.RunReccurenceInterval * short.MaxValue + sysInf.Priority;
                 schedule.Add(sysInf);
             }
 
             //once all systems have been processed we have all priority data set
-        }
-
-        public static int Sort(SystemInfo x, SystemInfo y)
-        {
-            int result = x.RunReccurenceInterval - y.RunReccurenceInterval;
-            if (result == 0)
-                return (y.PriorityComposite - x.PriorityComposite);
-            return result;
         }
     }
 }
