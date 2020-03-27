@@ -57,7 +57,7 @@ namespace Dragonbones
                     continue;
 
                 sysInf.PriorityComposite = sysInf.Age * sysInf.Priority;
-
+                sysInf.PriorityComposite = sysInf.RunReccurenceInterval * short.MaxValue + sysInf.Priority;
                 schedule.Add(sysInf);
             }
 
@@ -68,7 +68,7 @@ namespace Dragonbones
         {
             int result = x.RunReccurenceInterval - y.RunReccurenceInterval;
             if (result == 0)
-                return (x.PriorityComposite - y.PriorityComposite);
+                return (y.PriorityComposite - x.PriorityComposite);
             return result;
         }
     }

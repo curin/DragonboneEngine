@@ -20,7 +20,7 @@ namespace ConsoleTest
         {
             Stopwatch watch = new Stopwatch();
             double longestTime = 0;
-            SystemScheduler scheduler = new SystemScheduler(6, SystemType.Logic);
+            SystemScheduler scheduler = new SystemScheduler(SystemType.Logic);
             ISystemSchedule schedule = null;
 
             int logic = 0;
@@ -58,12 +58,11 @@ namespace ConsoleTest
                     Console.WriteLine("==================================================");
                     Console.WriteLine("                     Run " + runIndex.ToString());
                     Console.WriteLine("==================================================");
-                    for (int a = 0; a < 100; a++)
-                    {
+
+                        watch.Reset();
                         watch.Start();
                         schedule = scheduler.Schedule(systems);
                         watch.Stop();
-                    }
 
                     double place = 0;
                     int batchNum = 0;

@@ -7,7 +7,7 @@ namespace Dragonbones
     /// <summary>
     /// The system's info
     /// </summary>
-    public class SystemInfo
+    public class SystemInfo : IComparer<SystemInfo>
     {
         /// <summary>
         /// Constructs the system info using priority
@@ -137,6 +137,14 @@ namespace Dragonbones
         {
             RunCount++;
             AverageRunTime = MathHelper.MovingAverage(AverageRunTime, newTime, RunCount);
+        }
+
+        public int Compare(SystemInfo x, SystemInfo y)
+        {
+            int result = x.RunReccurenceInterval - y.RunReccurenceInterval;
+            if (result == 0)
+                return (y.PriorityComposite - x.PriorityComposite);
+            return result;
         }
     }
 }
