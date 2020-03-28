@@ -33,6 +33,7 @@ namespace Dragonbones
         {
             _start = _end = -1;
             _count = _next = _top = 0;
+            _rrStart = _rrEnd = 0;
             _runRecurrences.Clear();
             freeSpace.Clear();
         }

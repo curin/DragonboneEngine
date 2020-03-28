@@ -13,7 +13,7 @@ namespace ConsoleTest
             while (true)
             {
                 SchedulingTest test = new SchedulingTest();
-                test.Run(100);
+                test.Run(10);
             }
         }
     }

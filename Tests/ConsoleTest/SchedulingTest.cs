@@ -20,8 +20,7 @@ namespace ConsoleTest
         {
             Stopwatch watch = new Stopwatch();
             double longestTime = 0;
-            SystemScheduler scheduler = new SystemScheduler(SystemType.Logic, 6);
-            SystemSchedule schedule = null;
+            ISystemSchedule schedule = null;
 
             int logic = 0;
             int largestRunRecurrence = 0;
@@ -66,11 +65,15 @@ namespace ConsoleTest
                     Console.WriteLine("                     Run " + runIndex);
                     Console.WriteLine("==================================================");
 
-                    watch.Reset();
-                    watch.Start();
-                    schedule = (SystemSchedule)scheduler.Schedule(systems, logic, false);
-                    watch.Stop();
+                    for (int i = 0; i < 10; i++)
+                    {
+                        watch.Restart();
+                        schedule = SystemScheduler.Schedule(systems, logic, SystemType.Logic, 6);
+                        watch.Stop();
+                    }
 
+                    long ticks = watch.ElapsedTicks;
+                    Console.ReadLine();
                     double place = 0;
 
                     watch.Reset();
@@ -90,7 +93,7 @@ namespace ConsoleTest
                     Console.WriteLine("Run = " + schedule.Count + "/" + logic);
                     Console.WriteLine("RunToDate = " + systemsRun.Count + "/" + logic);
                     Console.WriteLine("Time = " + totalRunTime + "/" + (1 / 120.0));
-                    temp = watch.ElapsedTicks / (double)Stopwatch.Frequency;
+                    temp = ticks / (double)Stopwatch.Frequency;
                     Console.WriteLine("ScheduleTime = " + (temp));
 
                     string exit = Console.ReadLine();
@@ -104,15 +107,42 @@ namespace ConsoleTest
                         SystemUpdate(systems[i]);
                     }
 
-                    watch.Restart();
-                    schedule.Clear();
-                    for (int i = 0; i < systems.Count; i++)
+                    for (int i = 0; i < 10; i++)
                     {
-                        if (systems[i].Type == SystemType.Logic)
-                            schedule.Add(systems[i]);
+                        watch.Reset();
+                        watch.Start();
+                        schedule.Clear();
+                        watch.Stop();
+
+                        temp = watch.ElapsedTicks / (double)Stopwatch.Frequency;
+                        Console.WriteLine("ClearTime = " + (temp));
+                        watch.Reset();
+                        watch.Start();
+                        double average = 0;
+
+                        //start systemschedule
+                        schedule = new SystemSchedule(6, logic);
+
+                        //Determine the runlengths, the Aging of a system and compile it into the priority data
+                        //for each system
+                        foreach (SystemInfo sysInf in systems)
+                        {
+                            //SystemInfo sysInf = systems[j];
+                            //if the system is of the wrong type or not active skip it
+                            if (sysInf.Type != SystemType.Logic)
+                                continue;
+
+                            //age the system
+                            sysInf.Age++;
+
+                            sysInf.PriorityComposite = sysInf.Age * sysInf.Priority;
+                            schedule.Add(sysInf);
+                        }
+                        watch.Stop();
+                        temp = watch.ElapsedTicks / (double)Stopwatch.Frequency;
+                        Console.WriteLine("SortTime = " + (temp));
                     }
-                    watch.Stop();
-                    schedule.Reset();
+                    Console.ReadLine();
                     Console.WriteLine("==================================================");
 
                     while (schedule.NextSystem(0, out SystemInfo sysInf) != ScheduleResult.Finished)
@@ -126,8 +156,7 @@ namespace ConsoleTest
                         runSystems.Add(sysInf.ID);
                     }
 
-                    temp = watch.ElapsedTicks / (double)Stopwatch.Frequency;
-                    Console.WriteLine("SortTime = " + (temp));
+                    
 
                     if (temp > longestTime)
                         longestTime = temp;
