@@ -105,13 +105,12 @@ namespace ConsoleTest
                     }
 
                     watch.Restart();
-                    //schedule.Clear();
-                    //for (int i = 0; i < systems.Count; i++)
-                    //{
-                    //    if (systems[i].Type == SystemType.Logic)
-                    //        schedule.Add(systems[i]);
-                    //}
-                    schedule.Sort();
+                    schedule.Clear();
+                    for (int i = 0; i < systems.Count; i++)
+                    {
+                        if (systems[i].Type == SystemType.Logic)
+                            schedule.Add(systems[i]);
+                    }
                     watch.Stop();
                     schedule.Reset();
                     Console.WriteLine("==================================================");
