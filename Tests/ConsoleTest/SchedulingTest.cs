@@ -38,6 +38,13 @@ namespace ConsoleTest
                 }
             }
 
+            //systems.Add(new SystemInfo("1", 0, 5, SystemType.Logic, true));
+            //systems.Add(new SystemInfo("2", 2, 3, SystemType.Logic, true));
+            //systems.Add(new SystemInfo("3", 1, 4, SystemType.Logic, true));
+            //systems.Add(new SystemInfo("1", 0, 1, SystemType.Logic, true));
+            //systems.Add(new SystemInfo("2", 1, 2, SystemType.Logic, true));
+            //logic = 5
+
             Console.WriteLine("Logic = " + logic + "/" + systems.Count);
             List<int> systemsRun = new List<int>();
             List<int> runSystems = new List<int>();
@@ -59,10 +66,10 @@ namespace ConsoleTest
                     Console.WriteLine("                     Run " + runIndex);
                     Console.WriteLine("==================================================");
 
-                        watch.Reset();
-                        watch.Start();
-                        schedule = (SystemSchedule)scheduler.Schedule(systems);
-                        watch.Stop();
+                    watch.Reset();
+                    watch.Start();
+                    schedule = (SystemSchedule)scheduler.Schedule(systems, logic, false);
+                    watch.Stop();
 
                     double place = 0;
 
@@ -86,13 +93,26 @@ namespace ConsoleTest
                     temp = watch.ElapsedTicks / (double)Stopwatch.Frequency;
                     Console.WriteLine("ScheduleTime = " + (temp));
 
+                    string exit = Console.ReadLine();
+                    if (exit == "n")
+                        return;
+
+
                     for (int i = 0; i < systems.Count; i++)
                     {
                         systems[i].Age += i;
                         SystemUpdate(systems[i]);
                     }
 
+                    watch.Restart();
+                    //schedule.Clear();
+                    //for (int i = 0; i < systems.Count; i++)
+                    //{
+                    //    if (systems[i].Type == SystemType.Logic)
+                    //        schedule.Add(systems[i]);
+                    //}
                     schedule.Sort();
+                    watch.Stop();
                     schedule.Reset();
                     Console.WriteLine("==================================================");
 
@@ -106,6 +126,9 @@ namespace ConsoleTest
                             systemsRun.Add(sysInf.ID);
                         runSystems.Add(sysInf.ID);
                     }
+
+                    temp = watch.ElapsedTicks / (double)Stopwatch.Frequency;
+                    Console.WriteLine("SortTime = " + (temp));
 
                     if (temp > longestTime)
                         longestTime = temp;

@@ -32,19 +32,10 @@ namespace Dragonbones
         public void Clear()
         {
             _start = _end = -1;
-            _count = _next = 0;
+            _count = _next = _top = 0;
             _runRecurrences.Clear();
             freeSpace.Clear();
         }
-
-
-        //
-        //
-        //
-        //Need to FIX ADD AND SORT
-        //
-        //
-        //
 
         public void Add(SystemInfo system)
         {
@@ -73,8 +64,14 @@ namespace Dragonbones
                 {
                     if (rr.Prev == -1)
                         _rrStart = _runRecurrences.Count;
-                    rr.Prev = _runRecurrences.Count;
-                    _runRecurrences.Add(new RREntry(_runRecurrences.Count, system.RunReccurenceInterval, _next, rr.Index));
+                    else
+                    {
+                        RREntry rrprev = _runRecurrences[rr.Prev];
+                        rrprev.Next = _runRecurrences.Count;
+                        _runRecurrences[rr.Prev] = rrprev;
+                    }
+                    _runRecurrences.Add(new RREntry(_runRecurrences.Count, system.RunReccurenceInterval, _next, rr.Index, rr.Prev));
+                    rr.Prev = _runRecurrences.Count - 1;
                 }
                 else
                 {
@@ -127,6 +124,7 @@ namespace Dragonbones
                 return;
             }
 
+            Entry prev = _entries[entry];
             if (rr.RunRecurrence != system.RunReccurenceInterval)
             {
                 if (rr.Prev != -1)
@@ -143,8 +141,12 @@ namespace Dragonbones
 
                 _runRecurrences[rr.Index] = rr;
             }
+            else if (rr.RunRecurrence != prev.RunRecurrence)
+            {
+                rr.Start = _next;
+                _runRecurrences[rr.Index] = rr;
+            }
 
-            Entry prev = _entries[entry];
             Entry next = _entries[prev.NextEntry];
             
             prev.NextEntry = _next;
@@ -266,10 +268,7 @@ namespace Dragonbones
             while (true)
             {
                 if (current.RunRecurrence != system.RunReccurenceInterval)
-                {
                     break;
-                }
-
                 if (tempSys.PriorityComposite > system.PriorityComposite)
                 {
                     if (current.NextEntry == -1)
@@ -372,18 +371,26 @@ namespace Dragonbones
             }
         }
 
-        void MergeSort(Entry start, Entry end)
+        Tuple<int, int> MergeSort(Entry start, Entry end)
         {
             if (start.CacheIndex == end.CacheIndex)
-                return;
+                return new Tuple<int, int>(start.CacheIndex, end.CacheIndex);
+
+            if (start.NextEntry == end.CacheIndex)
+                return Merge(start, start, end, end);
 
             Entry mid = getMiddle(start, end);
             Entry next = _entries[mid.NextEntry];
 
-            MergeSort(start, mid);
-            MergeSort(next, end);
+            Tuple<int, int> first = MergeSort(start, mid);
+            Tuple<int, int> second = MergeSort(next, end);
 
-            Merge(start, mid, next, end);
+            start = _entries[first.Item1];
+            mid = _entries[first.Item2];
+            next = _entries[second.Item1];
+            end = _entries[second.Item2];
+
+            return Merge(start, mid, next, end);
         }
 
         Entry getMiddle(Entry start, Entry end)
@@ -401,8 +408,9 @@ namespace Dragonbones
             return end;
         }
 
-        void Merge(Entry start, Entry mid, Entry next, Entry end)
+        Tuple<int, int> Merge(Entry start, Entry mid, Entry next, Entry end)
         {
+            int nStart = start.CacheIndex, nEnd = end.CacheIndex;
             SystemInfo low, high;
             Entry temp;
             if (start.PrevEntry != -1)
@@ -418,9 +426,10 @@ namespace Dragonbones
 
                 if (SystemInfo.Sort(high, low) < 0)
                 {
+                    if (nStart == start.CacheIndex)
+                        nStart = next.CacheIndex;
                     temp.NextEntry = next.CacheIndex;
                     start.PrevEntry = next.CacheIndex;
-                    mid.NextEntry = next.NextEntry;
                     next.NextEntry = start.CacheIndex;
                     next.PrevEntry = temp.CacheIndex;
                     if (temp.CacheIndex != -1)
@@ -428,11 +437,14 @@ namespace Dragonbones
                     else
                         _start = next.CacheIndex;
                     _entries[next.CacheIndex] = next;
-                    _entries[mid.CacheIndex] = mid;
                     _entries[start.CacheIndex] = start;
+                    mid = _entries[mid.CacheIndex];
+                    mid.NextEntry = nextEntry;
+                    _entries[mid.CacheIndex] = mid;
 
                     if (next.CacheIndex == end.CacheIndex)
                     {
+                        nEnd = mid.CacheIndex;
                         if (nextEntry != -1)
                         {
                             temp = _entries[nextEntry];
@@ -454,18 +466,18 @@ namespace Dragonbones
 
                 if (start.CacheIndex == mid.CacheIndex)
                 {
-                    start.NextEntry = next.CacheIndex;
+                    mid.NextEntry = next.CacheIndex;
                     next.PrevEntry = start.CacheIndex;
-                    _entries[next.CacheIndex] = next;
+                    _entries[mid.CacheIndex] = next;
                     _entries[start.CacheIndex] = start;
                     break;
                 }
                 
                 temp = start;
                 start = _entries[start.NextEntry];
-                
-
             }
+
+            return new Tuple<int, int>(nStart, nEnd);
         }
     }
 }

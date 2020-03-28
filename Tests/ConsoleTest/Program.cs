@@ -10,8 +10,11 @@ namespace ConsoleTest
     {
         static void Main(string[] args)
         {
-            SchedulingTest test = new SchedulingTest();
-            test.Run(10);
+            while (true)
+            {
+                SchedulingTest test = new SchedulingTest();
+                test.Run(100);
+            }
         }
     }
 }
