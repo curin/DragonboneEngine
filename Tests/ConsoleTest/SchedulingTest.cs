@@ -3,223 +3,257 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
 using Dragonbones;
+using Dragonbones.Native;
 
 namespace ConsoleTest
 {
     public class SchedulingTest
     {
-        Random random = new Random();
-        bool[] activeRand = new bool[10] { true, true, true, true, true, true, true, false, false, false };
-        int[] runReccurenceRand = new int[20] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 5, 5 };
-        int[] priorityRand = new int[20] { 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 5, 6 };
-        SystemType[] typeRand = new SystemType[10] { SystemType.Logic, SystemType.Logic, SystemType.Logic, SystemType.Logic, SystemType.Logic,
+        readonly Random random = new Random();
+        readonly bool[] activeRand = new bool[10] { true, true, true, true, true, true, true, false, false, false };
+        readonly int[] runReccurenceRand = new int[20] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 5, 5 };
+        readonly int[] priorityRand = new int[20] { 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 5, 6 };
+        readonly SystemType[] typeRand = new SystemType[10] { SystemType.Logic, SystemType.Logic, SystemType.Logic, SystemType.Logic, SystemType.Logic,
             SystemType.Logic, SystemType.Render, SystemType.Render, SystemType.Render, SystemType.Render};
         int nextID = 0;
 
-        public void Run(int SystemCount)
+        public void Run(SystemType type, double time, int laneCount, int SystemCount)
         {
-            Stopwatch watch = new Stopwatch();
-            double longestTime = 0;
-            ISystemSchedule schedule = null;
-
-            int logic = 0;
-            int largestRunRecurrence = 0;
             List<SystemInfo> systems = new List<SystemInfo>();
             for (int i = 0; i < SystemCount; i++)
             {
                 systems.Add(RandomSystem());
-                //Console.WriteLine(systems[i].ToString());
-                if (systems[i].Type == SystemType.Logic)
-                {
-                    logic++;
-                    if (systems[i].RunReccurenceInterval > largestRunRecurrence)
-                        largestRunRecurrence = systems[i].RunReccurenceInterval;
-                }
+                systems[i].Age = 1;
+                systems[i].PriorityComposite = systems[i].Priority * systems[i].Age;
             }
-
-            //systems.Add(new SystemInfo("1", 0, 5, SystemType.Logic, true));
-            //systems.Add(new SystemInfo("2", 2, 3, SystemType.Logic, true));
-            //systems.Add(new SystemInfo("3", 1, 4, SystemType.Logic, true));
-            //systems.Add(new SystemInfo("1", 0, 1, SystemType.Logic, true));
-            //systems.Add(new SystemInfo("2", 1, 2, SystemType.Logic, true));
-            //logic = 5
-
-            Console.WriteLine("Logic = " + logic + "/" + systems.Count);
-            List<int> systemsRun = new List<int>();
-            List<int> runSystems = new List<int>();
-
-            char run = 'y';
-            int runIndex = 1;
-            double temp;
-
-            Console.WriteLine();
-            Console.WriteLine();
-
-            while (run == 'y')
-            {
-                while (systemsRun.Count < logic)
-                {
-                    runSystems.Clear();
-                    double totalRunTime = 0;
-                    Console.WriteLine("==================================================");
-                    Console.WriteLine("                     Run " + runIndex);
-                    Console.WriteLine("==================================================");
-
-                    for (int i = 0; i < 10; i++)
-                    {
-                        watch.Restart();
-                        schedule = SystemScheduler.Schedule(systems, logic, SystemType.Logic, 6);
-                        watch.Stop();
-                    }
-
-                    long ticks = watch.ElapsedTicks;
-                    Console.ReadLine();
-                    double place = 0;
-
-                    watch.Reset();
-                    watch.Start();
-                    while (schedule.NextSystem(0, out SystemInfo sysInf) != ScheduleResult.Finished)
-                    {
-                        //Handle Conflict;
-                        watch.Stop();
-                        Console.WriteLine(sysInf.ToString());
-                        sysInf.Age = 0;
-                        if (!systemsRun.Contains(sysInf.ID))
-                            systemsRun.Add(sysInf.ID);
-                        runSystems.Add(sysInf.ID);
-                    }
-                    watch.Stop();
-
-                    Console.WriteLine("Run = " + schedule.Count + "/" + logic);
-                    Console.WriteLine("RunToDate = " + systemsRun.Count + "/" + logic);
-                    Console.WriteLine("Time = " + totalRunTime + "/" + (1 / 120.0));
-                    temp = ticks / (double)Stopwatch.Frequency;
-                    Console.WriteLine("ScheduleTime = " + (temp));
-
-                    string exit = Console.ReadLine();
-                    if (exit == "n")
-                        return;
-
-
-                    for (int i = 0; i < systems.Count; i++)
-                    {
-                        systems[i].Age += i;
-                        SystemUpdate(systems[i]);
-                    }
-
-                    for (int i = 0; i < 10; i++)
-                    {
-                        watch.Reset();
-                        watch.Start();
-                        schedule.Clear();
-                        watch.Stop();
-
-                        temp = watch.ElapsedTicks / (double)Stopwatch.Frequency;
-                        Console.WriteLine("ClearTime = " + (temp));
-                        watch.Reset();
-                        watch.Start();
-                        double average = 0;
-
-                        //start systemschedule
-                        schedule = new SystemSchedule(6, logic);
-
-                        //Determine the runlengths, the Aging of a system and compile it into the priority data
-                        //for each system
-                        foreach (SystemInfo sysInf in systems)
-                        {
-                            //SystemInfo sysInf = systems[j];
-                            //if the system is of the wrong type or not active skip it
-                            if (sysInf.Type != SystemType.Logic)
-                                continue;
-
-                            //age the system
-                            sysInf.Age++;
-
-                            sysInf.PriorityComposite = sysInf.Age * sysInf.Priority;
-                            schedule.Add(sysInf);
-                        }
-                        watch.Stop();
-                        temp = watch.ElapsedTicks / (double)Stopwatch.Frequency;
-                        Console.WriteLine("SortTime = " + (temp));
-                    }
-                    Console.ReadLine();
-                    Console.WriteLine("==================================================");
-
-                    while (schedule.NextSystem(0, out SystemInfo sysInf) != ScheduleResult.Finished)
-                    {
-                        //Handle Conflict;
-                        watch.Stop();
-                        Console.WriteLine(sysInf.ToString());
-                        sysInf.Age = 0;
-                        if (!systemsRun.Contains(sysInf.ID))
-                            systemsRun.Add(sysInf.ID);
-                        runSystems.Add(sysInf.ID);
-                    }
-
-                    
-
-                    if (temp > longestTime)
-                        longestTime = temp;
-                    watch.Reset();
-
-                    Console.WriteLine();
-                    Console.WriteLine();
-
-                    Console.WriteLine("--------------------------------------------------");
-                    Console.WriteLine("     Systems run previously not run this time");
-                    Console.WriteLine("--------------------------------------------------");
-
-                    foreach (int id in systemsRun)
-                    {
-                        if (!runSystems.Contains(id))
-                            Console.WriteLine(systems[id].ToString());
-                    }
-
-                    Console.WriteLine();
-                    Console.WriteLine();
-
-                    Console.WriteLine("--------------------------------------------------");
-                    Console.WriteLine("              Systems still to run");
-                    Console.WriteLine("--------------------------------------------------");
-
-                    foreach (SystemInfo inf in systems)
-                    {
-                        if (inf.Type == SystemType.Logic && !systemsRun.Contains(inf.ID))
-                            Console.WriteLine(inf.ToString());
-                    }
-
-                    Console.WriteLine();
-                    Console.WriteLine();
-
-                    runIndex++;
-                    for (int i = 0; i < systems.Count; i++)
-                    {
-                        SystemUpdate(systems[i]);
-                    }
-                }
-
-                Console.WriteLine();
-                Console.WriteLine();
-                Console.WriteLine("Run Order");
-                foreach (int ID in systemsRun)
-                {
-                    Console.WriteLine(systems[ID].ToString());
-                }
-                systemsRun.Clear();
-                Console.WriteLine();
-                Console.WriteLine("Longest Scheduling Time : " + longestTime.ToString());
-                Console.WriteLine("Runs to Complete : " + runIndex.ToString());
-                longestTime = 0;
-                Console.WriteLine();
-                Console.WriteLine();
-
-                Console.WriteLine("Continue?(y/n)");
-                run = Console.ReadKey().KeyChar;
-                Console.WriteLine();
-
-
-            }
+            Run(systems.ToArray(), type, time, laneCount);
         }
+
+        public void Run(SystemType type, double time, int laneCount, SystemInfo[] systems)
+        {
+            if (systems == null)
+                return;
+
+            Run(systems, type, time, laneCount);
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "Test not localized")]
+        void Run(SystemInfo[] systems, SystemType type, double time, int laneCount)
+        {
+            int typeCount = 0;
+            double averageTime = 0; 
+            PrecisionTimer processTimer = new PrecisionTimer();
+            PrecisionTimer unitTimer = new PrecisionTimer();
+            Console.WriteLine("Test 1 - Adding All Systems at Once");
+
+            for (int i = 0; i < systems.Length; i++)
+                if (systems[i].Type == type)
+                    typeCount++;
+
+            SystemSchedule schedule = new SystemSchedule(laneCount, typeCount);
+
+            processTimer.Start();
+            for (int i = 0; i < systems.Length; i++)
+            {
+                unitTimer.Start();
+                SystemInfo sysInf = systems[i];
+                if (!sysInf.Active || sysInf.Type != type)
+                {
+                    unitTimer.Stop();
+                    averageTime = MathHelper.MovingAverage(averageTime, unitTimer.ElapsedSeconds, i + 1);
+                    unitTimer.Reset();
+                    continue;
+                }
+                schedule.Add(sysInf);
+                unitTimer.Stop();
+                processTimer.Stop();
+                averageTime = MathHelper.MovingAverage(averageTime, unitTimer.ElapsedSeconds, i + 1);
+                unitTimer.Reset();
+                processTimer.Start();
+            }
+            processTimer.Stop();
+
+            Console.WriteLine("Total Time to Add : " + processTimer.ElapsedSeconds);
+            Console.WriteLine("Average Time to Add : " + averageTime);
+            Console.WriteLine("Extrapolated Time to Add : " + (averageTime * systems.Length));
+            Console.WriteLine("Extrapolated Time without nonTypes : " + (averageTime * typeCount));
+            processTimer.Reset();
+
+            Console.ReadLine();
+
+            Console.WriteLine("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
+            Console.WriteLine("Test 2 - Adding Each System One at a Time");
+
+            averageTime = 0;
+            schedule.Clear();
+            processTimer.Start();
+            for (int i = 0; i < systems.Length; i++)
+            {
+                unitTimer.Start();
+                SystemInfo sysInf = systems[i];
+                if (!sysInf.Active || sysInf.Type != type)
+                {
+                    unitTimer.Stop();
+                    averageTime = MathHelper.MovingAverage(averageTime, unitTimer.ElapsedSeconds, i + 1);
+                    unitTimer.Reset();
+                    continue;
+                }
+                schedule.Add(sysInf);
+                unitTimer.Stop();
+                processTimer.Stop();
+                averageTime = MathHelper.MovingAverage(averageTime, unitTimer.ElapsedSeconds, i + 1);
+                unitTimer.Reset();
+
+                while (schedule.NextSystem(0, out SystemInfo sysInfo) != ScheduleResult.Finished)
+                {
+                    sysInfo.Age = 1;
+                }
+
+                processTimer.Start();
+            }
+            processTimer.Stop();
+
+            Console.WriteLine("Total Time to Add : " + processTimer.ElapsedSeconds);
+            Console.WriteLine("Average Time to Add : " + averageTime);
+            Console.WriteLine("Extrapolated Time to Add : " + (averageTime * systems.Length));
+            Console.WriteLine("Extrapolated Time without nonTypes : " + (averageTime * typeCount));
+            processTimer.Reset();
+
+            Console.ReadLine();
+
+            Console.WriteLine("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
+            Console.WriteLine("Test 3 - Clear List and Readd");
+
+            SystemSchedule copy = new SystemSchedule(schedule);
+            foreach (SystemInfo sysinf in systems)
+                SystemUpdate(sysinf);
+
+            processTimer.Start();
+            schedule.Clear();
+
+            for (int i = 0; i < systems.Length; i++)
+            {
+                SystemInfo sysInf = systems[i];
+                if (!sysInf.Active || sysInf.Type != type)
+                {
+                    continue;
+                }
+                schedule.Add(sysInf);
+            }
+            processTimer.Stop();
+
+            while (schedule.NextSystem(0, out SystemInfo sysInfo) != ScheduleResult.Finished)
+            {
+                Console.WriteLine(sysInfo);
+            }
+
+            Console.WriteLine("Total Time to clear then readd : " + processTimer.ElapsedSeconds);
+
+            Console.ReadLine();
+
+            Console.WriteLine("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
+            Console.WriteLine("Test 4 - Remove Individually and Add One at a time");
+
+            processTimer.Start();
+
+            copy.Reset();
+
+            for (int i = 0; i < systems.Length; i++)
+            {
+                SystemInfo sysInf = systems[i];
+                if (!sysInf.Active || sysInf.Type != type)
+                {
+                    continue;
+                }
+                copy.Remove(sysInf);
+                copy.Add(sysInf);
+            }
+            processTimer.Stop();
+
+            while (copy.NextSystem(0, out SystemInfo sysInfo) != ScheduleResult.Finished)
+            {
+                Console.WriteLine(sysInfo);
+            }
+
+            Console.WriteLine("Total Time to remove then readd : " + processTimer.ElapsedSeconds);
+
+            Console.ReadLine();
+
+            Console.WriteLine("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
+            Console.WriteLine("Test 5 - System Run");
+
+            schedule.Clear();
+
+            for (int i = 0; i < systems.Length; i++)
+            {
+                SystemInfo sysInf = systems[i];
+                if (!sysInf.Active || sysInf.Type != type)
+                {
+                    continue;
+                }
+                schedule.Add(sysInf);
+            }
+
+            double currentTime = 0;
+            int finishCount = 0;
+            double[] endTimes = new double[laneCount];
+            bool[] finished = new bool[laneCount];
+            averageTime = 0;
+
+            processTimer.Start();
+            while (!schedule.Finished && currentTime < time && finishCount < laneCount)
+            {
+                for (int i = 0; i < laneCount; i++)
+                    if (endTimes[i] <= currentTime && !finished[i])
+                    {
+                        unitTimer.Start();
+                        schedule.FinishLane(i);
+                        ScheduleResult result = schedule.NextSystem(i, out SystemInfo sysInf);
+
+                        if (result == ScheduleResult.Supplied)
+                        {
+                            sysInf.Age = 0;
+                            if (sysInf.AverageRunTime + currentTime > time)
+                            {
+                                finished[i] = true;
+                                finishCount++;
+                                unitTimer.Stop();
+                                continue;
+                            }
+                            endTimes[i] = currentTime + sysInf.AverageRunTime;
+                        }
+                        else if (result == ScheduleResult.Finished)
+                        {
+                            finished[i] = true;
+                            finishCount++;
+                        }
+                        unitTimer.Stop();
+                        processTimer.Stop();
+                        averageTime = MathHelper.MovingAverage(averageTime, unitTimer.ElapsedSeconds, i + 1);
+                        unitTimer.Reset();
+                        processTimer.Start();
+                    }
+
+                processTimer.Stop();
+                double nextTime = double.PositiveInfinity;
+                for (int i = 0; i < laneCount; i++)
+                    if (endTimes[i] > currentTime && endTimes[i] < nextTime)
+                        nextTime = endTimes[i];
+                if (nextTime != double.PositiveInfinity)
+                    currentTime = nextTime;
+                processTimer.Start();
+            }
+            processTimer.Stop();
+
+            Console.WriteLine("Total Time to decide : " + processTimer.ElapsedSeconds);
+            Console.WriteLine("Average Time to decide : " + averageTime);
+            Console.WriteLine("Extrapolated Time to decide : " + (averageTime * typeCount));
+            Console.WriteLine("Total Time Used : " + (currentTime) + "/" + time);
+            processTimer.Reset();
+
+            Console.ReadLine();
+        }
+
 
         SystemInfo RandomSystem()
         {

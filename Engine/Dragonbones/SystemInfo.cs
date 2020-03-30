@@ -7,7 +7,7 @@ namespace Dragonbones
     /// <summary>
     /// The system's info
     /// </summary>
-    public class SystemInfo : IComparer<SystemInfo>
+    public class SystemInfo : IComparer<SystemInfo>, IEquatable<SystemInfo>
     {
         /// <summary>
         /// Constructs the system info using priority
@@ -174,6 +174,23 @@ namespace Dragonbones
             if (result == 0)
                 return (y.PriorityComposite - x.PriorityComposite);
             return result;
+        }
+
+        public bool Equals(SystemInfo other)
+        {
+            if (other == null)
+                return false;
+            return Name == other.Name && ID == other.ID;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as SystemInfo);
+        }
+
+        public override int GetHashCode()
+        {
+            return Name.GetHashCode(StringComparison.InvariantCulture);
         }
     }
 }

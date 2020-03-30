@@ -13,7 +13,7 @@ namespace ConsoleTest
             while (true)
             {
                 SchedulingTest test = new SchedulingTest();
-                test.Run(10);
+                test.Run(SystemType.Logic, 1 / 60.0, 2, 10);
             }
         }
     }
