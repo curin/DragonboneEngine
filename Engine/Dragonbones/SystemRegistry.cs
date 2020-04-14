@@ -2,109 +2,134 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using Dragonbones.Collections;
 
 namespace Dragonbones
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1710:Identifiers should have correct suffix", Justification = "This is not just a collection, but smarter so a registry")]
     public class SystemRegistry : ISystemRegistry
     {
-        Entry[] entries;
-        ISystem[]
+        NamedDataRegistry<ISystem> _systems;
+        Dictionary<SystemType, int> _typeCounts = new Dictionary<SystemType, int>();
 
-        public ISystem this[string systemName] => throw new NotImplementedException();
+        public SystemRegistry(int MaxSystemCount, int hashSize = 47)
+        {
+            _systems = new NamedDataRegistry<ISystem>(MaxSystemCount, hashSize);
+        }
 
-        public ISystem this[int id] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public ISystem this[string systemName] => _systems[systemName];
 
-        public int Count { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public ISystem this[int id] => _systems[id];
+
+        public int Count => _systems.Count;
 
         public bool Add(ISystem system)
         {
-            throw new NotImplementedException();
+            if (system == null)
+                throw new ArgumentNullException(nameof(system));
+            int id = _systems.Add(system.SystemInfo.Name, system);
+            if (id == -1)
+                return false;
+            system.SystemInfo.SetID(id);
+            if (!_typeCounts.ContainsKey(system.SystemInfo.Type))
+                _typeCounts.Add(system.SystemInfo.Type, 0);
+            _typeCounts[system.SystemInfo.Type]++;
+            return true;
         }
 
         public void Clear()
         {
-            throw new NotImplementedException();
+            _systems.Clear();
         }
 
         public bool Contains(string systemName)
         {
-            throw new NotImplementedException();
+            return _systems.ContainsName(systemName);
         }
 
         public bool Contains(int id)
         {
-            throw new NotImplementedException();
+            return _systems.ContainsID(id);
         }
 
         public bool Contains(ISystem system)
         {
-            throw new NotImplementedException();
+            if (system == null)
+                throw new ArgumentNullException(nameof(system));
+            return Contains(system.SystemInfo.Name);
         }
 
         public IEnumerator<ISystem> GetEnumerator()
         {
-            throw new NotImplementedException();
+            return _systems.GetEnumerator();
         }
 
-        public int getID(string systemName)
+        public int GetID(string systemName)
         {
-            throw new NotImplementedException();
+            return _systems.GetID(systemName);
         }
 
-        public int getID(ISystem system)
+        public int GetID(ISystem system)
         {
-            throw new NotImplementedException();
+            if (system == null)
+                throw new ArgumentNullException(nameof(system));
+            return _systems.GetID(system.SystemInfo.Name);
         }
 
-        public string getName(int id)
+        public string GetName(int id)
         {
-            throw new NotImplementedException();
+            return _systems[id].SystemInfo.Name;
         }
 
-        public ISystem getSystem(string systemName)
+        public ISystem GetSystem(string systemName)
         {
-            throw new NotImplementedException();
+            return _systems.Get(systemName);
         }
 
-        public ISystem getSystem(int id)
+        public ISystem GetSystem(int id)
         {
-            throw new NotImplementedException();
+            return _systems.Get(id);
         }
 
         public int GetTypeCount(SystemType type)
         {
-            throw new NotImplementedException();
+            if (_typeCounts.ContainsKey(type))
+                return _typeCounts[type];
+            return 0;
         }
 
         public void Remove(string systemName)
         {
-            throw new NotImplementedException();
+            int preCount = _systems.Count;
+            ISystem system = _systems.PopAt(systemName);
+            if (preCount < _systems.Count)
+                _typeCounts[system.SystemInfo.Type]--;
+            system.SystemInfo.SetID(-1);
         }
 
         public void Remove(int id)
         {
-            throw new NotImplementedException();
+            int preCount = _systems.Count;
+            ISystem system = _systems.PopAt(id);
+            if (preCount < _systems.Count)
+                _typeCounts[system.SystemInfo.Type]--;
+            system.SystemInfo.SetID(-1);
         }
 
         public void Remove(ISystem system)
         {
-            throw new NotImplementedException();
+            if (system == null)
+                throw new ArgumentNullException(nameof(system));
+            int preCount = _systems.Count;
+            _systems.PopAt(system.SystemInfo.Name);
+            if (preCount < _systems.Count)
+                _typeCounts[system.SystemInfo.Type]--;
+            system.SystemInfo.SetID(-1);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            throw new NotImplementedException();
-        }
-
-        struct Entry
-        {
-            public int ID;
-            public string Name;
-            public int NextLink;
-            public int PreviousLink;
-            public int NextEnumerator;
-            public int PreviousEnumerator;
+            return _systems.GetEnumerator();
         }
     }
 }

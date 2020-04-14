@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Engine\Dragonbones.Collections\Dragonbones.Collections.csproj" />
     <ProjectReference Include="..\..\Engine\Dragonbones\Dragonbones.csproj" />
   </ItemGroup>
 

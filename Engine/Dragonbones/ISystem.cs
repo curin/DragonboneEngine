@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Dragonbones
 {
-    public interface ISystem
+    public interface ISystem : IEquatable<ISystem>
     {
         /// <summary>
         /// The system's header info

@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Dragonbones.Collections\Dragonbones.Collections.csproj" />
     <ProjectReference Include="..\Native\DirectX.Net\Dragonbones.Native\Dragonbones.Native.DXN.csproj" />
   </ItemGroup>
 

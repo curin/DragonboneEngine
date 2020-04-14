@@ -18,12 +18,12 @@ namespace Dragonbones
         /// </summary>
         /// <param name="id">the id of the system</param>
         /// <returns>the system</returns>
-        ISystem this[int id] { get; set; }
+        ISystem this[int id] { get; }
 
         /// <summary>
         /// The number of systems registered
         /// </summary>
-        int Count { get; set; }
+        int Count { get; }
 
         /// <summary>
         /// Get the number of systems registered of a specific type
@@ -37,33 +37,33 @@ namespace Dragonbones
         /// </summary>
         /// <param name="systemName">the name of the system</param>
         /// <returns>the id of the system</returns>
-        int getID(string systemName);
+        int GetID(string systemName);
         /// <summary>
         /// Get a system's id
         /// </summary>
         /// <param name="system">the system</param>
         /// <returns>the id of the system</returns>
-        int getID(ISystem system);
+        int GetID(ISystem system);
 
         /// <summary>
         /// Get a system's name
         /// </summary>
         /// <param name="id">the id of the system</param>
         /// <returns>the name of the system</returns>
-        string getName(int id);
+        string GetName(int id);
 
         /// <summary>
         /// Retrieve a particular system
         /// </summary>
         /// <param name="systemName">the name of the system</param>
         /// <returns>the system</returns>
-        ISystem getSystem(string systemName);
+        ISystem GetSystem(string systemName);
         /// <summary>
         /// Retrieve a particular system
         /// </summary>
         /// <param name="id">the id of the system</param>
         /// <returns>the system</returns>
-        ISystem getSystem(int id);
+        ISystem GetSystem(int id);
 
         /// <summary>
         /// Does the registry contain a system
