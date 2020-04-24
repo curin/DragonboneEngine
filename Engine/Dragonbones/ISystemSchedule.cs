@@ -4,6 +4,9 @@ using System.Text;
 
 namespace Dragonbones
 {
+    /// <summary>
+    /// A class that orders systems by priority for running and handles supplying systems one at a time for each lane of systems running.
+    /// </summary>
     public interface ISystemSchedule
     {
         /// <summary>
@@ -16,12 +19,17 @@ namespace Dragonbones
         /// <param name="system">the info of the system to run</param>
         /// <param name="systemLaneID">The id of system lane to provide a system for</param>
         /// <returns>if thereare more systems to run</returns>
-        ScheduleResult NextSystem(int systemLaneID, out SystemInfo systemBatch);
+        ScheduleResult NextSystem(int systemLaneID, out SystemInfo system);
         /// <summary>
         /// Add the next system to the schedule
         /// </summary>
         /// <param name="systemBatch">the batch of systems</param>
         void Add( SystemInfo systemBatch);
+        /// <summary>
+        /// Adds all systems from the attached registry
+        /// </summary>
+        /// <param name="registry">the system registry to add</param>
+        void AddFromRegistry(ISystemRegistry registry);
         /// <summary>
         /// Sets a lane to finished
         /// </summary>
@@ -39,8 +47,15 @@ namespace Dragonbones
         /// The number of systems in this schedule
         /// </summary>
         int Count { get; }
+        /// <summary>
+        /// The type of systems for this schedule
+        /// </summary>
+        SystemType Type { get; }
     }
 
+    /// <summary>
+    /// The result of attempting to schedule the another system
+    /// </summary>
     public enum ScheduleResult
     {
         /// <summary>

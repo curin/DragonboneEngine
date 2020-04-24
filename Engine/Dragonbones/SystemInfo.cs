@@ -14,7 +14,9 @@ namespace Dragonbones
         /// </summary>
         /// <param name="name">the system's name</param>
         /// <param name="type">the type of the system</param>
-        /// <param name="priority">the priority of the system</param>
+        /// <param name="priority">the priority of the system. Higher number is higher priority</param>
+        /// <param name="active">is this system currently active</param>
+        /// <param name="componentsUsed">the names of the components used by this system</param>
         public SystemInfo(string name, SystemType type, int priority, bool active = true, params string[] componentsUsed)
         {
             _name = name;
@@ -23,7 +25,7 @@ namespace Dragonbones
             Priority = priority;
             Type = type;
             Running = false;
-            RunReccurenceInterval = 0;
+            RunRecurrenceInterval = 0;
             AverageRunTime = 0;
             RunCount = 0;
             _componentsUsed = componentsUsed;
@@ -36,8 +38,11 @@ namespace Dragonbones
         /// </summary>
         /// <param name="name">the system's name</param>
         /// <param name="type">the type of the system</param>
-        /// <param name="runReccurrenceInterval">the frame interval between runs</param>
-        public SystemInfo(string name, int runReccurrenceInterval, int priority, SystemType type, bool active = true, params string[] componentsUsed)
+        /// <param name="runRecurrenceInterval">the frame interval between runs</param>
+        /// <param name="active">is this system currently active</param>
+        /// <param name="priority">the priority of the system. Higher number is higher priority</param>
+        /// <param name="componentsUsed">the names of the components used by this system</param>
+        public SystemInfo(string name, int runRecurrenceInterval, int priority, SystemType type, bool active = true, params string[] componentsUsed)
         {
             _name = name;
             _id = -1;
@@ -45,7 +50,7 @@ namespace Dragonbones
             Priority = priority;
             Type = type;
             Running = false;
-            RunReccurenceInterval = runReccurrenceInterval;
+            RunRecurrenceInterval = runRecurrenceInterval;
             AverageRunTime = 0;
             RunCount = 0;
             _componentsUsed = componentsUsed;
@@ -53,9 +58,9 @@ namespace Dragonbones
             Age = 0;
         }
 
-        readonly string _name;
-        int _id;
-        int[] _componentIDs;
+        private readonly string _name;
+        private int _id;
+        private int[] _componentIDs;
         /// <summary>
         /// The type of system, which defines when it is run
         /// </summary>
@@ -92,7 +97,7 @@ namespace Dragonbones
         /// </summary>
         public bool Active { get; set; }
         /// <summary>
-        /// The priority of the system, used to determine which systems should be run less frequently in order to maintain framerate
+        /// The priority of the system, used to determine which systems should be run less frequently in order to maintain frame rate
         /// Priority is grouped by RunRecurrence (0 being the lowest, 1 the highest, then everything after)
         /// </summary>
         public int Priority { get; }
@@ -100,7 +105,7 @@ namespace Dragonbones
         /// If Set to 0, will run based on priority system only.
         /// Otherwise, it represents the number of frames finished between each run
         /// </summary>
-        public int RunReccurenceInterval { get; }
+        public int RunRecurrenceInterval { get; }
         /// <summary>
         /// Is this system currently running
         /// </summary>
@@ -115,7 +120,7 @@ namespace Dragonbones
         public long RunCount { get; private set; }
         /// <summary>
         /// How many frames have passed since last execution
-        /// Used in Sheduling
+        /// Used in Scheduling
         /// </summary>
         public int Age { get; set; }
         /// <summary>
@@ -144,12 +149,21 @@ namespace Dragonbones
             _componentIDs = ids;
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
-            return ID + "\t" + Name + "\t" + "Type:" + Type.ToString() + "   Active:" + Active + "   Priority Composite:" + PriorityComposite + "   RRInterval:" + RunReccurenceInterval + "   Average Time:" + AverageRunTime;
+            return ID + "\t" + Name + "\t" + "Type:" + Type.ToString() + "   Active:" + Active + "   Priority Composite:" + PriorityComposite + "   RRInterval:" + RunRecurrenceInterval + "   Average Time:" + AverageRunTime;
         }
 
 
+        /// <summary>
+        /// Updates this system info
+        /// it increases updates the average runtime, recomputes priority composite,
+        /// and resets the run bool to false
+        ///
+        /// this is used to update info for scheduling
+        /// </summary>
+        /// <param name="newTime">the time it took for the system to run</param>
         public void Update(double newTime)
         {
             RunCount++;
@@ -158,24 +172,35 @@ namespace Dragonbones
             Run = false;
         }
 
+        /// <inheritdoc />
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Performance")]
         public int Compare(SystemInfo x, SystemInfo y)
         {
-            int result = x.RunReccurenceInterval - y.RunReccurenceInterval;
+            int result = x.RunRecurrenceInterval - y.RunRecurrenceInterval;
             if (result == 0)
                 return (y.PriorityComposite - x.PriorityComposite);
             return result;
         }
 
+        /// <summary>
+        /// Returns a comparison for two system infos
+        /// 0 is equivalent,
+        /// negative is higher priority
+        /// positive is lower priority
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Performance")]
         public static int Sort(SystemInfo x, SystemInfo y)
         {
-            int result = x.RunReccurenceInterval - y.RunReccurenceInterval;
+            int result = x.RunRecurrenceInterval - y.RunRecurrenceInterval;
             if (result == 0)
                 return (y.PriorityComposite - x.PriorityComposite);
             return result;
         }
 
+        /// <inheritdoc />
         public bool Equals(SystemInfo other)
         {
             if (other == null)
@@ -183,11 +208,13 @@ namespace Dragonbones
             return Name == other.Name && ID == other.ID;
         }
 
+        /// <inheritdoc />
         public override bool Equals(object obj)
         {
             return Equals(obj as SystemInfo);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             return Name.GetHashCode(StringComparison.InvariantCulture);

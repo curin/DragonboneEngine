@@ -4,4 +4,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>J:\Programming Projects\Dragonbones\DragonboneEngine\Engine\Dragonbones.Collections\Dragonbones.Collections.xml</DocumentationFile>
+  </PropertyGroup>
+
 </Project>

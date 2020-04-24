@@ -4,6 +4,9 @@ using System.Text;
 
 namespace Dragonbones
 {
+    /// <summary>
+    /// A helper class filled with some useful math functions
+    /// </summary>
     public static class MathHelper
     {
         /// <summary>

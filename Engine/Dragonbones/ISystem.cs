@@ -4,6 +4,9 @@ using System.Text;
 
 namespace Dragonbones
 {
+    /// <summary>
+    /// The interface which all systems are derived from
+    /// </summary>
     public interface ISystem : IEquatable<ISystem>
     {
         /// <summary>

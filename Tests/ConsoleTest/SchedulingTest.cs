@@ -50,7 +50,7 @@ namespace ConsoleTest
                 if (systems[i].Type == type)
                     typeCount++;
 
-            SystemSchedule schedule = new SystemSchedule(laneCount, typeCount);
+            SystemSchedule schedule = new SystemSchedule(SystemType.Logic, laneCount, typeCount);
 
             processTimer.Start();
             for (int i = 0; i < systems.Length; i++)

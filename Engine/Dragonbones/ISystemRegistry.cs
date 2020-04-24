@@ -4,6 +4,9 @@ using System.Text;
 
 namespace Dragonbones
 {
+    /// <summary>
+    /// A class to control storing systems
+    /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1710:Identifiers should have correct suffix", Justification = "Not a collection it should be smarter, a registry")]
     public interface ISystemRegistry : IEnumerable<ISystem>
     {
@@ -111,5 +114,18 @@ namespace Dragonbones
         /// Clear the registry of all data
         /// </summary>
         void Clear();
+        /// <summary>
+        /// Creates a <see cref="ISystemSchedule"/> from this registry
+        /// </summary>
+        /// <param name="type">the type of systems to be put in this schedule</param>
+        /// <param name="lanes">the number of systems that can run concurrently</param>
+        /// <returns>created schedule</returns>
+        ISystemSchedule CreateSchedule(SystemType type, int lanes);
+        /// <summary>
+        /// Recreates a system schedule.
+        /// Used to resort schedule when the schedule cannot resort itself
+        /// </summary>
+        /// <param name="schedule">the schedule to recreate</param>
+        void RecreateSchedule(ref ISystemSchedule schedule);
     }
 }

@@ -5,23 +5,40 @@ using System.Linq;
 
 namespace Dragonbones
 {
+    /// <summary>
+    /// A base implementation of <see cref="ISystemSchedule"/>
+    /// uses a priority list to sort ahead of time
+    /// </summary>
     public class SystemSchedule : ISystemSchedule
     {
-        public SystemSchedule(int laneCount, int maxSize)
+        /// <summary>
+        /// constructs an instance of <see cref="SystemSchedule"/>
+        /// </summary>
+        /// <param name="laneCount">the number of concurrent systems that can be run</param>
+        /// <param name="maxSize">the maximum number of systems to be stored</param>
+        /// <param name="type">the type of systems for this schedule</param>
+        public SystemSchedule(SystemType type, int laneCount, int maxSize)
         {
+            //initialize all fields
             _laneCount = laneCount;
             _lanes = new SystemInfo[laneCount];
             _running = new bool[laneCount];
+            _type = type;
 
             _maxSize = maxSize;
             _systemCache = new SystemInfo[_maxSize];
             _entries = new Entry[_maxSize];
         }
 
+        /// <summary>
+        /// copies an instance of <see cref="SystemSchedule"/>
+        /// </summary>
+        /// <param name="copy">the schedule to copy</param>
         public SystemSchedule(SystemSchedule copy)
         {
             if (copy == null)
                 throw new ArgumentNullException(nameof(copy));
+            //copy int values
             _count = copy._count;
             _next = copy._next;
             _top = copy._top;
@@ -30,15 +47,19 @@ namespace Dragonbones
             _rrStart = copy._rrStart;
             _rrEnd = copy._rrEnd;
             _laneCount = copy._laneCount;
+
+            //initialize int arrays
             _lanes = new SystemInfo[_laneCount];
             _running = new bool[_laneCount];
 
+            //copy values in lane arrays
             for (int i = 0; i < _laneCount; i++)
             {
                 _lanes[i] = copy._lanes[i];
                 _running[i] = copy._running[i];
             }
 
+            //copy storage arrays
             _maxSize = copy._maxSize;
             _systemCache = new SystemInfo[_maxSize];
             _entries = new Entry[_maxSize];
@@ -49,9 +70,11 @@ namespace Dragonbones
                 _entries[i] = copy._entries[i];
             }
 
+            //copy run recurrences
             for (int i = 0; i < copy._runRecurrences.Count; i++)
                 _runRecurrences.Add(copy._runRecurrences[i]);
 
+            //copy free space queue
             for (int i = 0; i < copy.freeSpace.Count; i++)
             {
                 int space = copy.freeSpace.Dequeue();
@@ -60,18 +83,22 @@ namespace Dragonbones
             }
         }
 
-        readonly SystemInfo[] _lanes;
-        readonly bool[] _running;
-        int _count = 0, _next = 0, _top = 0;
-        int _start = -1, _end = -1;
-        int _rrStart, _rrEnd;
+        private readonly SystemInfo[] _lanes;
+        private readonly bool[] _running;
+        private int _count = 0, _next = 0, _top = 0;
+        private int _start = -1, _end = -1;
+        private int _rrStart, _rrEnd;
         private readonly int _maxSize;
         private readonly int _laneCount;
-        readonly SystemInfo[] _systemCache;
-        readonly Entry[] _entries;
-        readonly List<RREntry> _runRecurrences = new List<RREntry>();
-        readonly Queue<int> freeSpace = new Queue<int>();
+        private readonly SystemInfo[] _systemCache;
+        private readonly Entry[] _entries;
+        private readonly List<RREntry> _runRecurrences = new List<RREntry>();
+        private readonly Queue<int> freeSpace = new Queue<int>();
+        private SystemType _type;
 
+        /// <summary>
+        /// <inheritdoc />
+        /// </summary>
         public void Clear()
         {
             _start = _end = -1;
@@ -82,19 +109,27 @@ namespace Dragonbones
             Reset();
         }
 
+        /// <summary>
+        /// <inheritdoc />
+        /// Only sorted on insertion
+        /// </summary>
         public void Add(SystemInfo system)
         {
+            if (system == null)
+                throw new ArgumentNullException(nameof(system));
+            if (system.Type != _type)
+                return;
             if (freeSpace.Count > 0)
                 _next = freeSpace.Dequeue();
-            _systemCache[_next] = system ?? throw new ArgumentNullException(nameof(system));
+            _systemCache[_next] = system;
             _count++;
 
             if (_start == -1)
             {
-                _entries[_next] = new Entry(system.RunReccurenceInterval, _next);
+                _entries[_next] = new Entry(system.RunRecurrenceInterval, _next);
                 _start = _end = _next;
                 _rrStart = _rrEnd = _runRecurrences.Count;
-                _runRecurrences.Add(new RREntry(_runRecurrences.Count, system.RunReccurenceInterval, _next));
+                _runRecurrences.Add(new RREntry(_runRecurrences.Count, system.RunRecurrenceInterval, _next));
                 _top++;
                 _next = _top;
                 return;
@@ -105,7 +140,7 @@ namespace Dragonbones
             {
                 Entry start = _entries[_start];
 
-                if (start.RunRecurrence != system.RunReccurenceInterval)
+                if (start.RunRecurrence != system.RunRecurrenceInterval)
                 {
                     if (rr.Prev == -1)
                         _rrStart = _runRecurrences.Count;
@@ -115,7 +150,7 @@ namespace Dragonbones
                         rrprev.Next = _runRecurrences.Count;
                         _runRecurrences[rr.Prev] = rrprev;
                     }
-                    _runRecurrences.Add(new RREntry(_runRecurrences.Count, system.RunReccurenceInterval, _next, rr.Index, rr.Prev));
+                    _runRecurrences.Add(new RREntry(_runRecurrences.Count, system.RunRecurrenceInterval, _next, rr.Index, rr.Prev));
                     rr.Prev = _runRecurrences.Count - 1;
                 }
                 else
@@ -124,7 +159,7 @@ namespace Dragonbones
                 }
                 _runRecurrences[rr.Index] = rr;
 
-                _entries[_next] = new Entry(system.RunReccurenceInterval, _next, _start);
+                _entries[_next] = new Entry(system.RunRecurrenceInterval, _next, _start);
                 _start = _next;
 
                 start.PrevEntry = _next;
@@ -144,16 +179,16 @@ namespace Dragonbones
             {
                 Entry end = _entries[_end];
 
-                if (end.RunRecurrence != system.RunReccurenceInterval)
+                if (end.RunRecurrence != system.RunRecurrenceInterval)
                 {
-                    _runRecurrences.Add(new RREntry(_runRecurrences.Count, system.RunReccurenceInterval, _next, rr.Next, rr.Index));
+                    _runRecurrences.Add(new RREntry(_runRecurrences.Count, system.RunRecurrenceInterval, _next, rr.Next, rr.Index));
                     if (rr.Next == -1)
                         _rrEnd = _runRecurrences.Count - 1;
                     rr.Next = _runRecurrences.Count - 1;
                     _runRecurrences[rr.Index] = rr;
                 }
 
-                _entries[_next] = new Entry(system.RunReccurenceInterval, _next, -1, _end);
+                _entries[_next] = new Entry(system.RunRecurrenceInterval, _next, -1, _end);
                 _end = _next;
 
                 end.NextEntry = _next;
@@ -170,7 +205,7 @@ namespace Dragonbones
             }
 
             Entry prev = _entries[entry];
-            if (rr.RunRecurrence != system.RunReccurenceInterval)
+            if (rr.RunRecurrence != system.RunRecurrenceInterval)
             {
                 if (rr.Prev != -1)
                 {
@@ -181,7 +216,7 @@ namespace Dragonbones
                 else
                     _rrStart = _runRecurrences.Count;
                 
-                _runRecurrences.Add(new RREntry(_runRecurrences.Count, system.RunReccurenceInterval, _next, rr.Index, rr.Prev));
+                _runRecurrences.Add(new RREntry(_runRecurrences.Count, system.RunRecurrenceInterval, _next, rr.Index, rr.Prev));
                 rr.Prev = _runRecurrences.Count - 1;
 
                 _runRecurrences[rr.Index] = rr;
@@ -197,7 +232,7 @@ namespace Dragonbones
             prev.NextEntry = _next;
             next.PrevEntry = _next;
             
-            _entries[_next] = new Entry(system.RunReccurenceInterval, _next, next.CacheIndex, prev.CacheIndex);
+            _entries[_next] = new Entry(system.RunRecurrenceInterval, _next, next.CacheIndex, prev.CacheIndex);
             
             _entries[entry] = prev;
             _entries[next.CacheIndex] = next;
@@ -212,8 +247,11 @@ namespace Dragonbones
             return;
         }
 
-        Entry current, searcher;
-        bool started;
+        private Entry _current, _searcher;
+        private bool _started;
+        /// <summary>
+        /// <inheritdoc />
+        /// </summary>
         public ScheduleResult NextSystem(int systemLaneID, out SystemInfo systemBatch)
         {
             if (systemLaneID >= _laneCount)
@@ -222,31 +260,28 @@ namespace Dragonbones
                 _running[systemLaneID] = false;
 
             systemBatch = null;
-            searcher = current;
+            _searcher = _current;
 
-            if (!started)
+            if (!_started)
             {
                 if (_start == -1)
                 {
                     return ScheduleResult.Finished;
                 }
-                current = _entries[_start];
-                systemBatch = _systemCache[current.CacheIndex];
-                started = true;
+                _current = _entries[_start];
+                systemBatch = _systemCache[_current.CacheIndex];
+                _started = true;
                 return ScheduleResult.Supplied;
             }
 
             bool invalid;
             while (systemBatch == null)
             {
-                if (searcher.NextEntry == -1)
-                    if (searcher.CacheIndex == current.CacheIndex)
-                        return ScheduleResult.Finished;
-                    else
-                        return ScheduleResult.Conflict;
+                if (_searcher.NextEntry == -1) 
+                    return _searcher.CacheIndex == _current.CacheIndex ? ScheduleResult.Finished : ScheduleResult.Conflict;
 
-                searcher = _entries[searcher.NextEntry];
-                systemBatch = _systemCache[searcher.CacheIndex];
+                _searcher = _entries[_searcher.NextEntry];
+                systemBatch = _systemCache[_searcher.CacheIndex];
 
                 invalid = !(systemBatch.Active || systemBatch.Run);
                 for (int i = 0; i < _laneCount; i++)
@@ -260,8 +295,8 @@ namespace Dragonbones
                 }
             }
 
-            if (searcher.CacheIndex == current.NextEntry)
-                current = searcher;
+            if (_searcher.CacheIndex == _current.NextEntry)
+                _current = _searcher;
             systemBatch.Run = true;
             systemBatch.Age = 0;
             _lanes[systemLaneID] = systemBatch;
@@ -273,14 +308,14 @@ namespace Dragonbones
         /// find the index of the previous entry
         /// </summary>
         /// <param name="system">system to find previous entry</param>
-        /// <param name="rr">the runreccurence of the system if it exists
-        /// if it does not exist then it is the one after it unless it is at the end then the previous run reccurence</param>
+        /// <param name="rr">the runrecurrence of the system if it exists
+        /// if it does not exist then it is the one after it unless it is at the end then the previous run recurrence</param>
         /// <returns>the index of the previous entry or
         /// -1 if this entry should be placed at the beginning or
         /// -2 if it should be placed at the end</returns>
-        int FindPreviousEntry(SystemInfo system, out RREntry rr)
+        private int FindPreviousEntry(SystemInfo system, out RREntry rr)
         {
-            if (system.RunReccurenceInterval == 0)
+            if (system.RunRecurrenceInterval == 0)
             {
                 rr = _runRecurrences[_rrEnd];
                 if (rr.RunRecurrence != 0)
@@ -291,13 +326,13 @@ namespace Dragonbones
                 rr = _runRecurrences[_rrStart];
                 while (true)
                 {
-                    if (rr.RunRecurrence > system.RunReccurenceInterval)
+                    if (rr.RunRecurrence > system.RunRecurrenceInterval)
                     {
                         if (rr.Prev == -1)
                             return -1;
                         return _entries[rr.Start].PrevEntry;
                     }
-                    else if (rr.RunRecurrence < system.RunReccurenceInterval)
+                    else if (rr.RunRecurrence < system.RunRecurrenceInterval)
                     {
                         if (rr.RunRecurrence == 0)
                         {
@@ -321,7 +356,7 @@ namespace Dragonbones
             SystemInfo tempSys = _systemCache[current.CacheIndex];
             while (true)
             {
-                if (current.RunRecurrence != system.RunReccurenceInterval)
+                if (current.RunRecurrence != system.RunRecurrenceInterval)
                     break;
                 if (tempSys.PriorityComposite > system.PriorityComposite)
                 {
@@ -339,11 +374,11 @@ namespace Dragonbones
             return current.PrevEntry;
         }
 
-        Entry FindEntry(SystemInfo sysInf, out RREntry rr)
+        private Entry FindEntry(SystemInfo sysInf, out RREntry rr)
         {
             Entry ret;
             SystemInfo tempInf;
-            if (sysInf.RunReccurenceInterval == 0)
+            if (sysInf.RunRecurrenceInterval == 0)
             {
                 rr = _runRecurrences[_rrEnd];
                 if (rr.RunRecurrence != 0)
@@ -354,10 +389,10 @@ namespace Dragonbones
             else
             {
                 rr = _runRecurrences[_rrStart];
-                while (rr.RunRecurrence != sysInf.RunReccurenceInterval && rr.Next != -1)
+                while (rr.RunRecurrence != sysInf.RunRecurrenceInterval && rr.Next != -1)
                     rr = _runRecurrences[rr.Next];
 
-                if (rr.RunRecurrence != sysInf.RunReccurenceInterval)
+                if (rr.RunRecurrence != sysInf.RunRecurrenceInterval)
                     return new Entry(-1, -1);
 
                 ret = _entries[rr.Start];
@@ -367,13 +402,13 @@ namespace Dragonbones
             if (tempInf == sysInf)
                 return ret;
 
-            while (tempInf != sysInf && ret.RunRecurrence == sysInf.RunReccurenceInterval && ret.NextEntry != -1)
+            while (tempInf != sysInf && ret.RunRecurrence == sysInf.RunRecurrenceInterval && ret.NextEntry != -1)
             {
                 ret = _entries[ret.NextEntry];
                 tempInf = _systemCache[ret.CacheIndex];
             }
 
-            if (ret.RunRecurrence != sysInf.RunReccurenceInterval)
+            if (ret.RunRecurrence != sysInf.RunRecurrenceInterval)
                 return new Entry(-1, -1);
 
             if (tempInf != sysInf)
@@ -382,6 +417,9 @@ namespace Dragonbones
             return ret;
         }
 
+        /// <summary>
+        /// <inheritdoc />
+        /// </summary>
         public void Remove(SystemInfo sysInf)
         {
             if (sysInf == null)
@@ -399,7 +437,7 @@ namespace Dragonbones
                 if (ent.NextEntry != -1)
                 {
                     tempEnt = _entries[ent.NextEntry];
-                    if (tempEnt.RunRecurrence != sysInf.RunReccurenceInterval)
+                    if (tempEnt.RunRecurrence != sysInf.RunRecurrenceInterval)
                         end = true;
                 }
                 else
@@ -473,7 +511,10 @@ namespace Dragonbones
             _count--;
         }
 
-        struct RREntry
+        /// <summary>
+        /// The entry used to track location of beginning of the run recurrences for faster sorting
+        /// </summary>
+        private struct RREntry
         {
             public RREntry(int index, int RR, int start, int next = -1, int prev = -1)
             {
@@ -485,13 +526,16 @@ namespace Dragonbones
             }
 
             public int Index;
-            public int RunRecurrence;
+            public readonly int RunRecurrence;
             public int Start;
             public int Next;
             public int Prev;
         }
 
-        struct Entry
+        /// <summary>
+        /// Entry struct for storing linked list used in schedule
+        /// </summary>
+        private struct Entry
         {
             public Entry(int runRecurrence, int cacheIndex, int next = -1, int prev = -1)
             {
@@ -501,26 +545,54 @@ namespace Dragonbones
                 NextEntry = next;
             }
 
-            public int RunRecurrence;
-            public int CacheIndex;
+            public readonly int RunRecurrence;
+            public readonly int CacheIndex;
             public int NextEntry;
             public int PrevEntry;
         }
         
-        public bool Finished => (current.NextEntry == -1 && started) || _start == -1;
+        /// <summary>
+        /// <inheritdoc />
+        /// </summary>
+        public bool Finished => (_current.NextEntry == -1 && _started) || _start == -1;
 
+        /// <summary>
+        /// <inheritdoc />
+        /// </summary>
         public int Count => _count;
 
+        /// <summary>
+        /// The type of systems for this schedule
+        /// </summary>
+        public SystemType Type => _type;
+
+        /// <summary>
+        /// <inheritdoc />
+        /// </summary>
         public void Reset()
         {
-            started = false;
+            _started = false;
         }
 
+        /// <summary>
+        /// <inheritdoc />
+        /// </summary>
         public void FinishLane(int systemLaneID)
         {
             if (systemLaneID >= _laneCount)
                 throw new ArgumentOutOfRangeException(nameof(systemLaneID));
             _running[systemLaneID] = false;
+        }
+
+        /// <summary>
+        /// <inheritdoc />
+        /// </summary>
+        public void AddFromRegistry(ISystemRegistry registry)
+        {
+            if (registry == null)
+                throw new ArgumentNullException(nameof(registry));
+            foreach (ISystem system in registry)
+                Add(system.SystemInfo);
         }
     }
 }

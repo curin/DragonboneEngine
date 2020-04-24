@@ -6,9 +6,9 @@ using Dragonbones;
 
 namespace ConsoleTest
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             CollectionTest.Run();
             Console.ReadLine();

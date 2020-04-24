@@ -4,6 +4,9 @@ using System.Text;
 
 namespace Dragonbones.Collections
 {
+    /// <summary>
+    /// A buffer of data which is used by both Render Systems and Logic Systems
+    /// </summary>
     public interface IDataBuffer
     {
         /// <summary>
