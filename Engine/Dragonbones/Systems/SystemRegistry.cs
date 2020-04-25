@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using Dragonbones.Collections;
 
-namespace Dragonbones
+namespace Dragonbones.Systems
 {
     /// <summary>
     /// A base version of the <see cref="SystemRegistry"/>

@@ -12,10 +12,10 @@ namespace Dragonbones.Collections
         /// <summary>
         /// Swaps the data buffers for rendering
         /// </summary>
-        void SwapPresentBuffers();
+        void SwapReadBuffer();
         /// <summary>
         /// Swaps the data buffers on finishing of updating
         /// </summary>
-        void SwapUpdateBuffers();
+        void SwapWriteBuffer();
     }
 }

@@ -1,0 +1,685 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Dragonbones</name>
+    </assembly>
+    <members>
+        <member name="T:Dragonbones.Components.IComponentBuffer">
+            <summary>
+            A buffer to store all component types 
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Components.IComponentBuffer.TypeName">
+            <summary>
+            The user defined typeName
+            be sure to make this as unique as possible
+            (use project specific identifiers like {StudioName}.{ProjectName}.{ComponentName})
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Components.IComponentBuffer.BufferID">
+            <summary>
+            A ID assigned by the system to this Buffer
+            Should be assigned by SetTypeID function
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Components.IComponentBuffer.SetTypeID(System.Int32)">
+            <summary>
+            Sets the BufferID field
+            Used by the system to set the buffer's ID
+            !!! DO NOT USE THIS FUNCTION !!!
+            </summary>
+            <param name="id">The ID to set to this buffer</param>
+        </member>
+        <member name="P:Dragonbones.Components.IComponentBuffer.RenderCount">
+            <summary>
+            The number of components stored for rendering
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Components.IComponentBuffer.LogicCount">
+            <summary>
+            The number of components stored in the Logic portion of the buffer
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Components.IComponentBuffer.ContainsID(System.Int32)">
+            <summary>
+            Checks if there is a stored component associated with the given ID
+            </summary>
+            <param name="id">the ID to check</param>
+            <returns>Whether the ID is associated with a stored component</returns>
+        </member>
+        <member name="M:Dragonbones.Components.IComponentBuffer.ContainsName(System.String)">
+            <summary>
+            Check if there is a stored component associated with the given name
+            </summary>
+            <param name="name">the name to check</param>
+            <returns>Whether the name is associated with a stored component</returns>
+        </member>
+        <member name="M:Dragonbones.Components.IComponentBuffer.GetIDFromName(System.String)">
+            <summary>
+            Gets the ID associated with the given name
+            </summary>
+            <param name="name">the name to find the ID of</param>
+            <returns>the ID associated with the given name or -1 if not found in the buffer</returns>
+        </member>
+        <member name="M:Dragonbones.Components.IComponentBuffer.RemoveAt(System.Int32)">
+            <summary>
+            Removes a component associated with the given ID
+            </summary>
+            <param name="id">the ID associated with the component to remove</param>
+        </member>
+        <member name="M:Dragonbones.Components.IComponentBuffer.RemoveAt(System.String)">
+            <summary>
+            Removes a component associated with the given name
+            </summary>
+            <param name="name"></param>
+        </member>
+        <member name="M:Dragonbones.Components.IComponentBuffer.Clear">
+            <summary>
+            Remove all data from the buffer
+            </summary>
+        </member>
+        <member name="T:Dragonbones.MathHelper">
+            <summary>
+            A helper class filled with some useful math functions
+            </summary>
+        </member>
+        <member name="M:Dragonbones.MathHelper.MovingAverage(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Calculates an average for a stream of data
+            </summary>
+            <param name="currentAverage">the current average</param>
+            <param name="addedValue">the new value to add to the set</param>
+            <param name="numberCount">the total number of values including the new one</param>
+            <returns>the new average</returns>
+        </member>
+        <member name="M:Dragonbones.MathHelper.MovingAverage(System.Single,System.Single,System.Int64)">
+            <summary>
+            Calculates an average for a stream of data
+            </summary>
+            <param name="currentAverage">the current average</param>
+            <param name="addedValue">the new value to add to the set</param>
+            <param name="numberCount">the total number of values including the new one</param>
+            <returns>the new average</returns>
+        </member>
+        <member name="M:Dragonbones.MathHelper.MovingAverage(System.Int64,System.Int64,System.Int64)">
+            <summary>
+            Calculates an average for a stream of data
+            </summary>
+            <param name="currentAverage">the current average</param>
+            <param name="addedValue">the new value to add to the set</param>
+            <param name="numberCount">the total number of values including the new one</param>
+            <returns>the new average</returns>
+        </member>
+        <member name="M:Dragonbones.MathHelper.MovingAverage(System.Double,System.Double,System.Int64)">
+            <summary>
+            Calculates an average for a stream of data
+            </summary>
+            <param name="currentAverage">the current average</param>
+            <param name="addedValue">the new value to add to the set</param>
+            <param name="numberCount">the total number of values including the new one</param>
+            <returns>the new average</returns>
+        </member>
+        <member name="T:Dragonbones.Systems.ISystem">
+            <summary>
+            The interface which all systems are derived from
+            Systems should not contain any state data for the game itself only
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Systems.ISystem.SystemInfo">
+            <summary>
+            The system's header info
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Systems.ISystem.Run(System.Single)">
+            <summary>
+            The method run for this system
+            </summary>
+            <param name="deltaTime">time since last run</param>
+        </member>
+        <member name="T:Dragonbones.Systems.ISystemRegistry">
+            <summary>
+            A class to control storing systems
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Systems.ISystemRegistry.Item(System.String)">
+            <summary>
+            Retrieve a particular system
+            </summary>
+            <param name="systemName">the name of the system</param>
+            <returns>the system</returns>
+        </member>
+        <member name="P:Dragonbones.Systems.ISystemRegistry.Item(System.Int32)">
+            <summary>
+            Retrieve a particular system
+            </summary>
+            <param name="id">the id of the system</param>
+            <returns>the system</returns>
+        </member>
+        <member name="P:Dragonbones.Systems.ISystemRegistry.Count">
+            <summary>
+            The number of systems registered
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Systems.ISystemRegistry.GetTypeCount(Dragonbones.Systems.SystemType)">
+            <summary>
+            Get the number of systems registered of a specific type
+            </summary>
+            <param name="type">the type of the systems</param>
+            <returns>the number of systems of the given type</returns>
+        </member>
+        <member name="M:Dragonbones.Systems.ISystemRegistry.GetID(System.String)">
+            <summary>
+            Get a system's id
+            </summary>
+            <param name="systemName">the name of the system</param>
+            <returns>the id of the system</returns>
+        </member>
+        <member name="M:Dragonbones.Systems.ISystemRegistry.GetID(Dragonbones.Systems.ISystem)">
+            <summary>
+            Get a system's id
+            </summary>
+            <param name="system">the system</param>
+            <returns>the id of the system</returns>
+        </member>
+        <member name="M:Dragonbones.Systems.ISystemRegistry.GetName(System.Int32)">
+            <summary>
+            Get a system's name
+            </summary>
+            <param name="id">the id of the system</param>
+            <returns>the name of the system</returns>
+        </member>
+        <member name="M:Dragonbones.Systems.ISystemRegistry.GetSystem(System.String)">
+            <summary>
+            Retrieve a particular system
+            </summary>
+            <param name="systemName">the name of the system</param>
+            <returns>the system</returns>
+        </member>
+        <member name="M:Dragonbones.Systems.ISystemRegistry.GetSystem(System.Int32)">
+            <summary>
+            Retrieve a particular system
+            </summary>
+            <param name="id">the id of the system</param>
+            <returns>the system</returns>
+        </member>
+        <member name="M:Dragonbones.Systems.ISystemRegistry.Contains(System.String)">
+            <summary>
+            Does the registry contain a system
+            </summary>
+            <param name="systemName">the name of the system</param>
+            <returns>if the system is stored</returns>
+        </member>
+        <member name="M:Dragonbones.Systems.ISystemRegistry.Contains(System.Int32)">
+            <summary>
+            is the registry using a system
+            </summary>
+            <param name="id">the id</param>
+            <returns>if the id is used</returns>
+        </member>
+        <member name="M:Dragonbones.Systems.ISystemRegistry.Contains(Dragonbones.Systems.ISystem)">
+            <summary>
+            Does the registry contain a system
+            </summary>
+            <param name="system">the system</param>
+            <returns>if the system is stored</returns>
+        </member>
+        <member name="M:Dragonbones.Systems.ISystemRegistry.Add(Dragonbones.Systems.ISystem)">
+            <summary>
+            Add a system to the registry
+            </summary>
+            <param name="system">the system to add</param>
+            <returns>if the system was added successfully</returns>
+        </member>
+        <member name="M:Dragonbones.Systems.ISystemRegistry.Remove(System.String)">
+            <summary>
+            Remove a system from the registry
+            </summary>
+            <param name="systemName">the name of the system</param>
+        </member>
+        <member name="M:Dragonbones.Systems.ISystemRegistry.Remove(System.Int32)">
+            <summary>
+            Remove a system from the registry
+            </summary>
+            <param name="id">the id of the system</param>
+        </member>
+        <member name="M:Dragonbones.Systems.ISystemRegistry.Remove(Dragonbones.Systems.ISystem)">
+            <summary>
+            Remove a system from the registry
+            </summary>
+            <param name="system">the system</param>
+        </member>
+        <member name="M:Dragonbones.Systems.ISystemRegistry.Clear">
+            <summary>
+            Clear the registry of all data
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Systems.ISystemRegistry.CreateSchedule(Dragonbones.Systems.SystemType,System.Int32)">
+            <summary>
+            Creates a <see cref="T:Dragonbones.Systems.ISystemSchedule"/> from this registry
+            </summary>
+            <param name="type">the type of systems to be put in this schedule</param>
+            <param name="lanes">the number of systems that can run concurrently</param>
+            <returns>created schedule</returns>
+        </member>
+        <member name="M:Dragonbones.Systems.ISystemRegistry.RecreateSchedule(Dragonbones.Systems.ISystemSchedule@)">
+            <summary>
+            Recreates a system schedule.
+            Used to resort schedule when the schedule cannot resort itself
+            </summary>
+            <param name="schedule">the schedule to recreate</param>
+        </member>
+        <member name="T:Dragonbones.Systems.ISystemSchedule">
+            <summary>
+            A class that orders systems by priority for running and handles supplying systems one at a time for each lane of systems running.
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Systems.ISystemSchedule.Finished">
+            <summary>
+            Has the schedule been finished?
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Systems.ISystemSchedule.NextSystem(System.Int32,Dragonbones.Systems.SystemInfo@)">
+            <summary>
+            Gives the system to run
+            </summary>
+            <param name="system">the info of the system to run</param>
+            <param name="systemLaneID">The id of system lane to provide a system for</param>
+            <returns>if thereare more systems to run</returns>
+        </member>
+        <member name="M:Dragonbones.Systems.ISystemSchedule.Add(Dragonbones.Systems.SystemInfo)">
+            <summary>
+            Add the next system to the schedule
+            </summary>
+            <param name="systemBatch">the batch of systems</param>
+        </member>
+        <member name="M:Dragonbones.Systems.ISystemSchedule.AddFromRegistry(Dragonbones.Systems.ISystemRegistry)">
+            <summary>
+            Adds all systems from the attached registry
+            </summary>
+            <param name="registry">the system registry to add</param>
+        </member>
+        <member name="M:Dragonbones.Systems.ISystemSchedule.FinishLane(System.Int32)">
+            <summary>
+            Sets a lane to finished
+            </summary>
+            <param name="systemLaneID">the id of the lane to finish</param>
+        </member>
+        <member name="M:Dragonbones.Systems.ISystemSchedule.Reset">
+            <summary>
+            Resets Schedule to start
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Systems.ISystemSchedule.Clear">
+            <summary>
+            Clears the Schedule
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Systems.ISystemSchedule.Count">
+            <summary>
+            The number of systems in this schedule
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Systems.ISystemSchedule.Type">
+            <summary>
+            The type of systems for this schedule
+            </summary>
+        </member>
+        <member name="T:Dragonbones.Systems.ScheduleResult">
+            <summary>
+            The result of attempting to schedule the another system
+            </summary>
+        </member>
+        <member name="F:Dragonbones.Systems.ScheduleResult.Supplied">
+            <summary>
+            A new system was supplied
+            </summary>
+        </member>
+        <member name="F:Dragonbones.Systems.ScheduleResult.Finished">
+            <summary>
+            The Schedule is finished
+            </summary>
+        </member>
+        <member name="F:Dragonbones.Systems.ScheduleResult.Conflict">
+            <summary>
+            No system supplied due to conflicts
+            retry soon
+            </summary>
+        </member>
+        <member name="T:Dragonbones.Systems.SystemInfo">
+            <summary>
+            The system's info
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemInfo.#ctor(System.String,Dragonbones.Systems.SystemType,System.Int32,System.Boolean,System.String[])">
+            <summary>
+            Constructs the system info using priority
+            </summary>
+            <param name="name">the system's name</param>
+            <param name="type">the type of the system</param>
+            <param name="priority">the priority of the system. Higher number is higher priority</param>
+            <param name="active">is this system currently active</param>
+            <param name="componentsUsed">the names of the components used by this system</param>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemInfo.#ctor(System.String,System.Int32,System.Int32,Dragonbones.Systems.SystemType,System.Boolean,System.String[])">
+            <summary>
+            Constructs the system info using run recurrence
+            </summary>
+            <param name="name">the system's name</param>
+            <param name="type">the type of the system</param>
+            <param name="runRecurrenceInterval">the frame interval between runs</param>
+            <param name="active">is this system currently active</param>
+            <param name="priority">the priority of the system. Higher number is higher priority</param>
+            <param name="componentsUsed">the names of the components used by this system</param>
+        </member>
+        <member name="P:Dragonbones.Systems.SystemInfo.Type">
+            <summary>
+            The type of system, which defines when it is run
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Systems.SystemInfo.Name">
+            <summary>
+            What is the name of this system?
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Systems.SystemInfo.ID">
+            <summary>
+            The ID for the system
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemInfo.GetComponentsUsedIDs">
+            <summary>
+            The ids of the component types used by this system
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemInfo.GetComponentsUsed">
+            <summary>
+            The types of components this system uses
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Systems.SystemInfo.Active">
+            <summary>
+            Is this system currently active?
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Systems.SystemInfo.Priority">
+            <summary>
+            The priority of the system, used to determine which systems should be run less frequently in order to maintain frame rate
+            Priority is grouped by RunRecurrence (0 being the lowest, 1 the highest, then everything after)
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Systems.SystemInfo.RunRecurrenceInterval">
+            <summary>
+            If Set to 0, will run based on priority system only.
+            Otherwise, it represents the number of frames finished between each run
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Systems.SystemInfo.Running">
+            <summary>
+            Is this system currently running
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Systems.SystemInfo.AverageRunTime">
+            <summary>
+            The average time it takes to run this system
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Systems.SystemInfo.RunCount">
+            <summary>
+            A variable to count the number of times a system runs
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Systems.SystemInfo.Age">
+            <summary>
+            How many frames have passed since last execution
+            Used in Scheduling
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Systems.SystemInfo.PriorityComposite">
+            <summary>
+            A Space to store a priority composite variable
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Systems.SystemInfo.Run">
+            <summary>
+            Whether this system was run this frame
+            Used in scheduling
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemInfo.SetID(System.Int32)">
+            <summary>
+            ID as set by System Registry
+            </summary>
+            <param name="id">the system's ID</param>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemInfo.SetComponentIDs(System.Int32[])">
+            <summary>
+            Method so system can set the component ids from the names
+            </summary>
+            <param name="ids"></param>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemInfo.ToString">
+            <inheritdoc />
+        </member>
+        <member name="M:Dragonbones.Systems.SystemInfo.Update(System.Double)">
+             <summary>
+             Updates this system info
+             it increases updates the average runtime, recomputes priority composite,
+             and resets the run bool to false
+            
+             this is used to update info for scheduling
+             </summary>
+             <param name="newTime">the time it took for the system to run</param>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemInfo.Compare(Dragonbones.Systems.SystemInfo,Dragonbones.Systems.SystemInfo)">
+            <inheritdoc />
+        </member>
+        <member name="M:Dragonbones.Systems.SystemInfo.Sort(Dragonbones.Systems.SystemInfo,Dragonbones.Systems.SystemInfo)">
+            <summary>
+            Returns a comparison for two system infos
+            0 is equivalent,
+            negative is higher priority
+            positive is lower priority
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemInfo.Equals(Dragonbones.Systems.SystemInfo)">
+            <inheritdoc />
+        </member>
+        <member name="M:Dragonbones.Systems.SystemInfo.Equals(System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:Dragonbones.Systems.SystemInfo.GetHashCode">
+            <inheritdoc />
+        </member>
+        <member name="T:Dragonbones.Systems.SystemRegistry">
+             <summary>
+             A base version of the <see cref="T:Dragonbones.Systems.SystemRegistry"/>
+            
+             This uses a <see cref="T:Dragonbones.Collections.NamedDataRegistry`1"/> to store the systems
+             </summary>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemRegistry.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Constructs an instance of <see cref="T:Dragonbones.Systems.SystemRegistry"/>
+            </summary>
+            <param name="maxSystemCount">the maximum number of systems to every be added to the registry</param>
+            <param name="hashSize">the hash size used by the internal hashtable. Higher makes for faster searching but increases memory usage</param>
+        </member>
+        <member name="P:Dragonbones.Systems.SystemRegistry.Item(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="P:Dragonbones.Systems.SystemRegistry.Item(System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="P:Dragonbones.Systems.SystemRegistry.Count">
+            <inheritdoc />
+        </member>
+        <member name="M:Dragonbones.Systems.SystemRegistry.Add(Dragonbones.Systems.ISystem)">
+            <inheritdoc />
+        </member>
+        <member name="M:Dragonbones.Systems.SystemRegistry.Clear">
+            <inheritdoc />
+        </member>
+        <member name="M:Dragonbones.Systems.SystemRegistry.CreateSchedule(Dragonbones.Systems.SystemType,System.Int32)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemRegistry.RecreateSchedule(Dragonbones.Systems.ISystemSchedule@)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemRegistry.Contains(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Dragonbones.Systems.SystemRegistry.Contains(System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Dragonbones.Systems.SystemRegistry.Contains(Dragonbones.Systems.ISystem)">
+            <inheritdoc />
+        </member>
+        <member name="M:Dragonbones.Systems.SystemRegistry.GetEnumerator">
+            <inheritdoc />
+        </member>
+        <member name="M:Dragonbones.Systems.SystemRegistry.GetID(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Dragonbones.Systems.SystemRegistry.GetID(Dragonbones.Systems.ISystem)">
+            <inheritdoc />
+        </member>
+        <member name="M:Dragonbones.Systems.SystemRegistry.GetName(System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Dragonbones.Systems.SystemRegistry.GetSystem(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Dragonbones.Systems.SystemRegistry.GetSystem(System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Dragonbones.Systems.SystemRegistry.GetTypeCount(Dragonbones.Systems.SystemType)">
+            <inheritdoc />
+        </member>
+        <member name="M:Dragonbones.Systems.SystemRegistry.Remove(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Dragonbones.Systems.SystemRegistry.Remove(System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Dragonbones.Systems.SystemRegistry.Remove(Dragonbones.Systems.ISystem)">
+            <inheritdoc />
+        </member>
+        <member name="M:Dragonbones.Systems.SystemRegistry.System#Collections#IEnumerable#GetEnumerator">
+            <inheritdoc />
+        </member>
+        <member name="T:Dragonbones.Systems.SystemSchedule">
+            <summary>
+            A base implementation of <see cref="T:Dragonbones.Systems.ISystemSchedule"/>
+            uses a priority list to sort ahead of time
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemSchedule.#ctor(Dragonbones.Systems.SystemType,System.Int32,System.Int32)">
+            <summary>
+            constructs an instance of <see cref="T:Dragonbones.Systems.SystemSchedule"/>
+            </summary>
+            <param name="laneCount">the number of concurrent systems that can be run</param>
+            <param name="maxSize">the maximum number of systems to be stored</param>
+            <param name="type">the type of systems for this schedule</param>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemSchedule.#ctor(Dragonbones.Systems.SystemSchedule)">
+            <summary>
+            copies an instance of <see cref="T:Dragonbones.Systems.SystemSchedule"/>
+            </summary>
+            <param name="copy">the schedule to copy</param>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemSchedule.Clear">
+            <summary>
+            <inheritdoc />
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemSchedule.Add(Dragonbones.Systems.SystemInfo)">
+            <summary>
+            <inheritdoc />
+            Only sorted on insertion
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemSchedule.NextSystem(System.Int32,Dragonbones.Systems.SystemInfo@)">
+            <summary>
+            <inheritdoc />
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemSchedule.FindPreviousEntry(Dragonbones.Systems.SystemInfo,Dragonbones.Systems.SystemSchedule.RREntry@)">
+            <summary>
+            find the index of the previous entry
+            </summary>
+            <param name="system">system to find previous entry</param>
+            <param name="rr">the runrecurrence of the system if it exists
+            if it does not exist then it is the one after it unless it is at the end then the previous run recurrence</param>
+            <returns>the index of the previous entry or
+            -1 if this entry should be placed at the beginning or
+            -2 if it should be placed at the end</returns>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemSchedule.Remove(Dragonbones.Systems.SystemInfo)">
+            <summary>
+            <inheritdoc />
+            </summary>
+        </member>
+        <member name="T:Dragonbones.Systems.SystemSchedule.RREntry">
+            <summary>
+            The entry used to track location of beginning of the run recurrences for faster sorting
+            </summary>
+        </member>
+        <member name="T:Dragonbones.Systems.SystemSchedule.Entry">
+            <summary>
+            Entry struct for storing linked list used in schedule
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Systems.SystemSchedule.Finished">
+            <summary>
+            <inheritdoc />
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Systems.SystemSchedule.Count">
+            <summary>
+            <inheritdoc />
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Systems.SystemSchedule.Type">
+            <summary>
+            The type of systems for this schedule
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemSchedule.Reset">
+            <summary>
+            <inheritdoc />
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemSchedule.FinishLane(System.Int32)">
+            <summary>
+            <inheritdoc />
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemSchedule.AddFromRegistry(Dragonbones.Systems.ISystemRegistry)">
+            <summary>
+            <inheritdoc />
+            </summary>
+        </member>
+        <member name="T:Dragonbones.Systems.SystemType">
+            <summary>
+            Defines what a system is used for
+            </summary>
+        </member>
+        <member name="F:Dragonbones.Systems.SystemType.Logic">
+            <summary>
+            Logic systems run on a multiple of 1/60th of a second time step
+            Should only be used for logic
+            Should not be used to draw anything to screen
+            </summary>
+        </member>
+        <member name="F:Dragonbones.Systems.SystemType.Render">
+            <summary>
+            Render systems run as often as possible but logic systems take priority
+            Should only be used for rendering
+            Should not be used to update logic
+            </summary>
+        </member>
+    </members>
+</doc>

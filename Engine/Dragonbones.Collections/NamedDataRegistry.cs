@@ -6,6 +6,8 @@ namespace Dragonbones.Collections
 {
     /// <summary>
     /// A class which stores values by a string name, but also gives an ID for fast lookup
+    /// The registry expects relatively fixed sized data sets and does not expect value to be regularly removed
+    /// Due to this it will not automatically size down.
     /// </summary>
     /// <typeparam name="TValue">the values to store</typeparam>
     public class NamedDataRegistry<TValue> : IEnumerable<TValue>
@@ -125,7 +127,7 @@ namespace Dragonbones.Collections
         /// <returns>whether the name was found</returns>
         public bool TryGet(string name, out TValue value)
         {
-            int id = FindEntry(name, out Entry ent);
+            int id = FindEntry(name, out _);
             if (id == -1)
             {
                 value = default;
@@ -168,7 +170,7 @@ namespace Dragonbones.Collections
         /// <returns>the value</returns>
         public TValue Get(string name)
         {
-            int id = FindEntry(name, out Entry ent);
+            int id = FindEntry(name, out _);
             return _values[id];
         }
 
@@ -189,7 +191,7 @@ namespace Dragonbones.Collections
         /// <returns>if the name was found</returns>
         public bool ContainsName(string name)
         {
-            return FindEntry(name, out Entry ent) != -1;
+            return FindEntry(name, out _) != -1;
         }
 
         /// <summary>
@@ -199,7 +201,7 @@ namespace Dragonbones.Collections
         /// <returns>if the value was found</returns>
         public bool Contains(TValue value)
         {
-            return FindEntry(value, out Entry ent) != -1;
+            return FindEntry(value, out _) != -1;
         }
 
         /// <summary>
@@ -209,7 +211,7 @@ namespace Dragonbones.Collections
         /// <returns>the ID associated with the name or -1 if not found</returns>
         public int GetID(string name)
         {
-            return FindEntry(name, out Entry ent);
+            return FindEntry(name, out _);
         }
 
         /// <summary>
@@ -219,7 +221,7 @@ namespace Dragonbones.Collections
         /// <returns>the ID associated with the value or -1 if not found</returns>
         public int GetID(TValue value)
         {
-            return FindEntry(value, out Entry ent);
+            return FindEntry(value, out _);
         }
         
         /// <summary>

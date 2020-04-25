@@ -4,6 +4,7 @@ using System.Linq;
 using System.Diagnostics;
 using Dragonbones;
 using Dragonbones.Native;
+using Dragonbones.Systems;
 
 namespace ConsoleTest
 {

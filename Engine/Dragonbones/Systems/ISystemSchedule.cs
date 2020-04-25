@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Dragonbones
+namespace Dragonbones.Systems
 {
     /// <summary>
     /// A class that orders systems by priority for running and handles supplying systems one at a time for each lane of systems running.

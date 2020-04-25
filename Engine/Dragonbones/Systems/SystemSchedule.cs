@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 
-namespace Dragonbones
+namespace Dragonbones.Systems
 {
     /// <summary>
     /// A base implementation of <see cref="ISystemSchedule"/>

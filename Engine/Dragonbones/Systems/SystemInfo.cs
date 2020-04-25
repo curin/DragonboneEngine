@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Dragonbones
+namespace Dragonbones.Systems
 {
     /// <summary>
     /// The system's info

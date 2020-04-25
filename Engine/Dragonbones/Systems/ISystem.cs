@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Dragonbones
+namespace Dragonbones.Systems
 {
     /// <summary>
     /// The interface which all systems are derived from
+    /// Systems should not contain any state data for the game itself only
     /// </summary>
     public interface ISystem : IEquatable<ISystem>
     {

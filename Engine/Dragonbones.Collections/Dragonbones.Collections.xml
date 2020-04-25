@@ -1,0 +1,226 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Dragonbones.Collections</name>
+    </assembly>
+    <members>
+        <member name="T:Dragonbones.Collections.IDataBuffer">
+            <summary>
+            A buffer of data which is used by both Render Systems and Logic Systems
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Collections.IDataBuffer.SwapReadBuffer">
+            <summary>
+            Swaps the data buffers for rendering
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Collections.IDataBuffer.SwapWriteBuffer">
+            <summary>
+            Swaps the data buffers on finishing of updating
+            </summary>
+        </member>
+        <member name="T:Dragonbones.Collections.NamedDataRegistry`1">
+            <summary>
+            A class which stores values by a string name, but also gives an ID for fast lookup
+            The registry expects relatively fixed sized data sets and does not expect value to be regularly removed
+            Due to this it will not automatically size down.
+            </summary>
+            <typeparam name="TValue">the values to store</typeparam>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Constructs a <see cref="T:Dragonbones.Collections.NamedDataRegistry`1"/> of the specified size
+            </summary>
+            <param name="capacity">the number of values that can be stored</param>
+            <param name="hashSize">the size of the hashtable used for finding values by name.
+            The larger this is the faster name lookups but the more memory used</param>
+        </member>
+        <member name="P:Dragonbones.Collections.NamedDataRegistry`1.Item(System.String)">
+            <summary>
+            Access a value by name
+            </summary>
+            <param name="name">the name of the value</param>
+            <returns>the value</returns>
+        </member>
+        <member name="P:Dragonbones.Collections.NamedDataRegistry`1.Item(System.Int32)">
+            <summary>
+            Access a value by ID
+            </summary>
+            <param name="id">the ID of the value</param>
+            <returns>the value</returns>
+        </member>
+        <member name="P:Dragonbones.Collections.NamedDataRegistry`1.Count">
+            <summary>
+            The number of objects stored in the registry
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.Add(System.String,`0)">
+            <summary>
+            Adds a value to the registry
+            </summary>
+            <param name="name">the name of the value</param>
+            <param name="value">the value to store</param>
+            <returns>the id of the stored value, -1 if it was unable to be stored</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.TryGet(System.String,`0@)">
+            <summary>
+            Attempt to get a value by name
+            </summary>
+            <param name="name">the name of the value</param>
+            <param name="value">the returned value</param>
+            <returns>whether the name was found</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.TryGet(System.Int32,`0@)">
+            <summary>
+            Attempt to get a value by ID
+            </summary>
+            <param name="id">the ID of the value</param>
+            <param name="value">the returned value</param>
+            <returns>Whether the ID was found</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.Get(System.String)">
+            <summary>
+            Get a value by name
+            </summary>
+            <param name="name">the name of the value</param>
+            <returns>the value</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.Get(System.Int32)">
+            <summary>
+            Get a value by ID
+            </summary>
+            <param name="id">the ID of the value</param>
+            <returns>the value</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.ContainsName(System.String)">
+            <summary>
+            Does this registry contain a value with the given name
+            </summary>
+            <param name="name">the name</param>
+            <returns>if the name was found</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.Contains(`0)">
+            <summary>
+            Does this registry contain this value
+            </summary>
+            <param name="value">the value</param>
+            <returns>if the value was found</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.GetID(System.String)">
+            <summary>
+            Get the ID associated with a name
+            </summary>
+            <param name="name">the name</param>
+            <returns>the ID associated with the name or -1 if not found</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.GetID(`0)">
+            <summary>
+            Get the ID associated with a value
+            </summary>
+            <param name="value">the value</param>
+            <returns>the ID associated with the value or -1 if not found</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.ContainsID(System.Int32)">
+            <summary>
+            Does this registry contain a value with the given ID
+            </summary>
+            <param name="id">the ID</param>
+            <returns>Whether a value is associated with the given ID</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.PopAt(System.String)">
+            <summary>
+            Remove the value at the given name and return the value
+            </summary>
+            <param name="name">the name of the value to remove</param>
+            <returns>the value of the given name</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.PopAt(System.Int32)">
+            <summary>
+            Remove the value at the given ID and return the value
+            </summary>
+            <param name="id">the ID of the value to remove</param>
+            <returns>the value associated with the given ID</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.Pop(`0)">
+            <summary>
+            Find the given value and remove it from the registry
+            </summary>
+            <param name="value">value to remove</param>
+            <returns>value found in the registry</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.RemoveAt(System.String)">
+            <summary>
+            Remove a value with the given name
+            </summary>
+            <param name="name">name of the value to remove</param>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.RemoveAt(System.Int32)">
+            <summary>
+            Remove a value associated with the given ID
+            </summary>
+            <param name="id">the ID of the value to remove</param>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.Remove(`0)">
+            <summary>
+            Remove the given value from the registry
+            </summary>
+            <param name="value">the value to remove</param>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.Remove(Dragonbones.Collections.NamedDataRegistry{`0}.Entry@)">
+            <summary>
+            Remove a given entry
+            </summary>
+            <param name="ent">the entry to remove</param>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.FindEntry(System.String,Dragonbones.Collections.NamedDataRegistry{`0}.Entry@)">
+            <summary>
+            Find an entry with a given name
+            </summary>
+            <param name="name">the name of the entry</param>
+            <param name="entry">the returned entry</param>
+            <returns>the ID of the entry</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.FindEntry(`0,Dragonbones.Collections.NamedDataRegistry{`0}.Entry@)">
+            <summary>
+            Find an entry of the given value
+            </summary>
+            <param name="value">the value to find</param>
+            <param name="entry">the returned entry</param>
+            <returns>the ID of the entry</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.Expand(System.Int32)">
+            <summary>
+            Expands the registry to the new size
+            </summary>
+            <param name="newSize">new size of the registry</param>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.Clear">
+            <summary>
+            Clears the registry data
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.GetHashIndex(System.Int32)">
+            <summary>
+            Gets the hash index of a given hashcode
+            </summary>
+            <param name="hashCode">the hashcode of an entry</param>
+            <returns>the hash index of the entry</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.GetEnumerator">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.System#Collections#IEnumerable#GetEnumerator">
+            <inheritdoc/>
+        </member>
+        <member name="T:Dragonbones.Collections.NamedDataRegistry`1.Entry">
+            <summary>
+            An individual entry which stores information about a stored value
+            </summary>
+        </member>
+        <member name="T:Dragonbones.Collections.NamedDataRegistry`1.Enumerator">
+            <summary>
+            The enumerator for <see cref="T:Dragonbones.Collections.NamedDataRegistry`1"/>
+            </summary>
+        </member>
+    </members>
+</doc>

@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
 using Dragonbones;
+using Dragonbones.Systems;
 
 namespace ConsoleTest
 {
     internal class Program
     {
-        private static void Main(string[] args)
+        private static void Main()
         {
+            SyncTest.Run(1);
             CollectionTest.Run();
             Console.ReadLine();
             SchedulingTest SchedTest = new SchedulingTest();
