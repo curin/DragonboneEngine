@@ -12,7 +12,7 @@ namespace Dragonbones.Collections
     where TValue:struct
     {
         private readonly TValue[] _value = new TValue[3];
-        private readonly Object _lock = new object();
+        private readonly object _lock = new object();
 
         /// <summary>
         /// Default Constructor
