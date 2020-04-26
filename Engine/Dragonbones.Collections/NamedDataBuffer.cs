@@ -16,9 +16,8 @@ namespace Dragonbones.Collections
     {
         private DoubleDataBuffer<TValue, Entry> _buffer;
         private DataBuffer<int> _hashStarts;
-        private int[] _count;
-        private int[] _start = new int[3];
-        private readonly object _lock = new object();
+        private ValueBuffer<int> _count = new ValueBuffer<int>();
+        private ValueBuffer<int> _start = new ValueBuffer<int>(-1);
 
         private int[] _hashEnds;
         private int _capacity;
@@ -39,9 +38,6 @@ namespace Dragonbones.Collections
             _hashStarts = new DataBuffer<int>(hashSize, -1);
             _hashSize = hashSize;
             _capacity = initialCapacity;
-
-            for (int i = 0; i < 3; i++)
-                _start[i] = -1;
 
             _buffer.Set(BufferTransactionType.WriteRead, 0, default, new Entry() {ID = -1});
             _buffer.SwapWriteBuffer();
@@ -111,7 +107,7 @@ namespace Dragonbones.Collections
                 _hashEnds[hash] = _next;
 
                 if (_end == -1)
-                    _start[0] = _end = _next;
+                    _start[BufferTransactionType.WriteRead] = _end = _next;
                 else
                 {
                     Entry temp = _buffer.Get(type, _end).Item2;
@@ -126,7 +122,7 @@ namespace Dragonbones.Collections
                 temp.Next = _next;
                 _buffer.SetSecondary(type, end, temp);
                 if (_end == -1)
-                    _start[0] = _end = _next;
+                    _start[BufferTransactionType.WriteRead] = _end = _next;
                 else
                 {
                     temp = _buffer.Get(type, _end).Item2;
@@ -138,7 +134,7 @@ namespace Dragonbones.Collections
             if (_next == _top)
                 _top++;
             _next = _top;
-            _count[0]++;
+            _count[BufferTransactionType.WriteRead]++;
             return ent.ID;
         }
 
@@ -404,7 +400,7 @@ namespace Dragonbones.Collections
             }
             else
             {
-                _start[0] = ent.NextIterator;
+                _start[BufferTransactionType.WriteRead] = ent.NextIterator;
             }
 
             int loc = GetHashIndex(ent.Name.GetHashCode());
@@ -435,7 +431,7 @@ namespace Dragonbones.Collections
             else
                 _freeIDs.Enqueue(ent.ID);
 
-            _count[0]--;
+            _count[BufferTransactionType.WriteRead]--;
 
             int id = ent.ID;
             ent.ID = -1;
@@ -576,8 +572,8 @@ namespace Dragonbones.Collections
         {
             if (type == BufferTransactionType.ReadOnly)
                 return;
-            _start[0] = _end = -1;
-             _count[0] = _top = _next = 0;
+            _start[BufferTransactionType.WriteRead] = _end = -1;
+             _count[BufferTransactionType.WriteRead] = _top = _next = 0;
             _freeIDs.Clear();
             for (int i = 0; i < _hashSize; i++)
             {
@@ -649,13 +645,13 @@ namespace Dragonbones.Collections
         /// <returns>the ID of the entry</returns>
         private int FindEntry(BufferTransactionType type, TValue value, out Tuple<TValue, Entry> valueEntry)
         {
-            if (_start[(int) type] == -1)
+            if (_start[type] == -1)
             {
                 valueEntry = new Tuple<TValue, Entry>(default, default);
                 return -1;
             }
 
-            valueEntry = _buffer[type, _start[(int) type]];
+            valueEntry = _buffer[type, _start[type]];
 
             while (valueEntry.Item1.Equals(value) && valueEntry.Item2.NextIterator != -1)
                 valueEntry = _buffer[type, valueEntry.Item2.NextIterator];
@@ -692,11 +688,8 @@ namespace Dragonbones.Collections
         {
             _buffer.SwapReadBuffer();
             _hashStarts.SwapReadBuffer();
-            lock (_lock)
-            {
-                _count[2] = _count[1];
-                _start[2] = _start[1];
-            }
+            _count.SwapReadBuffer();
+            _start.SwapReadBuffer();
         }
 
         /// <summary>
@@ -706,11 +699,8 @@ namespace Dragonbones.Collections
         {
             _buffer.SwapWriteBuffer();
             _hashStarts.SwapWriteBuffer();
-            lock (_lock)
-            {
-                _count[1] = _count[0];
-                _start[1] = _start[0];
-            }
+            _count.SwapWriteBuffer();
+            _start.SwapWriteBuffer();
         }
 
         /// <summary>Returns an enumerator that iterates through the collection.</summary>
