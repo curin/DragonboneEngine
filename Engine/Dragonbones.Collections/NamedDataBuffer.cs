@@ -740,7 +740,7 @@ namespace Dragonbones.Collections
         /// <returns>An enumerator that can be used to iterate through the collection.</returns>
         public IEnumerator<TValue> GetEnumerator()
         {
-            return _buffer.GetEnumerator();
+            return new Enumerator(BufferTransactionType.ReadOnly, this);
         }
 
         /// <summary>Returns an enumerator that iterates through a collection.</summary>
@@ -771,6 +771,57 @@ namespace Dragonbones.Collections
             public int Previous;
             public int NextIterator;
             public int PreviousIterator;
+        }
+
+        /// <summary>
+        /// The enumerator for <see cref="NamedDataBuffer{TValue}"/>
+        /// </summary>
+        private class Enumerator : IEnumerator<TValue>
+        {
+            private NamedDataBuffer<TValue> _buff;
+            private BufferTransactionType _type;
+            public Enumerator(BufferTransactionType type, NamedDataBuffer<TValue> buff)
+            {
+                _buff = buff;
+                _next = -2;
+                _type = type;
+            }
+
+            private int _current, _next;
+            public TValue Current => _buff._buffer[_type, _current].Item1;
+
+            object IEnumerator.Current => _buff._buffer[_type, _current];
+
+            public void Dispose()
+            {
+                _buff = null;
+            }
+
+            public bool MoveNext()
+            {
+                if (_next == -1)
+                    return false;
+                NamedDataBuffer<TValue>.Entry ent = default;
+                if (_next == -2)
+                {
+
+                    _current = _buff._start[_type];
+                    if (_current != -1)
+                        ent = _buff._buffer[_type, _current].Item2;
+                    _next = ent.NextIterator;
+                    return true;
+                }
+
+                _current = _next;
+                ent = _buff._buffer[_type, _current].Item2;
+                _next = ent.NextIterator;
+                return true;
+            }
+
+            public void Reset()
+            {
+                _next = -2;
+            }
         }
     }
 }
