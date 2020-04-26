@@ -44,6 +44,8 @@ namespace Dragonbones.Collections
             _count = _top = _next = 0;
             _capacity = capacity;
             _hashSize = hashSize;
+
+            _entries[0] = new Entry() { ID = -1 };
         }
 
         /// <summary>
@@ -73,6 +75,10 @@ namespace Dragonbones.Collections
         /// <returns>the id of the stored value, -1 if it was unable to be stored</returns>
         public int Add(string name, TValue value)
         {
+            int find = FindEntry(name, out _);
+            if (find != -1)
+                throw new ArgumentException("NameDataRegistry already contains an entry for name " + name);
+
             if (_freeIDs.Count > 0)
                 _next = _freeIDs.Dequeue();
             if (_next == _top && _top == _capacity)
@@ -153,7 +159,7 @@ namespace Dragonbones.Collections
             }
 
             Entry ent = _entries[id];
-            if (ent.ID == -1 || ent.ID == 0 && ent.NextEnumerator == 0)
+            if (ent.ID != id)
             {
                 value = default;
                 return false;
@@ -205,11 +211,22 @@ namespace Dragonbones.Collections
         }
 
         /// <summary>
+        /// Does this registry contain a value with the given ID
+        /// </summary>
+        /// <param name="id">the ID</param>
+        /// <returns>Whether a value is associated with the given ID</returns>
+        public bool ContainsID(int id)
+        {
+            Entry ent = _entries[id];
+            return ent.ID == id;
+        }
+
+        /// <summary>
         /// Get the ID associated with a name
         /// </summary>
         /// <param name="name">the name</param>
         /// <returns>the ID associated with the name or -1 if not found</returns>
-        public int GetID(string name)
+        public int GetIDFromName(string name)
         {
             return FindEntry(name, out _);
         }
@@ -223,61 +240,29 @@ namespace Dragonbones.Collections
         {
             return FindEntry(value, out _);
         }
-        
+
         /// <summary>
-        /// Does this registry contain a value with the given ID
+        /// Get the name associated with an ID
         /// </summary>
-        /// <param name="id">the ID</param>
-        /// <returns>Whether a value is associated with the given ID</returns>
-        public bool ContainsID(int id)
+        /// <param name="id">the ID associated with the value</param>
+        /// <returns>the name associated with the value</returns>
+        public string GetNameFromID(int id)
         {
             Entry ent = _entries[id];
-            return ent.ID != -1;
+            if (ent.ID != id)
+                throw new ArgumentException("The Named Data Registry does not have an entry associated with the ID " + id);
+            return ent.Name;
         }
 
         /// <summary>
-        /// Remove the value at the given name and return the value
+        /// Get the name associated with a value
         /// </summary>
-        /// <param name="name">the name of the value to remove</param>
-        /// <returns>the value of the given name</returns>
-        public TValue PopAt(string name)
+        /// <param name="value">the value</param>
+        /// <returns>the name associated with the value</returns>
+        public string GetName(TValue value)
         {
-            TValue val = default;
-            if (FindEntry(name, out Entry ent) != -1)
-            {
-                val = _values[ent.ID];
-                Remove(ref ent);
-            }
-            return val;
-        }
-
-        /// <summary>
-        /// Remove the value at the given ID and return the value
-        /// </summary>
-        /// <param name="id">the ID of the value to remove</param>
-        /// <returns>the value associated with the given ID</returns>
-        public TValue PopAt(int id)
-        {
-            TValue val = _values[id];
-            Entry ent = _entries[id];
-            Remove(ref ent);
-            return val;
-        }
-
-        /// <summary>
-        /// Find the given value and remove it from the registry
-        /// </summary>
-        /// <param name="value">value to remove</param>
-        /// <returns>value found in the registry</returns>
-        public TValue Pop(TValue value)
-        {
-            TValue val = default;
-            if (FindEntry(value, out Entry ent) != -1)
-            {
-                val = _values[ent.ID];
-                Remove(ref ent);
-            }
-            return val;
+            FindEntry(value, out Entry ent);
+            return ent.Name;
         }
 
         /// <summary>
@@ -297,7 +282,8 @@ namespace Dragonbones.Collections
         public void RemoveAt(int id)
         {
             Entry ent = _entries[id];
-            Remove(ref ent);
+            if (ent.ID == id)
+                Remove(ref ent);
         }
 
         /// <summary>
@@ -371,7 +357,51 @@ namespace Dragonbones.Collections
             int id = ent.ID;
             ent.ID = -1;
             _entries[id] = ent;
-            _values[id] = default;
+        }
+
+        /// <summary>
+        /// Remove the value at the given name and return the value
+        /// </summary>
+        /// <param name="name">the name of the value to remove</param>
+        /// <returns>the value of the given name</returns>
+        public TValue PopAt(string name)
+        {
+            TValue val = default;
+            if (FindEntry(name, out Entry ent) != -1)
+            {
+                val = _values[ent.ID];
+                Remove(ref ent);
+            }
+            return val;
+        }
+
+        /// <summary>
+        /// Remove the value at the given ID and return the value
+        /// </summary>
+        /// <param name="id">the ID of the value to remove</param>
+        /// <returns>the value associated with the given ID</returns>
+        public TValue PopAt(int id)
+        {
+            TValue val = _values[id];
+            Entry ent = _entries[id];
+            Remove(ref ent);
+            return val;
+        }
+
+        /// <summary>
+        /// Find the given value and remove it from the registry
+        /// </summary>
+        /// <param name="value">value to remove</param>
+        /// <returns>value found in the registry</returns>
+        public TValue Pop(TValue value)
+        {
+            TValue val = default;
+            if (FindEntry(value, out Entry ent) != -1)
+            {
+                val = _values[ent.ID];
+                Remove(ref ent);
+            }
+            return val;
         }
 
         /// <summary>

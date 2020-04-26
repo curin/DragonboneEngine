@@ -34,6 +34,51 @@ namespace Dragonbones.Collections
             }
         }
 
+        /// <summary>
+        /// Constructs a data buffer of the specified length.
+        /// </summary>
+        /// <param name="length">the length of the buffer</param>
+        /// <param name="initialValue">the value to start each entry at</param>
+        public DataBuffer(int length, TValue initialValue)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                _values[i] = new TValue[length];
+                for (int j = 0; j < length; j++)
+                    _values[i][j] = initialValue;
+            }
+
+            for (int i = 0; i < 2; i++)
+            {
+                _dirtyMarks[i] = new bool[length];
+                _dirtyEntries[i] = new Queue<int>();
+            }
+        }
+
+        /// <summary>
+        /// Perform a deep copy of a DataBuffer
+        /// </summary>
+        /// <param name="copy">buffer to copy</param>
+        /// <param name="length">the length of the new buffer</param>
+        public DataBuffer(DataBuffer<TValue> copy, int length = -1)
+        {
+            if (length == -1)
+                length = copy.GetLength();
+            for (int i = 0; i < 3; i++)
+            {
+                _values[i] = new TValue[length];
+                copy._values[i].CopyTo(_values[i], 0);
+            }
+
+            for (int i = 0; i < 2; i++)
+            {
+                _dirtyMarks[i] = new bool[length];
+                copy._dirtyMarks[i].CopyTo(_dirtyMarks[i], 0);
+
+                _dirtyEntries[i] = new Queue<int>(copy._dirtyEntries[i]);
+            }
+        }
+
         private readonly TValue[][] _values = new TValue[3][];
         private readonly Queue<int>[] _dirtyEntries = new Queue<int>[2];
         private readonly bool[][] _dirtyMarks = new bool[2][];
@@ -44,7 +89,7 @@ namespace Dragonbones.Collections
         /// <param name="type">Determines how the information can be manipulated and where information is retrieved from</param>
         /// <param name="index">the index to retrieve data from</param>
         /// <returns>the value at the given index from the corresponding buffer</returns>
-        private TValue this[BufferTransactionType type, int index]
+        public TValue this[BufferTransactionType type, int index]
         {
             get => Get(type, index);
             set => Set(type, index, value);
@@ -56,7 +101,7 @@ namespace Dragonbones.Collections
         /// <param name="type">the transaction type determines if you pull from the read buffer or the write buffer</param>
         /// <param name="index">the index to access</param>
         /// <returns>the value at the given index from the corresponding buffer</returns>
-        TValue Get(BufferTransactionType type, int index)
+        public TValue Get(BufferTransactionType type, int index)
         {
             return _values[(int)type][index];
         }
@@ -69,7 +114,7 @@ namespace Dragonbones.Collections
         /// Write only transactions write to the write buffer and will be transferred after the swap write and then swap read are run in that order</param>
         /// <param name="index">the index to set</param>
         /// <param name="value">the value to set at the index</param>
-        void Set(BufferTransactionType type, int index, TValue value)
+        public void Set(BufferTransactionType type, int index, TValue value)
         {
             if (type == BufferTransactionType.ReadOnly)
                 return;
@@ -84,7 +129,7 @@ namespace Dragonbones.Collections
         /// Gets a 64-bit value that represents the number of entries in the buffer
         /// </summary>
         /// <returns>the buffer entries count</returns>
-        long GetLongLength()
+        public long GetLongLength()
         {
             return _values[0].GetLongLength(0);
         }
@@ -93,7 +138,7 @@ namespace Dragonbones.Collections
         /// Gets a 32-bit value that represents the number of entries in the buffer
         /// </summary>
         /// <returns>the buffer entries count</returns>
-        int GetLength()
+        public int GetLength()
         {
             return _values[0].Length;
         }
@@ -104,7 +149,7 @@ namespace Dragonbones.Collections
         /// <param name="type">the transaction type which determines whether the write buffer or read buffer is copied</param>
         /// <param name="array">the array to copy to</param>
         /// <param name="index">the index to start the copy at</param>
-        void CopyTo(BufferTransactionType type, Array array, int index)
+        public void CopyTo(BufferTransactionType type, Array array, int index)
         {
             _values[(int)type].CopyTo(array, index);
         }
