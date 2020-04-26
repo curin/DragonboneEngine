@@ -40,43 +40,228 @@
             The number of components stored in the Logic portion of the buffer
             </summary>
         </member>
-        <member name="M:Dragonbones.Components.IComponentBuffer.ContainsID(System.Int32)">
+        <member name="M:Dragonbones.Components.IComponentBuffer.ContainsID(Dragonbones.Systems.SystemType,System.Int32)">
             <summary>
             Checks if there is a stored component associated with the given ID
             </summary>
             <param name="id">the ID to check</param>
+            <param name="systemType">the type of system making the call</param>
             <returns>Whether the ID is associated with a stored component</returns>
         </member>
-        <member name="M:Dragonbones.Components.IComponentBuffer.ContainsName(System.String)">
+        <member name="M:Dragonbones.Components.IComponentBuffer.ContainsName(Dragonbones.Systems.SystemType,System.String)">
             <summary>
             Check if there is a stored component associated with the given name
             </summary>
             <param name="name">the name to check</param>
+            <param name="systemType">the type of system making the call</param>
             <returns>Whether the name is associated with a stored component</returns>
         </member>
-        <member name="M:Dragonbones.Components.IComponentBuffer.GetIDFromName(System.String)">
+        <member name="M:Dragonbones.Components.IComponentBuffer.GetIDFromName(Dragonbones.Systems.SystemType,System.String)">
             <summary>
             Gets the ID associated with the given name
             </summary>
+            <param name="systemType">the type of system making the call</param>
             <param name="name">the name to find the ID of</param>
             <returns>the ID associated with the given name or -1 if not found in the buffer</returns>
         </member>
-        <member name="M:Dragonbones.Components.IComponentBuffer.RemoveAt(System.Int32)">
+        <member name="M:Dragonbones.Components.IComponentBuffer.RemoveAt(Dragonbones.Systems.SystemType,System.Int32)">
             <summary>
             Removes a component associated with the given ID
             </summary>
+            <param name="systemType">the type of system making the call
+            Remove calls are ignored from Render Systems</param>
             <param name="id">the ID associated with the component to remove</param>
         </member>
-        <member name="M:Dragonbones.Components.IComponentBuffer.RemoveAt(System.String)">
+        <member name="M:Dragonbones.Components.IComponentBuffer.RemoveAt(Dragonbones.Systems.SystemType,System.String)">
             <summary>
             Removes a component associated with the given name
             </summary>
+            <param name="systemType">the type of system making the call
+            Remove calls are ignored from Render Systems</param>
             <param name="name"></param>
         </member>
-        <member name="M:Dragonbones.Components.IComponentBuffer.Clear">
+        <member name="M:Dragonbones.Components.IComponentBuffer.Clear(Dragonbones.Systems.SystemType)">
             <summary>
             Remove all data from the buffer
             </summary>
+            <param name="systemType">the type of system making the call
+            Clear calls are ignored from Render Systems</param>
+        </member>
+        <member name="T:Dragonbones.Components.IComponentBuffer`1">
+            <summary>
+            The generic form of <see cref="T:Dragonbones.Components.IComponentBuffer"/>
+            This contains information specific to the component
+            </summary>
+            <typeparam name="TComponent">The component type being stored</typeparam>
+        </member>
+        <member name="P:Dragonbones.Components.IComponentBuffer`1.Item(Dragonbones.Systems.SystemType,System.Int32)">
+            <summary>
+            Accesses a component for a system
+            Render systems cannot set values
+            </summary>
+            <param name="systemType">what type of system is accessing the buffer</param>
+            <param name="id">the ID of the component to access</param>
+            <returns>The component associated with the ID</returns>
+        </member>
+        <member name="P:Dragonbones.Components.IComponentBuffer`1.Item(Dragonbones.Systems.SystemType,System.String)">
+            <summary>
+            Accesses a component for a system
+            Render systems cannot set values
+            </summary>
+            <param name="systemType">what type of system is accessing the buffer</param>
+            <param name="name">the name of the component to access</param>
+            <returns>The component associated with the name</returns>
+        </member>
+        <member name="M:Dragonbones.Components.IComponentBuffer`1.Add(System.String,`0)">
+            <summary>
+            Adds a component to the buffer
+            </summary>
+            <param name="name">the name of the component I suggest something like {entityName}.{ComponentType}#</param>
+            <param name="value">the value to store</param>
+            <returns>the id associated with the value to store</returns>
+        </member>
+        <member name="M:Dragonbones.Components.IComponentBuffer`1.TryGet(Dragonbones.Systems.SystemType,System.Int32,`0@)">
+            <summary>
+            Attempts to retrieve a component for a system
+            </summary>
+            <param name="systemType">the type of system making the call</param>
+            <param name="id">the ID associated with the component</param>
+            <param name="value">the component associated with the ID</param>
+            <returns>Whether a component is associated with the given ID</returns>
+        </member>
+        <member name="M:Dragonbones.Components.IComponentBuffer`1.TryGet(Dragonbones.Systems.SystemType,System.String,`0@)">
+            <summary>
+            Attempts to retrieve a component for a system
+            </summary>
+            <param name="systemType">the type of system making the call</param>
+            <param name="name">the name associated with the component</param>
+            <param name="value">the component associated with the name</param>
+            <returns>Whether a component is associated with the given name</returns>
+        </member>
+        <member name="M:Dragonbones.Components.IComponentBuffer`1.Get(Dragonbones.Systems.SystemType,System.Int32)">
+            <summary>
+            Retrieve a component for a system
+            </summary>
+            <param name="systemType">the type of system making the call</param>
+            <param name="id">the ID associated with the component</param>
+            <returns>the component associated with the ID</returns>
+        </member>
+        <member name="M:Dragonbones.Components.IComponentBuffer`1.Get(Dragonbones.Systems.SystemType,System.String)">
+            <summary>
+            Retrieve a component for a system
+            </summary>
+            <param name="systemType">the type of system making the call</param>
+            <param name="name">the name associated with the component</param>
+            <returns>the component associated with the name</returns>
+        </member>
+        <member name="M:Dragonbones.Components.IComponentBuffer`1.Set(Dragonbones.Systems.SystemType,System.Int32,`0)">
+            <summary>
+            Set the value of a component from a system
+            </summary>
+            <param name="systemType">the type of system making the call
+            Set calls are ignored from Render Systems</param>
+            <param name="id">the ID associated with component</param>
+            <param name="value">the value to set</param>
+        </member>
+        <member name="M:Dragonbones.Components.IComponentBuffer`1.Set(Dragonbones.Systems.SystemType,System.String,`0)">
+            <summary>
+            Set the value of a component from a system
+            </summary>
+            <param name="systemType">the type of system making the call
+            Set calls are ignored from Render Systems</param>
+            <param name="name">the name associated with component</param>
+            <param name="value">the value to set</param>
+        </member>
+        <member name="M:Dragonbones.Components.IComponentBuffer`1.Remove(Dragonbones.Systems.SystemType,`0)">
+            <summary>
+            Remove a component matching the given value
+            </summary>
+            <param name="systemType">the type of system making the call
+            Remove calls are ignored from Render Systems</param>
+            <param name="value">the value to remove</param>
+        </member>
+        <member name="M:Dragonbones.Components.IComponentBuffer`1.Contains(Dragonbones.Systems.SystemType,`0)">
+            <summary>
+            Does this Buffer contain a component
+            </summary>
+            <param name="systemType">the type of system making the call</param>
+            <param name="value">the component to check</param>
+            <returns>Whether the component was found in the buffer</returns>
+        </member>
+        <member name="M:Dragonbones.Components.IComponentBuffer`1.GetID(Dragonbones.Systems.SystemType,`0)">
+            <summary>
+            Get the ID associated with a component
+            </summary>
+            <param name="systemType">the type of system making the call</param>
+            <param name="value">the component</param>
+            <returns>the ID associated with the component or -1 if not found in the buffer</returns>
+        </member>
+        <member name="M:Dragonbones.Components.IComponentBuffer`1.GetName(Dragonbones.Systems.SystemType,`0)">
+            <summary>
+            Get the name associated with a component
+            </summary>
+            <param name="systemType">the type of system making the call</param>
+            <param name="value">the component</param>
+            <returns>the name associated with a component or "~NOT FOUND~" if not found in the buffer</returns>
+        </member>
+        <member name="M:Dragonbones.Components.IComponentBuffer`1.PopAt(Dragonbones.Systems.SystemType,System.String)">
+            <summary>
+            Retrieve then removes a component from the buffer
+            </summary>
+            <param name="systemType">the type of system making the call
+            Pop calls are ignored from Render Systems</param>
+            <param name="name">the name associated with the component</param>
+            <returns>the component associated with the name</returns>
+        </member>
+        <member name="M:Dragonbones.Components.IComponentBuffer`1.PopAt(Dragonbones.Systems.SystemType,System.Int32)">
+            <summary>
+            Retrieve then removes a component from the buffer
+            </summary>
+            <param name="systemType">the type of system making the call
+            Pop calls are ignored from Render Systems</param>
+            <param name="id">the ID associated with the component</param>
+            <returns>the component associated with the ID</returns>
+        </member>
+        <member name="M:Dragonbones.Components.IComponentBuffer`1.Pop(Dragonbones.Systems.SystemType,`0)">
+            <summary>
+            Retrieve current value of a component then remove it from the buffer
+            This only works if the <see cref="!:TComponent"/>.Equals(<see cref="!:TComponent"/>); is written so that the items don't need to be completely identical
+            </summary>
+            <param name="systemType">the type of system making the call
+            Pop calls are ignored from Render Systems</param>
+            <param name="value">the component to retrieve and remove</param>
+            <returns>the updated copy of the component</returns>
+        </member>
+        <member name="M:Dragonbones.Components.IComponentBuffer`1.TryPopAt(Dragonbones.Systems.SystemType,System.String,`0@)">
+            <summary>
+            Attempts to retrieve then remove a component from the buffer
+            </summary>
+            <param name="systemType">the type of system making the call
+            Pop calls are ignored from Render Systems</param>
+            <param name="name">the name associated with the component</param>
+            <param name="value">the current value retrieved</param>
+            <returns>Whether the pop was successful</returns>
+        </member>
+        <member name="M:Dragonbones.Components.IComponentBuffer`1.TryPopAt(Dragonbones.Systems.SystemType,System.Int32,`0@)">
+            <summary>
+            Attempts to retrieve then remove a component from the buffer
+            </summary>
+            <param name="systemType">the type of system making the call
+            Pop calls are ignored from Render Systems</param>
+            <param name="id">the ID associated with the component</param>
+            <param name="value">the current value retrieved</param>
+            <returns>Whether the pop was successful</returns>
+        </member>
+        <member name="M:Dragonbones.Components.IComponentBuffer`1.TryPop(Dragonbones.Systems.SystemType,`0,`0@)">
+            <summary>
+            Attempts to retrieve current value of a component then remove it from the buffer
+            This only works if the <see cref="!:TComponent"/>.Equals(<see cref="!:TComponent"/>); is written so that the items don't need to be completely identical
+            </summary>
+            <param name="systemType">the type of system making the call
+            Pop calls are ignored from Render Systems</param>
+            <param name="value">the component to retrieve and remove</param>
+            <param name="newValue">the current value retrieved</param>
+            <returns>Whether the pop was successful</returns>
         </member>
         <member name="T:Dragonbones.MathHelper">
             <summary>
@@ -667,18 +852,18 @@
             Defines what a system is used for
             </summary>
         </member>
-        <member name="F:Dragonbones.Systems.SystemType.Logic">
-            <summary>
-            Logic systems run on a multiple of 1/60th of a second time step
-            Should only be used for logic
-            Should not be used to draw anything to screen
-            </summary>
-        </member>
         <member name="F:Dragonbones.Systems.SystemType.Render">
             <summary>
             Render systems run as often as possible but logic systems take priority
             Should only be used for rendering
             Should not be used to update logic
+            </summary>
+        </member>
+        <member name="F:Dragonbones.Systems.SystemType.Logic">
+            <summary>
+            Logic systems run on a multiple of 1/60th of a second time step
+            Should only be used for logic
+            Should not be used to draw anything to screen
             </summary>
         </member>
     </members>

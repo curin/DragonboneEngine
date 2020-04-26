@@ -6,6 +6,11 @@ using Dragonbones.Systems;
 
 namespace Dragonbones.Components
 {
+    /// <summary>
+    /// The generic form of <see cref="IComponentBuffer"/>
+    /// This contains information specific to the component
+    /// </summary>
+    /// <typeparam name="TComponent">The component type being stored</typeparam>
     public interface IComponentBuffer<TComponent> : IComponentBuffer, IEnumerable<TComponent>
         where TComponent : struct, IEquatable<TComponent>
     {
@@ -133,6 +138,8 @@ namespace Dragonbones.Components
         /// Retrieve current value of a component then remove it from the buffer
         /// This only works if the <see cref="TComponent"/>.Equals(<see cref="TComponent"/>); is written so that the items don't need to be completely identical
         /// </summary>
+        /// <param name="systemType">the type of system making the call
+        /// Pop calls are ignored from Render Systems</param>
         /// <param name="value">the component to retrieve and remove</param>
         /// <returns>the updated copy of the component</returns>
         TComponent Pop(SystemType systemType, TComponent value);
@@ -143,6 +150,7 @@ namespace Dragonbones.Components
         /// <param name="systemType">the type of system making the call
         /// Pop calls are ignored from Render Systems</param>
         /// <param name="name">the name associated with the component</param>
+        /// <param name="value">the current value retrieved</param>
         /// <returns>Whether the pop was successful</returns>
         bool TryPopAt(SystemType systemType, string name, out TComponent value);
         /// <summary>
@@ -151,6 +159,7 @@ namespace Dragonbones.Components
         /// <param name="systemType">the type of system making the call
         /// Pop calls are ignored from Render Systems</param>
         /// <param name="id">the ID associated with the component</param>
+        /// <param name="value">the current value retrieved</param>
         /// <returns>Whether the pop was successful</returns>
         bool TryPopAt(SystemType systemType, int id, out TComponent value);
         /// <summary>
@@ -160,7 +169,8 @@ namespace Dragonbones.Components
         /// <param name="systemType">the type of system making the call
         /// Pop calls are ignored from Render Systems</param>
         /// <param name="value">the component to retrieve and remove</param>
+        /// <param name="newValue">the current value retrieved</param>
         /// <returns>Whether the pop was successful</returns>
-        bool TryPop(SystemType type, TComponent value, out TComponent newValue);
+        bool TryPop(SystemType systemType, TComponent value, out TComponent newValue);
     }
 }

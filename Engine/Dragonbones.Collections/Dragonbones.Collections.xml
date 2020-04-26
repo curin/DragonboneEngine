@@ -4,19 +4,605 @@
         <name>Dragonbones.Collections</name>
     </assembly>
     <members>
-        <member name="T:Dragonbones.Collections.IDataBuffer">
+        <member name="T:Dragonbones.Collections.BufferTransactionType">
             <summary>
-            A buffer of data which is used by both Render Systems and Logic Systems
+            This refers to the type of transaction being made to a buffer
             </summary>
         </member>
-        <member name="M:Dragonbones.Collections.IDataBuffer.SwapReadBuffer">
+        <member name="F:Dragonbones.Collections.BufferTransactionType.ReadOnly">
+            <summary>
+            Readonly transactions read from the read buffer and are unable to write
+            </summary>
+        </member>
+        <member name="F:Dragonbones.Collections.BufferTransactionType.WriteRead">
+            <summary>
+            WriteRead transactions read and write to the write buffer
+            </summary>
+        </member>
+        <member name="T:Dragonbones.Collections.DataBuffer`1">
+             <summary>
+             A Databuffer is a multithreaded structure to store data in an array format.
+             The structure is designed to be written to on one thread and read from on another.
+             The write thread can also read, but it will only read what it has recently written.
+            
+             When the write thread is done with a batch of writes it can swap the write buffer to make it read for the read buffer.
+             When the read thread is ready to read it can swap the read buffer pulling the latest buffer flagged ready to read.
+             </summary>
+             <typeparam name="TValue">the type of value stored in the buffer</typeparam>
+        </member>
+        <member name="M:Dragonbones.Collections.DataBuffer`1.#ctor(System.Int32)">
+            <summary>
+            Constructs a data buffer of the specified length.
+            </summary>
+            <param name="length">the length of the buffer</param>
+        </member>
+        <member name="M:Dragonbones.Collections.DataBuffer`1.#ctor(System.Int32,`0)">
+            <summary>
+            Constructs a data buffer of the specified length.
+            </summary>
+            <param name="length">the length of the buffer</param>
+            <param name="initialValue">the value to start each entry at</param>
+        </member>
+        <member name="M:Dragonbones.Collections.DataBuffer`1.#ctor(Dragonbones.Collections.DataBuffer{`0},System.Int32)">
+            <summary>
+            Perform a deep copy of a DataBuffer
+            </summary>
+            <param name="copy">buffer to copy</param>
+            <param name="length">the length of the new buffer</param>
+        </member>
+        <member name="P:Dragonbones.Collections.DataBuffer`1.Item(Dragonbones.Collections.BufferTransactionType,System.Int32)">
+            <summary>
+            Access the data buffer information
+            </summary>
+            <param name="type">Determines how the information can be manipulated and where information is retrieved from</param>
+            <param name="index">the index to retrieve data from</param>
+            <returns>the value at the given index from the corresponding buffer</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.DataBuffer`1.Get(Dragonbones.Collections.BufferTransactionType,System.Int32)">
+            <summary>
+            Retrieve a value from the buffer
+            </summary>
+            <param name="type">the transaction type determines if you pull from the read buffer or the write buffer</param>
+            <param name="index">the index to access</param>
+            <returns>the value at the given index from the corresponding buffer</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.DataBuffer`1.Set(Dragonbones.Collections.BufferTransactionType,System.Int32,`0)">
+            <summary>
+            Sets a value in the buffer at the given index
+            </summary>
+            <param name="type">the transaction type determines how the function may respond
+            Readonly transactions are ignored by set
+            Write only transactions write to the write buffer and will be transferred after the swap write and then swap read are run in that order</param>
+            <param name="index">the index to set</param>
+            <param name="value">the value to set at the index</param>
+        </member>
+        <member name="M:Dragonbones.Collections.DataBuffer`1.GetLongLength">
+            <summary>
+            Gets a 64-bit value that represents the number of entries in the buffer
+            </summary>
+            <returns>the buffer entries count</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.DataBuffer`1.GetLength">
+            <summary>
+            Gets a 32-bit value that represents the number of entries in the buffer
+            </summary>
+            <returns>the buffer entries count</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.DataBuffer`1.CopyTo(Dragonbones.Collections.BufferTransactionType,System.Array,System.Int32)">
+            <summary>
+            Copies buffer contents to an array at the specified index
+            </summary>
+            <param name="type">the transaction type which determines whether the write buffer or read buffer is copied</param>
+            <param name="array">the array to copy to</param>
+            <param name="index">the index to start the copy at</param>
+        </member>
+        <member name="M:Dragonbones.Collections.DataBuffer`1.SwapReadBuffer">
             <summary>
             Swaps the data buffers for rendering
             </summary>
         </member>
-        <member name="M:Dragonbones.Collections.IDataBuffer.SwapWriteBuffer">
+        <member name="M:Dragonbones.Collections.DataBuffer`1.SwapWriteBuffer">
             <summary>
             Swaps the data buffers on finishing of updating
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Collections.DataBuffer`1.GetEnumerator">
+            <summary>Returns an enumerator that iterates through the collection.</summary>
+            <returns>An enumerator that can be used to iterate through the collection.</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.DataBuffer`1.System#Collections#IEnumerable#GetEnumerator">
+            <summary>Returns an enumerator that iterates through a collection.</summary>
+            <returns>An <see cref="T:System.Collections.IEnumerator"></see> object that can be used to iterate through the collection.</returns>
+        </member>
+        <member name="T:Dragonbones.Collections.DoubleDataBuffer`2">
+            <summary>
+            Similar in concept to <see cref="T:Dragonbones.Collections.DataBuffer`1"/> this is meant for multithreaded use.
+            The main difference is that this keeps two lists of data updated in tandem,
+            this implementation is meant to decrease overhead over keeping two data buffers as much of the work can be done together.
+            </summary>
+            <typeparam name="TPrimary">The primary data type stored here</typeparam>
+            <typeparam name="TSecondary">The secondary data type stored here</typeparam>
+        </member>
+        <member name="M:Dragonbones.Collections.DoubleDataBuffer`2.#ctor(System.Int32)">
+            <summary>
+            Constructs a double data buffer of the specified length.
+            </summary>
+            <param name="length">the length of the buffer</param>
+        </member>
+        <member name="M:Dragonbones.Collections.DoubleDataBuffer`2.#ctor(Dragonbones.Collections.DoubleDataBuffer{`0,`1},System.Int32)">
+            <summary>
+            Perform a deep copy of a DoubleDataBuffer
+            </summary>
+            <param name="copy">buffer to copy</param>
+            <param name="length">the length of the new buffer</param>
+        </member>
+        <member name="P:Dragonbones.Collections.DoubleDataBuffer`2.Item(Dragonbones.Collections.BufferTransactionType,System.Int32)">
+            <summary>
+            Access the data buffer information
+            </summary>
+            <param name="type">Determines how the information can be manipulated and where information is retrieved from</param>
+            <param name="index">the index to retrieve data from</param>
+            <returns>the value at the given index from the corresponding buffer</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.DoubleDataBuffer`2.Get(Dragonbones.Collections.BufferTransactionType,System.Int32)">
+            <summary>
+            Retrieve a value from the buffer
+            </summary>
+            <param name="type">the transaction type determines if you pull from the read buffer or the write buffer</param>
+            <param name="index">the index to access</param>
+            <returns>the values at the given index from the corresponding buffer</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.DoubleDataBuffer`2.GetPrimary(Dragonbones.Collections.BufferTransactionType,System.Int32)">
+            <summary>
+            Retrieve a primary value from the buffer
+            </summary>
+            <param name="type">the transaction type determines if you pull from the read buffer or the write buffer</param>
+            <param name="index">the index to access</param>
+            <returns>the primary value at the given index from the corresponding buffer</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.DoubleDataBuffer`2.GetSecondary(Dragonbones.Collections.BufferTransactionType,System.Int32)">
+            <summary>
+            Retrieve a secondary value from the buffer
+            </summary>
+            <param name="type">the transaction type determines if you pull from the read buffer or the write buffer</param>
+            <param name="index">the index to access</param>
+            <returns>the secondary value at the given index from the corresponding buffer</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.DoubleDataBuffer`2.Set(Dragonbones.Collections.BufferTransactionType,System.Int32,`0,`1)">
+            <summary>
+            Sets a value in the buffer at the given index
+            </summary>
+            <param name="type">the transaction type determines how the function may respond
+            Readonly transactions are ignored by set
+            Write only transactions write to the write buffer and will be transferred after the swap write and then swap read are run in that order</param>
+            <param name="index">the index to set</param>
+            <param name="primary">the primary value to set at the index</param>
+            <param name="secondary">the secondary value to set at the index</param>
+        </member>
+        <member name="M:Dragonbones.Collections.DoubleDataBuffer`2.SetPrimary(Dragonbones.Collections.BufferTransactionType,System.Int32,`0)">
+            <summary>
+            Sets a value in the buffer at the given index
+            </summary>
+            <param name="type">the transaction type determines how the function may respond
+            Readonly transactions are ignored by set
+            Write only transactions write to the write buffer and will be transferred after the swap write and then swap read are run in that order</param>
+            <param name="index">the index to set</param>
+            <param name="primary">the primary value to set at the index</param>
+        </member>
+        <member name="M:Dragonbones.Collections.DoubleDataBuffer`2.SetSecondary(Dragonbones.Collections.BufferTransactionType,System.Int32,`1)">
+            <summary>
+            Sets a value in the buffer at the given index
+            </summary>
+            <param name="type">the transaction type determines how the function may respond
+            Readonly transactions are ignored by set
+            Write only transactions write to the write buffer and will be transferred after the swap write and then swap read are run in that order</param>
+            <param name="index">the index to set</param>
+            <param name="secondary">the secondary value to set at the index</param>
+        </member>
+        <member name="M:Dragonbones.Collections.DoubleDataBuffer`2.GetLongLength">
+            <summary>
+            Gets a 64-bit value that represents the number of entries in the buffer
+            </summary>
+            <returns>the buffer entries count</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.DoubleDataBuffer`2.GetLength">
+            <summary>
+            Gets a 32-bit value that represents the number of entries in the buffer
+            </summary>
+            <returns>the buffer entries count</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.DoubleDataBuffer`2.CopyPrimaryTo(Dragonbones.Collections.BufferTransactionType,System.Array,System.Int32)">
+            <summary>
+            Copies primary buffer contents to an array at the specified index
+            </summary>
+            <param name="type">the transaction type which determines whether the write buffer or read buffer is copied</param>
+            <param name="array">the array to copy to</param>
+            <param name="index">the index to start the copy at</param>
+        </member>
+        <member name="M:Dragonbones.Collections.DoubleDataBuffer`2.CopySecondaryTo(Dragonbones.Collections.BufferTransactionType,System.Array,System.Int32)">
+            <summary>
+            Copies secondary buffer contents to an array at the specified index
+            </summary>
+            <param name="type">the transaction type which determines whether the write buffer or read buffer is copied</param>
+            <param name="array">the array to copy to</param>
+            <param name="index">the index to start the copy at</param>
+        </member>
+        <member name="M:Dragonbones.Collections.DoubleDataBuffer`2.SwapReadBuffer">
+            <summary>
+            Swaps the data buffers for rendering
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Collections.DoubleDataBuffer`2.SwapWriteBuffer">
+            <summary>
+            Swaps the data buffers on finishing of updating
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Collections.DoubleDataBuffer`2.GetEnumerator">
+            <summary>Returns an enumerator that iterates through the collection.</summary>
+            <returns>An enumerator that can be used to iterate through the collection.</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.DoubleDataBuffer`2.System#Collections#IEnumerable#GetEnumerator">
+            <summary>Returns an enumerator that iterates through a collection.</summary>
+            <returns>An <see cref="T:System.Collections.IEnumerator"></see> object that can be used to iterate through the collection.</returns>
+        </member>
+        <member name="T:Dragonbones.Collections.IDataBuffer">
+            <summary>
+            A buffer designed for multi-threaded reading and writing
+            where one thread reads and the other thread writes
+            The write thread may also need to read what it has written
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Collections.IDataBuffer.SwapReadBuffer">
+            <summary>
+            Swaps the data buffer for reading
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Collections.IDataBuffer.SwapWriteBuffer">
+            <summary>
+            Swaps the data buffer for writing
+            Should be done when finished writing
+            </summary>
+        </member>
+        <member name="T:Dragonbones.Collections.LargeValueBuffer`1">
+            <summary>
+            A <see cref="T:Dragonbones.Collections.IDataBuffer"/> designed to store large single values for multi-threaded applications
+            </summary>
+            <typeparam name="TValue">The value stored</typeparam>
+        </member>
+        <member name="M:Dragonbones.Collections.LargeValueBuffer`1.#ctor">
+            <summary>
+            Default Constructor
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Collections.LargeValueBuffer`1.#ctor(`0)">
+            <summary>
+            Construct the Value buffer with a default Value
+            </summary>
+            <param name="initialValue">the value to start with</param>
+        </member>
+        <member name="P:Dragonbones.Collections.LargeValueBuffer`1.Item(Dragonbones.Collections.BufferTransactionType)">
+            <summary>
+            Accesses the value
+            </summary>
+            <param name="type">the transaction type which determines which part of the buffer is accessed</param>
+            <returns>the value stored</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.LargeValueBuffer`1.Set(Dragonbones.Collections.BufferTransactionType,`0)">
+            <summary>
+            Set the value stored in the buffer
+            </summary>
+            <param name="type">the transaction type, Set cannot be done in a readonly transaction</param>
+            <param name="value">the value to set</param>
+        </member>
+        <member name="M:Dragonbones.Collections.LargeValueBuffer`1.SwapReadBuffer">
+            <summary>
+            Swaps the data buffer for reading
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Collections.LargeValueBuffer`1.SwapWriteBuffer">
+            <summary>
+            Swaps the data buffer for writing
+            Should be done when finished writing
+            </summary>
+        </member>
+        <member name="T:Dragonbones.Collections.NamedDataBuffer`1">
+            <summary>
+            A Data buffer which takes in a name for every element
+            and gives back an index rather than needing an index to be assigned ahead of time
+            Names must be unique between values if not the values will be overwritten at write.
+            </summary>
+            <typeparam name="TValue"></typeparam>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Constructs a NamedDataBuffer with the initial capacity
+            </summary>
+            <param name="initialCapacity">the starting size of the buffer</param>
+            <param name="hashSize">the size of the hashtable in the buffer</param>
+        </member>
+        <member name="P:Dragonbones.Collections.NamedDataBuffer`1.Item(Dragonbones.Collections.BufferTransactionType,System.Int32)">
+            <summary>
+            Accesses a specified value at a given ID for a given transaction type
+            (Set operations do not work for ReadOnly transactions)
+            </summary>
+            <param name="type">the type of transaction</param>
+            <param name="id">the ID associated with the value</param>
+            <returns>the value associated with the ID</returns>
+        </member>
+        <member name="P:Dragonbones.Collections.NamedDataBuffer`1.Item(Dragonbones.Collections.BufferTransactionType,System.String)">
+            <summary>
+            Accesses a specified value at a given name for a given transaction type
+            (Set operations do not work for ReadOnly transactions)
+            </summary>
+            <param name="type">the type of transaction</param>
+            <param name="name">the name associated with the value</param>
+            <returns>the value associated with the name</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.Add(Dragonbones.Collections.BufferTransactionType,System.String,`0)">
+            <summary>
+            Add a value to the buffer
+            (only works in WriteRead transaction types)
+            </summary>
+            <param name="type">the transaction type</param>
+            <param name="name">the name of the value</param>
+            <param name="value">the value</param>
+            <returns>the ID associated with the name</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.TryGet(Dragonbones.Collections.BufferTransactionType,System.String,`0@)">
+            <summary>
+            Attempt to get a value by name
+            </summary>
+            <param name="type">The type of transaction this call represents, changes what buffer the data is pulled from</param>
+            <param name="name">the name of the value</param>
+            <param name="value">the returned value</param>
+            <returns>whether the name was found</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.TryGet(Dragonbones.Collections.BufferTransactionType,System.Int32,`0@)">
+            <summary>
+            Attempt to get a value by ID
+            </summary>
+            <param name="type">The type of transaction this call represents, changes what buffer the data is pulled from</param>
+            <param name="id">the ID of the value</param>
+            <param name="value">the returned value</param>
+            <returns>Whether the ID was found</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.Get(Dragonbones.Collections.BufferTransactionType,System.String)">
+            <summary>
+            Retrieve a value by name
+            </summary>
+            <param name="type">the type of transaction being made, this affects what buffer the data comes from</param>
+            <param name="name">the name of the value</param>
+            <returns>the value associated with the name</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.Get(Dragonbones.Collections.BufferTransactionType,System.Int32)">
+            <summary>
+            Retrieve a value by ID
+            </summary>
+            <param name="type">the type of transaction being made, this affects what buffer the data comes from</param>
+            <param name="id">the ID associated with the value</param>
+            <returns>the value associated with the ID</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.Set(Dragonbones.Collections.BufferTransactionType,System.Int32,`0)">
+            <summary>
+            Sets the value in the buffer associated with the given id
+            (only works in WriteRead transaction types)
+            </summary>
+            <param name="type">The transaction type</param>
+            <param name="id">the id associated with the value to replace</param>
+            <param name="value">the new value to set</param>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.Set(Dragonbones.Collections.BufferTransactionType,System.String,`0)">
+            <summary>
+            Sets the value in the buffer associated with the given name
+            (only works in WriteRead transaction types)
+            If a value is not found, the value is added
+            </summary>
+            <param name="type">the transaction type</param>
+            <param name="name">the name associated with the value to replace</param>
+            <param name="value">the new value</param>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.ContainsID(Dragonbones.Collections.BufferTransactionType,System.Int32)">
+            <summary>
+            Does this buffer contain a value with the associated ID
+            </summary>
+            <param name="type">the transaction type which determines where the information is pulled from</param>
+            <param name="id">the ID associated with the value</param>
+            <returns>Whether the value associated with the ID is within the buffer</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.ContainsName(Dragonbones.Collections.BufferTransactionType,System.String)">
+            <summary>
+            Does this buffer contain a value with the associated name
+            </summary>
+            <param name="type">the transaction type which determines where the information is pulled from</param>
+            <param name="name">the name associated with the value</param>
+            <returns>Whether the value associated with the name is within the buffer</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.Contains(Dragonbones.Collections.BufferTransactionType,`0)">
+            <summary>
+            Does this buffer contain a value
+            </summary>
+            <param name="type">the transaction type which determines where the information is pulled from</param>
+            <param name="value">the value to check</param>
+            <returns>Whether the value is within the buffer</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.GetIDFromName(Dragonbones.Collections.BufferTransactionType,System.String)">
+            <summary>
+            Retrieve the ID associated with the given name
+            </summary>
+            <param name="type">the transaction type which determines where the information is pulled from</param>
+            <param name="name">the name associated with the ID</param>
+            <returns>The ID associated the given name or -1 if not found</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.GetID(Dragonbones.Collections.BufferTransactionType,`0)">
+            <summary>
+            Retrieve the ID associated with the given value
+            </summary>
+            <param name="type">the transaction type which determines where the information is pulled from</param>
+            <param name="value">the value associated with the ID</param>
+            <returns>The ID associated the given value or -1 if not found</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.GetNameFromID(Dragonbones.Collections.BufferTransactionType,System.Int32)">
+            <summary>
+            Gets the name associated with the given ID
+            </summary>
+            <param name="type">the transaction type which determines where the information is pulled from</param>
+            <param name="id">the id associated with the name</param>
+            <returns>the name associated with the id</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.GetName(Dragonbones.Collections.BufferTransactionType,`0)">
+            <summary>
+            Gets the name associated with a value
+            </summary>
+            <param name="type">the transaction type which determines where the information is pulled from</param>
+            <param name="value">the value</param>
+            <returns>the name associated with the value</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.RemoveAt(Dragonbones.Collections.BufferTransactionType,System.String)">
+            <summary>
+            Remove a value associated with the given name from the buffer
+            </summary>
+            <param name="type">the transaction type, Readonly transactions cannot remove values</param>
+            <param name="name">the name associated with the value to remove</param>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.RemoveAt(Dragonbones.Collections.BufferTransactionType,System.Int32)">
+            <summary>
+            Remove a value associated with the given ID from the buffer
+            </summary>
+            <param name="type">the transaction type, Readonly transactions cannot remove values</param>
+            <param name="id">the ID associated with the value to remove</param>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.Remove(Dragonbones.Collections.BufferTransactionType,`0)">
+            <summary>
+            Remove a value from the buffer
+            </summary>
+            <param name="type">the transaction type, Readonly transactions cannot remove values</param>
+            <param name="value">the value to remove</param>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.Remove(Dragonbones.Collections.BufferTransactionType,Dragonbones.Collections.NamedDataBuffer{`0}.Entry@)">
+            <summary>
+            Removes an entry from the buffer
+            </summary>
+            <param name="type">the transaction type, Readonly transactions cannot remove values</param>
+            <param name="ent">the entry to remove</param>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.PopAt(Dragonbones.Collections.BufferTransactionType,System.Int32)">
+            <summary>
+            Retrieves a value then removes it from the buffer
+            </summary>
+            <param name="type">the transaction type, Readonly transactions cannot pop</param>
+            <param name="id">the ID of the value to pop</param>
+            <returns>the value removed from the buffer</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.PopAt(Dragonbones.Collections.BufferTransactionType,System.String)">
+            <summary>
+            Retrieves a value then removes it from the buffer
+            </summary>
+            <param name="type">the transaction type, Readonly transactions cannot pop</param>
+            <param name="name">the name of the value to pop</param>
+            <returns>the value removed from the buffer</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.Pop(Dragonbones.Collections.BufferTransactionType,`0)">
+            <summary>
+            Retrieves a value then removes it from the buffer
+            </summary>
+            <param name="type">the transaction type, Readonly transactions cannot pop</param>
+            <param name="value">the value to pop</param>
+            <returns>the current value removed from the buffer</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.TryPopAt(Dragonbones.Collections.BufferTransactionType,System.Int32,`0@)">
+            <summary>
+            Attempts to Retrieve a value then removes it from the buffer
+            </summary>
+            <param name="type">the transaction type, Readonly transactions cannot pop</param>
+            <param name="id">the ID of the value to pop</param>
+            <param name="value">the value removed</param>
+            <returns>Whether the pop was successful</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.TryPopAt(Dragonbones.Collections.BufferTransactionType,System.String,`0@)">
+            <summary>
+            Attempts to Retrieve a value then removes it from the buffer
+            </summary>
+            <param name="type">the transaction type, Readonly transactions cannot pop</param>
+            <param name="name">the name of the value to pop</param>
+            <param name="value">the value removed</param>
+            <returns>Whether the pop was successful</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.TryPop(Dragonbones.Collections.BufferTransactionType,`0,`0@)">
+            <summary>
+            Attempts to Retrieve a value then removes it from the buffer
+            </summary>
+            <param name="type">the transaction type, Readonly transactions cannot pop</param>
+            <param name="value">the value to removed</param>
+            <param name="newValue">the current value that was removed</param>
+            <returns>Whether the pop was successful</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.Clear(Dragonbones.Collections.BufferTransactionType)">
+            <summary>
+            Clears the Buffer
+            </summary>
+            <param name="type">the transaction type, Readonly transactions cannot clear</param>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.FindEntry(Dragonbones.Collections.BufferTransactionType,System.String,System.Tuple{`0,Dragonbones.Collections.NamedDataBuffer{`0}.Entry}@)">
+            <summary>
+            Find an entry of the given name
+            </summary>
+            <param name="type">the transaction type, which determines where the data comes from</param>
+            <param name="name">the name to find</param>
+            <param name="valueEntry">the returned entry and value pair</param>
+            <returns>the ID of the entry</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.FindEntry(Dragonbones.Collections.BufferTransactionType,System.String,Dragonbones.Collections.NamedDataBuffer{`0}.Entry@)">
+            <summary>
+            Find an entry of the given name
+            </summary>
+            <param name="type">the transaction type, which determines where the data comes from</param>
+            <param name="name">the name to find</param>
+            <param name="entry">the returned entry</param>
+            <returns>the ID of the entry</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.FindEntry(Dragonbones.Collections.BufferTransactionType,`0,System.Tuple{`0,Dragonbones.Collections.NamedDataBuffer{`0}.Entry}@)">
+            <summary>
+            Find an entry of the given value
+            </summary>
+            <param name="type">the transaction type which determines where the data comes from</param>
+            <param name="value">the value to find</param>
+            <param name="valueEntry">the returned entry and value pair</param>
+            <returns>the ID of the entry</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.Expand(System.Int32)">
+            <summary>
+            Expands the size of the buffer
+            </summary>
+            <param name="newCapacity">the new capacity of the buffer</param>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.GetHashIndex(System.Int32)">
+            <summary>
+            Get the hash index of a particular hashcode
+            </summary>
+            <param name="hashCode">the hash code</param>
+            <returns>the index in the hashtable for the hashcode to be placed in</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.SwapReadBuffer">
+            <summary>
+            Swaps the data buffers for rendering
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.SwapWriteBuffer">
+            <summary>
+            Swaps the data buffers on finishing of updating
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.GetEnumerator">
+            <summary>Returns an enumerator that iterates through the collection.</summary>
+            <returns>An enumerator that can be used to iterate through the collection.</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.System#Collections#IEnumerable#GetEnumerator">
+            <summary>Returns an enumerator that iterates through a collection.</summary>
+            <returns>An <see cref="T:System.Collections.IEnumerator"></see> object that can be used to iterate through the collection.</returns>
+        </member>
+        <member name="T:Dragonbones.Collections.NamedDataBuffer`1.Entry">
+            <summary>
+            Represents an entry in the hashtable for the named data buffer
             </summary>
         </member>
         <member name="T:Dragonbones.Collections.NamedDataRegistry`1">
@@ -106,7 +692,14 @@
             <param name="value">the value</param>
             <returns>if the value was found</returns>
         </member>
-        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.GetID(System.String)">
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.ContainsID(System.Int32)">
+            <summary>
+            Does this registry contain a value with the given ID
+            </summary>
+            <param name="id">the ID</param>
+            <returns>Whether a value is associated with the given ID</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.GetIDFromName(System.String)">
             <summary>
             Get the ID associated with a name
             </summary>
@@ -120,33 +713,19 @@
             <param name="value">the value</param>
             <returns>the ID associated with the value or -1 if not found</returns>
         </member>
-        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.ContainsID(System.Int32)">
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.GetNameFromID(System.Int32)">
             <summary>
-            Does this registry contain a value with the given ID
+            Get the name associated with an ID
             </summary>
-            <param name="id">the ID</param>
-            <returns>Whether a value is associated with the given ID</returns>
+            <param name="id">the ID associated with the value</param>
+            <returns>the name associated with the value</returns>
         </member>
-        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.PopAt(System.String)">
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.GetName(`0)">
             <summary>
-            Remove the value at the given name and return the value
+            Get the name associated with a value
             </summary>
-            <param name="name">the name of the value to remove</param>
-            <returns>the value of the given name</returns>
-        </member>
-        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.PopAt(System.Int32)">
-            <summary>
-            Remove the value at the given ID and return the value
-            </summary>
-            <param name="id">the ID of the value to remove</param>
-            <returns>the value associated with the given ID</returns>
-        </member>
-        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.Pop(`0)">
-            <summary>
-            Find the given value and remove it from the registry
-            </summary>
-            <param name="value">value to remove</param>
-            <returns>value found in the registry</returns>
+            <param name="value">the value</param>
+            <returns>the name associated with the value</returns>
         </member>
         <member name="M:Dragonbones.Collections.NamedDataRegistry`1.RemoveAt(System.String)">
             <summary>
@@ -171,6 +750,27 @@
             Remove a given entry
             </summary>
             <param name="ent">the entry to remove</param>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.PopAt(System.String)">
+            <summary>
+            Remove the value at the given name and return the value
+            </summary>
+            <param name="name">the name of the value to remove</param>
+            <returns>the value of the given name</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.PopAt(System.Int32)">
+            <summary>
+            Remove the value at the given ID and return the value
+            </summary>
+            <param name="id">the ID of the value to remove</param>
+            <returns>the value associated with the given ID</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataRegistry`1.Pop(`0)">
+            <summary>
+            Find the given value and remove it from the registry
+            </summary>
+            <param name="value">value to remove</param>
+            <returns>value found in the registry</returns>
         </member>
         <member name="M:Dragonbones.Collections.NamedDataRegistry`1.FindEntry(System.String,Dragonbones.Collections.NamedDataRegistry{`0}.Entry@)">
             <summary>
@@ -220,6 +820,48 @@
         <member name="T:Dragonbones.Collections.NamedDataRegistry`1.Enumerator">
             <summary>
             The enumerator for <see cref="T:Dragonbones.Collections.NamedDataRegistry`1"/>
+            </summary>
+        </member>
+        <member name="T:Dragonbones.Collections.ValueBuffer`1">
+            <summary>
+            A <see cref="T:Dragonbones.Collections.IDataBuffer"/> designed to store small single values for multi-threaded applications
+            </summary>
+            <typeparam name="TValue">The value stored</typeparam>
+        </member>
+        <member name="M:Dragonbones.Collections.ValueBuffer`1.#ctor">
+            <summary>
+            Default Constructor
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Collections.ValueBuffer`1.#ctor(`0)">
+            <summary>
+            Construct the Value buffer with a default Value
+            </summary>
+            <param name="initialValue">the value to start with</param>
+        </member>
+        <member name="P:Dragonbones.Collections.ValueBuffer`1.Item(Dragonbones.Collections.BufferTransactionType)">
+            <summary>
+            Accesses the value
+            </summary>
+            <param name="type">the transaction type which determines which part of the buffer is accessed</param>
+            <returns>the value stored</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.ValueBuffer`1.Set(Dragonbones.Collections.BufferTransactionType,`0)">
+            <summary>
+            Set the value stored in the buffer
+            </summary>
+            <param name="type">the transaction type, Set cannot be done in a readonly transaction</param>
+            <param name="value">the value to set</param>
+        </member>
+        <member name="M:Dragonbones.Collections.ValueBuffer`1.SwapReadBuffer">
+            <summary>
+            Swaps the data buffer for reading
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Collections.ValueBuffer`1.SwapWriteBuffer">
+            <summary>
+            Swaps the data buffer for writing
+            Should be done when finished writing
             </summary>
         </member>
     </members>

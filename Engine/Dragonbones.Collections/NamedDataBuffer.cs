@@ -62,7 +62,7 @@ namespace Dragonbones.Collections
         /// (Set operations do not work for ReadOnly transactions)
         /// </summary>
         /// <param name="type">the type of transaction</param>
-        /// <param name="id">the name associated with the value</param>
+        /// <param name="name">the name associated with the value</param>
         /// <returns>the value associated with the name</returns>
         public TValue this[BufferTransactionType type, string name]
         {

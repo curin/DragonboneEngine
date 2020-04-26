@@ -11,7 +11,7 @@ namespace ConsoleTest
     {
         private static void Main()
         {
-            SyncTest.Run(1);
+            SyncTest.Run();
             CollectionTest.Run();
             Console.ReadLine();
             SchedulingTest SchedTest = new SchedulingTest();

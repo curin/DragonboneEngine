@@ -5,13 +5,13 @@ using System.Threading.Tasks;
 
 namespace ConsoleTest
 {
-    public class SyncTest
+    public static class SyncTest
     {
-        public static int[][] Arrays;
-        public static bool[][] DirtyMarkers = new bool[2][];
-        public static Queue<int>[] DirtyLists = new Queue<int>[2];
+        private static int[][] Arrays;
+        private static bool[][] DirtyMarkers = new bool[2][];
+        private static Queue<int>[] DirtyLists = new Queue<int>[2];
 
-        public static void Run(int iterations)
+        public static void Run()
         {
             Arrays = new int[3][];
             for (int i = 0; i < 3; i++)

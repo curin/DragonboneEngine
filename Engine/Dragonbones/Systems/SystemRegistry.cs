@@ -107,7 +107,7 @@ namespace Dragonbones.Systems
         /// <inheritdoc />
         public int GetID(string systemName)
         {
-            return _systems.GetID(systemName);
+            return _systems.GetIDFromName(systemName);
         }
 
         /// <inheritdoc />
@@ -115,7 +115,7 @@ namespace Dragonbones.Systems
         {
             if (system == null)
                 throw new ArgumentNullException(nameof(system));
-            return _systems.GetID(system.SystemInfo.Name);
+            return _systems.GetIDFromName(system.SystemInfo.Name);
         }
 
         /// <inheritdoc />

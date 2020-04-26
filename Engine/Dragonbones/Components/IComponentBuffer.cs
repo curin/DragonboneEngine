@@ -79,7 +79,7 @@ namespace Dragonbones.Components
         /// </summary>
         /// <param name="systemType">the type of system making the call
         /// Clear calls are ignored from Render Systems</param>
-        void Clear(SystemType type);
+        void Clear(SystemType systemType);
 
     }
 }
