@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Dragonbones.Collections
@@ -47,21 +48,45 @@ namespace Dragonbones.Collections
         {
             if (length == -1)
                 length = copy.GetLength();
-            for (int i = 0; i < 3; i++)
-            {
-                _value1s[i] = new TPrimary[length];
-                copy._value1s[i].CopyTo(_value1s[i], 0);
 
-                _value2s[i] = new TSecondary[length];
-                copy._value2s[i].CopyTo(_value2s[i], 0);
+            if (length > copy._value1s.Length)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    _value1s[i] = new TPrimary[length];
+                    copy._value1s[i].CopyTo(_value1s[i], 0);
+
+                    _value2s[i] = new TSecondary[length];
+                    copy._value2s[i].CopyTo(_value2s[i], 0);
+                }
+
+                for (int i = 0; i < 2; i++)
+                {
+                    _dirtyMarks[i] = new bool[length];
+                    copy._dirtyMarks[i].CopyTo(_dirtyMarks[i], 0);
+
+                    _dirtyEntries[i] = new Queue<int>(copy._dirtyEntries[i]);
+                }
             }
-
-            for (int i = 0; i < 2; i++)
+            else
             {
-                _dirtyMarks[i] = new bool[length];
-                copy._dirtyMarks[i].CopyTo(_dirtyMarks[i], 0);
+                for (int i = 0; i < 3; i++)
+                {
+                    _value1s[i] = new TPrimary[length];
+                    Buffer.BlockCopy(copy._value1s[i],0,_value1s[i], 0, length);
 
-                _dirtyEntries[i] = new Queue<int>(copy._dirtyEntries[i]);
+                    _value2s[i] = new TSecondary[length];
+                    Buffer.BlockCopy(copy._value2s[i], 0, _value2s[i], 0, length);
+                }
+
+                for (int i = 0; i < 2; i++)
+                {
+                    _dirtyMarks[i] = new bool[length];
+                    Buffer.BlockCopy(copy._dirtyMarks[i], 0, _dirtyMarks[i], 0, length);
+
+                    foreach (var entry in copy._dirtyEntries[i].Where(entry => entry < length))
+                        _dirtyEntries[i].Enqueue(entry);
+                }
             }
         }
 

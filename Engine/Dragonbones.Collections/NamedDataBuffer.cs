@@ -71,6 +71,16 @@ namespace Dragonbones.Collections
         }
 
         /// <summary>
+        /// Returns the count of the buffer for the transaction type
+        /// </summary>
+        /// <param name="type">the transaction type which determines which part of the buffer the information is from</param>
+        /// <returns>the count of values stored in the buffer</returns>
+        public int Count(BufferTransactionType type)
+        {
+            return _count[type];
+        }
+
+        /// <summary>
         /// Add a value to the buffer
         /// (only works in WriteRead transaction types)
         /// </summary>
@@ -662,10 +672,33 @@ namespace Dragonbones.Collections
         }
 
         /// <summary>
+        /// Constricts the size of the buffer to as small as possible
+        /// </summary>
+        /// <param name="newCapacity">the target capacity, if the buffer will shrink as close to this as possible non-destructively.</param>
+        public void Constrict(int newCapacity)
+        {
+            while (_freeIDs.Contains(_top - 1))
+                _top--;
+
+            for (int i = 0; i < _freeIDs.Count; i++)
+            {
+                int val = _freeIDs.Dequeue();
+                if (val < _top)
+                    _freeIDs.Enqueue(val);
+            }
+
+            if (newCapacity < _top)
+                newCapacity = _top;
+
+            _buffer = new DoubleDataBuffer<TValue, Entry>(_buffer, newCapacity);
+            _capacity = newCapacity;
+        }
+
+        /// <summary>
         /// Expands the size of the buffer
         /// </summary>
         /// <param name="newCapacity">the new capacity of the buffer</param>
-        private void Expand(int newCapacity)
+        public void Expand(int newCapacity)
         {
             _buffer = new DoubleDataBuffer<TValue, Entry>(_buffer, newCapacity);
             _capacity = newCapacity;

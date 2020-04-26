@@ -19,10 +19,10 @@
         <member name="P:Dragonbones.Components.IComponentBuffer.BufferID">
             <summary>
             A ID assigned by the system to this Buffer
-            Should be assigned by SetTypeID function
+            Should be assigned by SetBufferID function
             </summary>
         </member>
-        <member name="M:Dragonbones.Components.IComponentBuffer.SetTypeID(System.Int32)">
+        <member name="M:Dragonbones.Components.IComponentBuffer.SetBufferID(System.Int32)">
             <summary>
             Sets the BufferID field
             Used by the system to set the buffer's ID

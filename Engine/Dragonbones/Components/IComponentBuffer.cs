@@ -20,7 +20,7 @@ namespace Dragonbones.Components
         string TypeName { get; }
         /// <summary>
         /// A ID assigned by the system to this Buffer
-        /// Should be assigned by SetTypeID function
+        /// Should be assigned by SetBufferID function
         /// </summary>
         int BufferID { get; }
         /// <summary>
@@ -29,15 +29,26 @@ namespace Dragonbones.Components
         /// !!! DO NOT USE THIS FUNCTION !!!
         /// </summary>
         /// <param name="id">The ID to set to this buffer</param>
-        void SetTypeID(int id);
+        void SetBufferID(int id);
         /// <summary>
-        /// The number of components stored for rendering
+        /// Gets the count of entries in the buffer
         /// </summary>
-        int RenderCount { get; }
+        /// <param name="systemType">the type of system making the call which affects where in the buffer the data is retrieved</param>
+        /// <returns>the count of entries in the buffer from the perspective of the system</returns>
+
+        int Count(SystemType systemType);
+
         /// <summary>
-        /// The number of components stored in the Logic portion of the buffer
+        /// Attempts to shrink the buffer to a new capacity.
+        /// If it cannot it will shrink as small as it can
         /// </summary>
-        int LogicCount { get; }
+        /// <param name="newCapacity">the capacity to attempt to shrink to</param>
+        void Constrict(int newCapacity);
+        /// <summary>
+        /// Expands the buffer to the new capacity
+        /// </summary>
+        /// <param name="newCapacity">the capacity to expand to</param>
+        void Expand(int newCapacity);
 
         /// <summary>
         /// Checks if there is a stored component associated with the given ID

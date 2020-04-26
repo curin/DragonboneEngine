@@ -34,10 +34,11 @@ namespace Dragonbones.Components
         /// <summary>
         /// Adds a component to the buffer
         /// </summary>
+        /// <param name="systemType">the type of system making the call, Render systems cannot add components</param>
         /// <param name="name">the name of the component I suggest something like {entityName}.{ComponentType}#</param>
         /// <param name="value">the value to store</param>
         /// <returns>the id associated with the value to store</returns>
-        int Add(string name, TComponent value);
+        int Add(SystemType systemType, string name, TComponent value);
 
         /// <summary>
         /// Attempts to retrieve a component for a system
