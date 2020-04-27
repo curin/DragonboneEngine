@@ -74,9 +74,9 @@ namespace ConsoleTest
             }
             processTimer.Stop();
 
-            Console.WriteLine("Total Time to Add : " + processTimer.ElapsedSeconds);
-            Console.WriteLine("Average Time to Add : " + averageTime);
-            Console.WriteLine("Extrapolated Time to Add : " + (averageTime * systems.Length));
+            Console.WriteLine("Total Time to Register : " + processTimer.ElapsedSeconds);
+            Console.WriteLine("Average Time to Register : " + averageTime);
+            Console.WriteLine("Extrapolated Time to Register : " + (averageTime * systems.Length));
             Console.WriteLine("Extrapolated Time without nonTypes : " + (averageTime * typeCount));
             processTimer.Reset();
 
@@ -114,9 +114,9 @@ namespace ConsoleTest
             }
             processTimer.Stop();
 
-            Console.WriteLine("Total Time to Add : " + processTimer.ElapsedSeconds);
-            Console.WriteLine("Average Time to Add : " + averageTime);
-            Console.WriteLine("Extrapolated Time to Add : " + (averageTime * systems.Length));
+            Console.WriteLine("Total Time to Register : " + processTimer.ElapsedSeconds);
+            Console.WriteLine("Average Time to Register : " + averageTime);
+            Console.WriteLine("Extrapolated Time to Register : " + (averageTime * systems.Length));
             Console.WriteLine("Extrapolated Time without nonTypes : " + (averageTime * typeCount));
             processTimer.Reset();
 
@@ -153,7 +153,7 @@ namespace ConsoleTest
             Console.ReadLine();
 
             Console.WriteLine("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
-            Console.WriteLine("Test 4 - Remove Individually and Add One at a time");
+            Console.WriteLine("Test 4 - Remove Individually and Register One at a time");
 
             processTimer.Start();
 

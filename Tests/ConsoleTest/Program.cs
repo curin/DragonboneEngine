@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
 using Dragonbones;
+using Dragonbones.Entities;
 using Dragonbones.Systems;
 
 namespace ConsoleTest
@@ -11,6 +12,7 @@ namespace ConsoleTest
     {
         private static void Main()
         {
+            EntityTest.Run(100000, 10000);
             SyncTest.Run();
             CollectionTest.Run();
             Console.ReadLine();

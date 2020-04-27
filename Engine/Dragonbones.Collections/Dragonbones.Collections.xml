@@ -76,6 +76,16 @@
             <param name="index">the index to set</param>
             <param name="value">the value to set at the index</param>
         </member>
+        <member name="M:Dragonbones.Collections.DataBuffer`1.ShiftData(Dragonbones.Collections.BufferTransactionType,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Shifts a section of data in the array
+            This does not work for readonly transactions
+            </summary>
+            <param name="type">the type of transaction which affects what data is affected</param>
+            <param name="startIndex">the index to start the shift from</param>
+            <param name="length">the number of elements to move</param>
+            <param name="shiftTo">the index to shift to</param>
+        </member>
         <member name="M:Dragonbones.Collections.DataBuffer`1.GetLongLength">
             <summary>
             Gets a 64-bit value that represents the number of entries in the buffer
@@ -128,6 +138,21 @@
             Constructs a double data buffer of the specified length.
             </summary>
             <param name="length">the length of the buffer</param>
+        </member>
+        <member name="M:Dragonbones.Collections.DoubleDataBuffer`2.#ctor(System.Int32,`0,`1)">
+            <summary>
+            Constructs a double data buffer of the specified length.
+            </summary>
+            <param name="length">the length of the buffer</param>
+            <param name="initialPrimary">The initial value for the primary buffer</param>
+            <param name="initialSecondary">the initial value for the secondary buffer</param>
+        </member>
+        <member name="M:Dragonbones.Collections.DoubleDataBuffer`2.#ctor(System.Int32,`0)">
+            <summary>
+            Constructs a double data buffer of the specified length.
+            </summary>
+            <param name="length">the length of the buffer</param>
+            <param name="initialPrimary">The initial value for the primary buffer</param>
         </member>
         <member name="M:Dragonbones.Collections.DoubleDataBuffer`2.#ctor(Dragonbones.Collections.DoubleDataBuffer{`0,`1},System.Int32)">
             <summary>
@@ -237,6 +262,16 @@
             Swaps the data buffers on finishing of updating
             </summary>
         </member>
+        <member name="M:Dragonbones.Collections.DoubleDataBuffer`2.ShiftData(Dragonbones.Collections.BufferTransactionType,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Shifts a section of data in the array
+            This does not work for readonly transactions
+            </summary>
+            <param name="type">the type of transaction which affects what data is affected</param>
+            <param name="startIndex">the index to start the shift from</param>
+            <param name="length">the number of elements to move</param>
+            <param name="shiftTo">the index to shift to</param>
+        </member>
         <member name="M:Dragonbones.Collections.DoubleDataBuffer`2.GetEnumerator">
             <summary>Returns an enumerator that iterates through the collection.</summary>
             <returns>An enumerator that can be used to iterate through the collection.</returns>
@@ -337,6 +372,13 @@
             <param name="type">the type of transaction</param>
             <param name="name">the name associated with the value</param>
             <returns>the value associated with the name</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.Count(Dragonbones.Collections.BufferTransactionType)">
+            <summary>
+            Returns the count of the buffer for the transaction type
+            </summary>
+            <param name="type">the transaction type which determines which part of the buffer the information is from</param>
+            <returns>the count of values stored in the buffer</returns>
         </member>
         <member name="M:Dragonbones.Collections.NamedDataBuffer`1.Add(Dragonbones.Collections.BufferTransactionType,System.String,`0)">
             <summary>
@@ -569,6 +611,12 @@
             <param name="valueEntry">the returned entry and value pair</param>
             <returns>the ID of the entry</returns>
         </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.Constrict(System.Int32)">
+            <summary>
+            Constricts the size of the buffer to as small as possible
+            </summary>
+            <param name="newCapacity">the target capacity, if the buffer will shrink as close to this as possible non-destructively.</param>
+        </member>
         <member name="M:Dragonbones.Collections.NamedDataBuffer`1.Expand(System.Int32)">
             <summary>
             Expands the size of the buffer
@@ -603,6 +651,11 @@
         <member name="T:Dragonbones.Collections.NamedDataBuffer`1.Entry">
             <summary>
             Represents an entry in the hashtable for the named data buffer
+            </summary>
+        </member>
+        <member name="T:Dragonbones.Collections.NamedDataBuffer`1.Enumerator">
+            <summary>
+            The enumerator for <see cref="T:Dragonbones.Collections.NamedDataBuffer`1"/>
             </summary>
         </member>
         <member name="T:Dragonbones.Collections.NamedDataRegistry`1">

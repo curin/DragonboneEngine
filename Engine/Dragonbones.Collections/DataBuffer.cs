@@ -16,7 +16,6 @@ namespace Dragonbones.Collections
     /// </summary>
     /// <typeparam name="TValue">the type of value stored in the buffer</typeparam>
     public class DataBuffer<TValue> : IDataBuffer, IEnumerable<TValue>
-        where TValue: struct
     {
         /// <summary>
         /// Constructs a data buffer of the specified length.
@@ -123,6 +122,25 @@ namespace Dragonbones.Collections
             if (_dirtyMarks[0][index]) return;
             _dirtyMarks[0][index] = true;
             _dirtyEntries[0].Enqueue(index);
+        }
+
+        /// <summary>
+        /// Shifts a section of data in the array
+        /// This does not work for readonly transactions
+        /// </summary>
+        /// <param name="type">the type of transaction which affects what data is affected</param>
+        /// <param name="startIndex">the index to start the shift from</param>
+        /// <param name="length">the number of elements to move</param>
+        /// <param name="shiftTo">the index to shift to</param>
+        public void ShiftData(BufferTransactionType type, int startIndex, int length, int shiftTo)
+        {
+            if (type == BufferTransactionType.ReadOnly)
+                return;
+            TValue[] temp = new TValue[length];
+
+            Array.Copy(_values[(int)type], startIndex, temp, 0, length);
+
+            Array.Copy(temp, 0, _values[(int)type], shiftTo, length);
         }
 
         /// <summary>

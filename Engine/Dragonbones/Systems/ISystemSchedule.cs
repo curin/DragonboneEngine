@@ -21,7 +21,7 @@ namespace Dragonbones.Systems
         /// <returns>if thereare more systems to run</returns>
         ScheduleResult NextSystem(int systemLaneID, out SystemInfo system);
         /// <summary>
-        /// Add the next system to the schedule
+        /// Register the next system to the schedule
         /// </summary>
         /// <param name="systemBatch">the batch of systems</param>
         void Add( SystemInfo systemBatch);

@@ -40,6 +40,58 @@ namespace Dragonbones.Collections
         }
 
         /// <summary>
+        /// Constructs a double data buffer of the specified length.
+        /// </summary>
+        /// <param name="length">the length of the buffer</param>
+        /// <param name="initialPrimary">The initial value for the primary buffer</param>
+        /// <param name="initialSecondary">the initial value for the secondary buffer</param>
+        public DoubleDataBuffer(int length, TPrimary initialPrimary, TSecondary initialSecondary)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                _value1s[i] = new TPrimary[length];
+                _value2s[i] = new TSecondary[length];
+
+                for (int j = 0; j < length; j++)
+                {
+                    _value1s[i][j] = initialPrimary;
+                    _value2s[i][j] = initialSecondary;
+                }
+            }
+
+            for (int i = 0; i < 2; i++)
+            {
+                _dirtyMarks[i] = new bool[length];
+                _dirtyEntries[i] = new Queue<int>();
+            }
+        }
+
+        /// <summary>
+        /// Constructs a double data buffer of the specified length.
+        /// </summary>
+        /// <param name="length">the length of the buffer</param>
+        /// <param name="initialPrimary">The initial value for the primary buffer</param>
+        public DoubleDataBuffer(int length, TPrimary initialPrimary)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                _value1s[i] = new TPrimary[length];
+                _value2s[i] = new TSecondary[length];
+
+                for (int j = 0; j < length; j++)
+                {
+                    _value1s[i][j] = initialPrimary;
+                }
+            }
+
+            for (int i = 0; i < 2; i++)
+            {
+                _dirtyMarks[i] = new bool[length];
+                _dirtyEntries[i] = new Queue<int>();
+            }
+        }
+
+        /// <summary>
         /// Perform a deep copy of a DoubleDataBuffer
         /// </summary>
         /// <param name="copy">buffer to copy</param>
@@ -271,6 +323,28 @@ namespace Dragonbones.Collections
                     _dirtyEntries[1].Enqueue(val);
                 }
             }
+        }
+
+        /// <summary>
+        /// Shifts a section of data in the array
+        /// This does not work for readonly transactions
+        /// </summary>
+        /// <param name="type">the type of transaction which affects what data is affected</param>
+        /// <param name="startIndex">the index to start the shift from</param>
+        /// <param name="length">the number of elements to move</param>
+        /// <param name="shiftTo">the index to shift to</param>
+        public void ShiftData(BufferTransactionType type, int startIndex, int length, int shiftTo)
+        {
+            if (type == BufferTransactionType.ReadOnly)
+                return;
+            TPrimary[] tPrim = new TPrimary[length];
+            TSecondary[] tSec = new TSecondary[length];
+
+            Array.Copy(_value1s[(int)type], startIndex, tPrim, 0, length);
+            Array.Copy(_value2s[(int)type], startIndex, tSec, 0, length);
+
+            Array.Copy(tPrim, 0, _value1s[(int)type], shiftTo, length);
+            Array.Copy(tSec, 0, _value2s[(int)type], shiftTo, length);
         }
 
         /// <summary>Returns an enumerator that iterates through the collection.</summary>

@@ -88,11 +88,11 @@ namespace Dragonbones.Systems
         bool Contains(ISystem system);
 
         /// <summary>
-        /// Add a system to the registry
+        /// Register a system to the registry
         /// </summary>
         /// <param name="system">the system to add</param>
         /// <returns>if the system was added successfully</returns>
-        bool Add(ISystem system);
+        bool Register(ISystem system);
 
         /// <summary>
         /// Remove a system from the registry

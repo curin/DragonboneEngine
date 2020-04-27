@@ -302,7 +302,7 @@ namespace Dragonbones.Components
         /// <returns>Whether the component was found in the buffer</returns>
         public bool Contains(SystemType systemType, TComponent value)
         {
-            return _buffer.Contains((BufferTransactionType)systemType, value)
+            return _buffer.Contains((BufferTransactionType) systemType, value);
         }
 
         /// <summary>
@@ -313,7 +313,7 @@ namespace Dragonbones.Components
         /// <returns>the ID associated with the component or -1 if not found in the buffer</returns>
         public int GetID(SystemType systemType, TComponent value)
         {
-            return _buffer.GetID((BufferTransactionType)systemType, value)
+            return _buffer.GetID((BufferTransactionType) systemType, value);
         }
 
         /// <summary>

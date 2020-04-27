@@ -11,10 +11,9 @@ namespace Dragonbones.Collections
     /// and gives back an index rather than needing an index to be assigned ahead of time
     /// Names must be unique between values if not the values will be overwritten at write.
     /// </summary>
-    /// <typeparam name="TValue"></typeparam>
-    public class NamedDataBuffer<TValue>: IDataBuffer,  IEnumerable<TValue>
+    public class NameBuffer: IDataBuffer,  IEnumerable<Tuple<int,string>>
     {
-        private DoubleDataBuffer<TValue, Entry> _buffer;
+        private DataBuffer<Entry> _buffer;
         private DataBuffer<int> _hashStarts;
         private ValueBuffer<int> _count = new ValueBuffer<int>();
         private ValueBuffer<int> _start = new ValueBuffer<int>(-1);
@@ -32,14 +31,14 @@ namespace Dragonbones.Collections
         /// </summary>
         /// <param name="initialCapacity">the starting size of the buffer</param>
         /// <param name="hashSize">the size of the hashtable in the buffer</param>
-        public NamedDataBuffer(int initialCapacity, int hashSize = 47)
+        public NameBuffer(int initialCapacity, int hashSize = 47)
         {
-            _buffer = new DoubleDataBuffer<TValue, Entry>(initialCapacity);
+            _buffer = new DataBuffer<Entry>(initialCapacity);
             _hashStarts = new DataBuffer<int>(hashSize, -1);
             _hashSize = hashSize;
             _capacity = initialCapacity;
 
-            _buffer.Set(BufferTransactionType.WriteRead, 0, default, new Entry() {ID = -1});
+            _buffer.Set(BufferTransactionType.WriteRead, 0, new Entry() {ID = -1});
             _buffer.SwapWriteBuffer();
             _buffer.SwapReadBuffer();
         }
@@ -51,9 +50,9 @@ namespace Dragonbones.Collections
         /// <param name="type">the type of transaction</param>
         /// <param name="id">the ID associated with the value</param>
         /// <returns>the value associated with the ID</returns>
-        public TValue this[BufferTransactionType type, int id]
+        public string this[BufferTransactionType type, int id]
         {
-            get => Get(type, id);
+            get => GetNameFromID(type, id);
             set => Set(type, id, value);
         }
 
@@ -64,10 +63,9 @@ namespace Dragonbones.Collections
         /// <param name="type">the type of transaction</param>
         /// <param name="name">the name associated with the value</param>
         /// <returns>the value associated with the name</returns>
-        public TValue this[BufferTransactionType type, string name]
+        public int this[BufferTransactionType type, string name]
         {
-            get => Get(type, name);
-            set => Set(type, name, value);
+            get => GetIDFromName(type, name);
         }
 
         /// <summary>
@@ -88,7 +86,7 @@ namespace Dragonbones.Collections
         /// <param name="name">the name of the value</param>
         /// <param name="value">the value</param>
         /// <returns>the ID associated with the name</returns>
-        public int Add(BufferTransactionType type, string name, TValue value)
+        public int Add(BufferTransactionType type, string name)
         {
             if (type == BufferTransactionType.ReadOnly)
                 return -1;
@@ -96,7 +94,6 @@ namespace Dragonbones.Collections
             int find = FindEntry(type, name, out Entry findEnt);
             if (find != -1)
             {
-                _buffer.SetPrimary(type, find, value);
                 return find;
             }
 
@@ -109,7 +106,7 @@ namespace Dragonbones.Collections
             int end = _hashEnds[hash];
             Entry ent = new Entry(_next, name, end, _end);
 
-            _buffer.Set(type, _next, value, ent);
+            _buffer.Set(type, _next, ent);
 
             if (end == -1)
             {
@@ -120,24 +117,24 @@ namespace Dragonbones.Collections
                     _start[BufferTransactionType.WriteRead] = _end = _next;
                 else
                 {
-                    Entry temp = _buffer.Get(type, _end).Item2;
+                    Entry temp = _buffer.Get(type, _end);
                     temp.NextIterator = _next;
-                    _buffer.SetSecondary(type, _end, temp);
+                    _buffer.Set(type, _end, temp);
                     _end = _next;
                 }
             }
             else
             {
-                Entry temp = _buffer.Get(type, end).Item2;
+                Entry temp = _buffer.Get(type, end);
                 temp.Next = _next;
-                _buffer.SetSecondary(type, end, temp);
+                _buffer.Set(type, end, temp);
                 if (_end == -1)
                     _start[BufferTransactionType.WriteRead] = _end = _next;
                 else
                 {
-                    temp = _buffer.Get(type, _end).Item2;
+                    temp = _buffer.Get(type, _end);
                     temp.NextIterator = _next;
-                    _buffer.SetSecondary(type, _end, temp);
+                    _buffer.Set(type, _end, temp);
                     _end = _next;
                 }
             }
@@ -149,72 +146,40 @@ namespace Dragonbones.Collections
         }
 
         /// <summary>
-        /// Attempt to get a value by name
-        /// </summary>
-        /// <param name="type">The type of transaction this call represents, changes what buffer the data is pulled from</param>
-        /// <param name="name">the name of the value</param>
-        /// <param name="value">the returned value</param>
-        /// <returns>whether the name was found</returns>
-        public bool TryGet(BufferTransactionType type, string name, out TValue value)
-        {
-            int id = FindEntry(type, name, out Tuple<TValue, Entry> valueEntry);
-            if (id == -1)
-            {
-                value = default;
-                return false;
-            }
-
-            value = valueEntry.Item1;
-            return true;
-        }
-
-        /// <summary>
-        /// Attempt to get a value by ID
+        /// Attempt to get a name by ID
         /// </summary>
         /// <param name="type">The type of transaction this call represents, changes what buffer the data is pulled from</param>
         /// <param name="id">the ID of the value</param>
         /// <param name="value">the returned value</param>
         /// <returns>Whether the ID was found</returns>
-        public bool TryGet(BufferTransactionType type, int id, out TValue value)
+        public bool TryGet(BufferTransactionType type, int id, out string name)
         {
             if (id < 0 || id > _capacity)
             {
-                value = default;
+                name = default;
                 return false;
             }
 
-            Tuple<TValue, Entry> valueEntry = _buffer[type, id];
-            if (valueEntry.Item2.ID != id)
+            Entry entry = _buffer[type, id];
+            if (entry.ID != id)
             {
-                value = default;
+                name = default;
                 return false;
             }
 
-            value = valueEntry.Item1;
+            name = entry.Name;
             return true;
         }
 
         /// <summary>
-        /// Retrieve a value by name
-        /// </summary>
-        /// <param name="type">the type of transaction being made, this affects what buffer the data comes from</param>
-        /// <param name="name">the name of the value</param>
-        /// <returns>the value associated with the name</returns>
-        public TValue Get(BufferTransactionType type, string name)
-        {
-            FindEntry(type, name, out Tuple<TValue, Entry> valueEntry);
-            return valueEntry.Item1;
-        }
-
-        /// <summary>
-        /// Retrieve a value by ID
+        /// Retrieve a name by ID
         /// </summary>
         /// <param name="type">the type of transaction being made, this affects what buffer the data comes from</param>
         /// <param name="id">the ID associated with the value</param>
-        /// <returns>the value associated with the ID</returns>
-        public TValue Get(BufferTransactionType type, int id)
+        /// <returns>the name associated with the ID</returns>
+        public string Get(BufferTransactionType type, int id)
         {
-            return _buffer.Get(type, id).Item1;
+            return _buffer.Get(type, id).Name;
         }
 
         /// <summary>
@@ -223,9 +188,11 @@ namespace Dragonbones.Collections
         /// </summary>
         /// <param name="type">The transaction type</param>
         /// <param name="id">the id associated with the value to replace</param>
-        /// <param name="value">the new value to set</param>
-        public void Set(BufferTransactionType type, int id, TValue value)
+        /// <param name="newName">the new name to set</param>
+        public void Set(BufferTransactionType type, int id, string newName)
         {
+            //RENAME
+            //need to move in hashtable
             if (id < 0 || id > _capacity)
                 throw new ArgumentOutOfRangeException(nameof(id));
 
@@ -246,6 +213,8 @@ namespace Dragonbones.Collections
         /// <param name="value">the new value</param>
         public void Set(BufferTransactionType type, string name, TValue value)
         {
+            //Rename
+            //need to move in hashtable
             if (FindEntry(type, name, out Tuple<TValue, Entry> valueEntry) == -1)
                 Add(type, name, value);
 
@@ -253,7 +222,7 @@ namespace Dragonbones.Collections
         }
 
         /// <summary>
-        /// Does this buffer contain a value with the associated ID
+        /// Does this buffer contain a name with the associated ID
         /// </summary>
         /// <param name="type">the transaction type which determines where the information is pulled from</param>
         /// <param name="id">the ID associated with the value</param>
@@ -263,12 +232,12 @@ namespace Dragonbones.Collections
             if (id < 0 || id > _capacity)
                 return false;
 
-            Entry ent = _buffer.GetSecondary(type, id);
+            Entry ent = _buffer.Get(type, id);
             return ent.ID == id;
         }
 
         /// <summary>
-        /// Does this buffer contain a value with the associated name
+        /// Does this buffer contain a name
         /// </summary>
         /// <param name="type">the transaction type which determines where the information is pulled from</param>
         /// <param name="name">the name associated with the value</param>
@@ -276,17 +245,6 @@ namespace Dragonbones.Collections
         public bool ContainsName(BufferTransactionType type, string name)
         {
             return FindEntry(type, name, out Entry entry) != -1;
-        }
-
-        /// <summary>
-        /// Does this buffer contain a value
-        /// </summary>
-        /// <param name="type">the transaction type which determines where the information is pulled from</param>
-        /// <param name="value">the value to check</param>
-        /// <returns>Whether the value is within the buffer</returns>
-        public bool Contains(BufferTransactionType type, TValue value)
-        {
-            return FindEntry(type, value, out _) != -1;
         }
 
         /// <summary>
@@ -301,17 +259,6 @@ namespace Dragonbones.Collections
         }
 
         /// <summary>
-        /// Retrieve the ID associated with the given value
-        /// </summary>
-        /// <param name="type">the transaction type which determines where the information is pulled from</param>
-        /// <param name="value">the value associated with the ID</param>
-        /// <returns>The ID associated the given value or -1 if not found</returns>
-        public int GetID(BufferTransactionType type, TValue value)
-        {
-            return FindEntry(type, value, out _);
-        }
-
-        /// <summary>
         /// Gets the name associated with the given ID
         /// </summary>
         /// <param name="type">the transaction type which determines where the information is pulled from</param>
@@ -322,24 +269,12 @@ namespace Dragonbones.Collections
             if (id < 0 || id > _capacity)
                 throw new ArgumentOutOfRangeException(nameof(id));
 
-            Entry ent = _buffer.GetSecondary(type, id);
+            Entry ent = _buffer.Get(type, id);
             if (ent.ID == id)
                 return ent.Name;
             throw new ArgumentException("NamedDataBuffer does not contain a value associated with ID " + id);
         }
 
-        /// <summary>
-        /// Gets the name associated with a value
-        /// </summary>
-        /// <param name="type">the transaction type which determines where the information is pulled from</param>
-        /// <param name="value">the value</param>
-        /// <returns>the name associated with the value</returns>
-        public string GetName(BufferTransactionType type, TValue value)
-        {
-            if (FindEntry(type, value, out Tuple<TValue, Entry> valueEntry) != -1)
-                return valueEntry.Item2.Name;
-            throw new ArgumentException("NamedDataBuffer does not contain the value " + value.ToString());
-        }
 
         /// <summary>
         /// Remove a value associated with the given name from the buffer
@@ -363,22 +298,9 @@ namespace Dragonbones.Collections
         {
             if (type == BufferTransactionType.ReadOnly) return;
 
-            Entry ent = _buffer.GetSecondary(type, id);
+            Entry ent = _buffer.Get(type, id);
             if (ent.ID == id)
                 Remove(type, ref ent);
-        }
-
-        /// <summary>
-        /// Remove a value from the buffer
-        /// </summary>
-        /// <param name="type">the transaction type, Readonly transactions cannot remove values</param>
-        /// <param name="value">the value to remove</param>
-        public void Remove(BufferTransactionType type, TValue value)
-        {
-            if (type == BufferTransactionType.ReadOnly) return;
-            if (FindEntry(type, value, out Tuple<TValue, Entry> valueEntry) == -1) return;
-            Entry entry = valueEntry.Item2;
-            Remove(type, ref entry);
         }
 
         /// <summary>
@@ -393,9 +315,9 @@ namespace Dragonbones.Collections
             Entry temp;
             if (ent.NextIterator != -1)
             {
-                temp = _buffer.GetSecondary(type, ent.NextIterator);
+                temp = _buffer.Get(type, ent.NextIterator);
                 temp.PreviousIterator = ent.PreviousIterator;
-                _buffer.SetSecondary(type, ent.NextIterator, temp);
+                _buffer.Set(type, ent.NextIterator, temp);
             }
             else
             {
@@ -404,9 +326,9 @@ namespace Dragonbones.Collections
 
             if (ent.PreviousIterator != -1)
             {
-                temp = _buffer.GetSecondary(type, ent.PreviousIterator);
+                temp = _buffer.Get(type, ent.PreviousIterator);
                 temp.NextIterator = ent.NextIterator;
-                _buffer.SetSecondary(type, ent.PreviousIterator, temp);
+                _buffer.Set(type, ent.PreviousIterator, temp);
             }
             else
             {
@@ -416,9 +338,9 @@ namespace Dragonbones.Collections
             int loc = GetHashIndex(ent.Name.GetHashCode());
             if (ent.Next != -1)
             {
-                temp = _buffer.GetSecondary(type, ent.Next);
+                temp = _buffer.Get(type, ent.Next);
                 temp.Previous = ent.Previous;
-                _buffer.SetSecondary(type, ent.Next, temp);
+                _buffer.Set(type, ent.Next, temp);
             }
             else
             {
@@ -427,9 +349,9 @@ namespace Dragonbones.Collections
 
             if (ent.Previous != -1)
             {
-                temp = _buffer.GetSecondary(type, ent.Previous);
+                temp = _buffer.Get(type, ent.Previous);
                 temp.Next = ent.Next;
-                _buffer.SetSecondary(type, ent.Previous, temp);
+                _buffer.Set(type, ent.Previous, temp);
             }
             else
             {
@@ -445,133 +367,7 @@ namespace Dragonbones.Collections
 
             int id = ent.ID;
             ent.ID = -1;
-            _buffer.SetSecondary(type, id, ent);
-        }
-
-        /// <summary>
-        /// Retrieves a value then removes it from the buffer
-        /// </summary>
-        /// <param name="type">the transaction type, Readonly transactions cannot pop</param>
-        /// <param name="id">the ID of the value to pop</param>
-        /// <returns>the value removed from the buffer</returns>
-        public TValue PopAt(BufferTransactionType type, int id)
-        {
-            if (type == BufferTransactionType.ReadOnly) return default;
-
-            (TValue value, Entry ent) = _buffer.Get(type, id);
-            if (ent.ID != id)
-                throw new ArgumentException("The NamedDataBuffer does not contain a value associated with the id " + id);
-            Remove(type, ref ent);
-            return value;
-        }
-
-        /// <summary>
-        /// Retrieves a value then removes it from the buffer
-        /// </summary>
-        /// <param name="type">the transaction type, Readonly transactions cannot pop</param>
-        /// <param name="name">the name of the value to pop</param>
-        /// <returns>the value removed from the buffer</returns>
-        public TValue PopAt(BufferTransactionType type, string name)
-        {
-            if (type == BufferTransactionType.ReadOnly) return default;
-
-            if (FindEntry(type, name, out Tuple<TValue, Entry> valueEntry) == -1)
-                throw new ArgumentException("The NamedDataBuffer does not contain a value associated with the name " + name);
-            Entry ent = valueEntry.Item2;
-            Remove(type, ref ent);
-            return valueEntry.Item1;
-        }
-
-        /// <summary>
-        /// Retrieves a value then removes it from the buffer
-        /// </summary>
-        /// <param name="type">the transaction type, Readonly transactions cannot pop</param>
-        /// <param name="value">the value to pop</param>
-        /// <returns>the current value removed from the buffer</returns>
-        public TValue Pop(BufferTransactionType type, TValue value)
-        {
-            if (type == BufferTransactionType.ReadOnly) return default;
-            if (FindEntry(type, value, out Tuple<TValue, Entry> valueEntry) == -1) throw new ArgumentException("The NamedDataBuffer does not contain the value " + value.ToString());
-            Entry entry = valueEntry.Item2;
-            Remove(type, ref entry);
-            return valueEntry.Item1;
-        }
-
-        /// <summary>
-        /// Attempts to Retrieve a value then removes it from the buffer
-        /// </summary>
-        /// <param name="type">the transaction type, Readonly transactions cannot pop</param>
-        /// <param name="id">the ID of the value to pop</param>
-        /// <param name="value">the value removed</param>
-        /// <returns>Whether the pop was successful</returns>
-        public bool TryPopAt(BufferTransactionType type, int id, out TValue value)
-        {
-            if (type == BufferTransactionType.ReadOnly)
-            {
-                value = default;
-                return false;
-            }
-
-            Entry ent;
-            (value, ent) = _buffer.Get(type, id);
-            if (ent.ID != id)
-                return false;
-            Remove(type, ref ent);
-            return true;
-        }
-
-        /// <summary>
-        /// Attempts to Retrieve a value then removes it from the buffer
-        /// </summary>
-        /// <param name="type">the transaction type, Readonly transactions cannot pop</param>
-        /// <param name="name">the name of the value to pop</param>
-        /// <param name="value">the value removed</param>
-        /// <returns>Whether the pop was successful</returns>
-        public bool TryPopAt(BufferTransactionType type, string name, out TValue value)
-        {
-            if (type == BufferTransactionType.ReadOnly)
-            {
-                value = default;
-                return false;
-            }
-
-            if (FindEntry(type, name, out Tuple<TValue, Entry> valueEntry) == -1)
-            {
-                value = default;
-                return false;
-            }
-
-            Entry ent = valueEntry.Item2;
-            Remove(type, ref ent);
-            value = valueEntry.Item1;
-            return true;
-        }
-
-        /// <summary>
-        /// Attempts to Retrieve a value then removes it from the buffer
-        /// </summary>
-        /// <param name="type">the transaction type, Readonly transactions cannot pop</param>
-        /// <param name="value">the value to removed</param>
-        /// <param name="newValue">the current value that was removed</param>
-        /// <returns>Whether the pop was successful</returns>
-        public bool TryPop(BufferTransactionType type, TValue value, out TValue newValue)
-        {
-            if (type == BufferTransactionType.ReadOnly)
-            {
-                newValue = default;
-                return false;
-            }
-
-            if (FindEntry(type, value, out Tuple<TValue, Entry> valueEntry) == -1)
-            {
-                newValue = default;
-                return false;
-            }
-
-            Entry entry = valueEntry.Item2;
-            Remove(type, ref entry);
-            newValue = valueEntry.Item1;
-            return true;
+            _buffer.Set(type, id, ent);
         }
 
         /// <summary>
@@ -583,40 +379,13 @@ namespace Dragonbones.Collections
             if (type == BufferTransactionType.ReadOnly)
                 return;
             _start[BufferTransactionType.WriteRead] = _end = -1;
-             _count[BufferTransactionType.WriteRead] = _top = _next = 0;
+            _count[BufferTransactionType.WriteRead] = _top = _next = 0;
             _freeIDs.Clear();
             for (int i = 0; i < _hashSize; i++)
             {
                 _hashStarts.Set(type, i, -1);
                 _hashEnds[i] = -1;
             }
-        }
-
-        /// <summary>
-        /// Find an entry of the given name
-        /// </summary>
-        /// <param name="type">the transaction type, which determines where the data comes from</param>
-        /// <param name="name">the name to find</param>
-        /// <param name="valueEntry">the returned entry and value pair</param>
-        /// <returns>the ID of the entry</returns>
-        private int FindEntry(BufferTransactionType type, string name, out Tuple<TValue, Entry> valueEntry)
-        {
-            int loc = GetHashIndex(name.GetHashCode());
-            if (_hashStarts.Get(type, loc) == -1)
-            {
-                valueEntry = new Tuple<TValue, Entry>(default, default);
-                return -1;
-            }
-
-            valueEntry = _buffer.Get(type, _hashStarts.Get(type, loc));
-
-            while (valueEntry.Item2.Next != -1 && valueEntry.Item2.Name != name)
-                valueEntry = _buffer.Get(type, valueEntry.Item2.Next);
-
-            if (valueEntry.Item2.Name != name)
-                return -1;
-
-            return valueEntry.Item2.ID;
         }
 
         /// <summary>
@@ -635,10 +404,10 @@ namespace Dragonbones.Collections
                 return -1;
             }
 
-            entry = _buffer.GetSecondary(type, _hashStarts.Get(type, loc));
+            entry = _buffer.Get(type, _hashStarts.Get(type, loc));
 
             while (entry.Next != -1 && entry.Name != name)
-                entry = _buffer.GetSecondary(type, entry.Next);
+                entry = _buffer.Get(type, entry.Next);
 
             if (entry.Name != name)
                 return -1;
@@ -646,30 +415,6 @@ namespace Dragonbones.Collections
             return entry.ID;
         }
 
-        /// <summary>
-        /// Find an entry of the given value
-        /// </summary>
-        /// <param name="type">the transaction type which determines where the data comes from</param>
-        /// <param name="value">the value to find</param>
-        /// <param name="valueEntry">the returned entry and value pair</param>
-        /// <returns>the ID of the entry</returns>
-        private int FindEntry(BufferTransactionType type, TValue value, out Tuple<TValue, Entry> valueEntry)
-        {
-            if (_start[type] == -1)
-            {
-                valueEntry = new Tuple<TValue, Entry>(default, default);
-                return -1;
-            }
-
-            valueEntry = _buffer[type, _start[type]];
-
-            while (valueEntry.Item1.Equals(value) && valueEntry.Item2.NextIterator != -1)
-                valueEntry = _buffer[type, valueEntry.Item2.NextIterator];
-
-            if (valueEntry.Item1.Equals(value))
-                return valueEntry.Item2.ID;
-            return -1;
-        }
 
         /// <summary>
         /// Constricts the size of the buffer to as small as possible
@@ -690,7 +435,7 @@ namespace Dragonbones.Collections
             if (newCapacity < _top)
                 newCapacity = _top;
 
-            _buffer = new DoubleDataBuffer<TValue, Entry>(_buffer, newCapacity);
+            _buffer = new DataBuffer<Entry>(_buffer, newCapacity);
             _capacity = newCapacity;
         }
 
@@ -700,7 +445,7 @@ namespace Dragonbones.Collections
         /// <param name="newCapacity">the new capacity of the buffer</param>
         public void Expand(int newCapacity)
         {
-            _buffer = new DoubleDataBuffer<TValue, Entry>(_buffer, newCapacity);
+            _buffer = new DataBuffer<Entry>(_buffer, newCapacity);
             _capacity = newCapacity;
         }
 
@@ -738,7 +483,7 @@ namespace Dragonbones.Collections
 
         /// <summary>Returns an enumerator that iterates through the collection.</summary>
         /// <returns>An enumerator that can be used to iterate through the collection.</returns>
-        public IEnumerator<TValue> GetEnumerator()
+        public IEnumerator<Tuple<int, string>> GetEnumerator()
         {
             return new Enumerator(BufferTransactionType.ReadOnly, this);
         }
@@ -774,13 +519,13 @@ namespace Dragonbones.Collections
         }
 
         /// <summary>
-        /// The enumerator for <see cref="NamedDataBuffer{TValue}"/>
+        /// The enumerator for <see cref="NameBuffer"/>
         /// </summary>
-        private class Enumerator : IEnumerator<TValue>
+        private class Enumerator : IEnumerator<Tuple<int,string>>
         {
-            private NamedDataBuffer<TValue> _buff;
+            private NameBuffer _buff;
             private BufferTransactionType _type;
-            public Enumerator(BufferTransactionType type, NamedDataBuffer<TValue> buff)
+            public Enumerator(BufferTransactionType type, NameBuffer buff)
             {
                 _buff = buff;
                 _next = -2;
@@ -788,7 +533,7 @@ namespace Dragonbones.Collections
             }
 
             private int _current, _next;
-            public TValue Current => _buff._buffer[_type, _current].Item1;
+            public Tuple<int, string> Current => new Tuple<int, string>(_buff._buffer[_type, _current].ID, _buff._buffer[_type, _current].Name);
 
             object IEnumerator.Current => Current;
 
@@ -801,19 +546,19 @@ namespace Dragonbones.Collections
             {
                 if (_next == -1)
                     return false;
-                NamedDataBuffer<TValue>.Entry ent = default;
+                NameBuffer.Entry ent = default;
                 if (_next == -2)
                 {
 
                     _current = _buff._start[_type];
                     if (_current != -1)
-                        ent = _buff._buffer[_type, _current].Item2;
+                        ent = _buff._buffer[_type, _current];
                     _next = ent.NextIterator;
                     return true;
                 }
 
                 _current = _next;
-                ent = _buff._buffer[_type, _current].Item2;
+                ent = _buff._buffer[_type, _current];
                 _next = ent.NextIterator;
                 return true;
             }

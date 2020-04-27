@@ -37,7 +37,7 @@ namespace Dragonbones.Systems
         public int Count => _systems.Count;
 
         /// <inheritdoc />
-        public bool Add(ISystem system)
+        public bool Register(ISystem system)
         {
             if (system == null)
                 throw new ArgumentNullException(nameof(system));
