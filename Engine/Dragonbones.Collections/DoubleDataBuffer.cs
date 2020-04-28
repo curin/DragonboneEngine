@@ -15,10 +15,10 @@ namespace Dragonbones.Collections
     /// <typeparam name="TSecondary">The secondary data type stored here</typeparam>
     public class DoubleDataBuffer<TPrimary, TSecondary> : IDataBuffer, IEnumerable<TPrimary>
     {
-        private readonly TPrimary[][] _value1s = new TPrimary[3][];
-        private readonly TSecondary[][] _value2s = new TSecondary[3][];
-        private readonly Queue<int>[] _dirtyEntries = new Queue<int>[2];
-        private readonly bool[][] _dirtyMarks = new bool[2][];
+        private TPrimary[][] _value1s = new TPrimary[3][];
+        private TSecondary[][] _value2s = new TSecondary[3][];
+        private Queue<int>[] _dirtyEntries = new Queue<int>[2];
+        private bool[][] _dirtyMarks = new bool[2][];
 
         /// <summary>
         /// Constructs a double data buffer of the specified length.
@@ -359,6 +359,15 @@ namespace Dragonbones.Collections
         IEnumerator IEnumerable.GetEnumerator()
         {
             return _value1s[2].GetEnumerator();
+        }
+
+        /// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+        public void Dispose()
+        {
+            _dirtyMarks = null;
+            _value1s = null;
+            _dirtyEntries = null;
+            _value2s = null;
         }
     }
 }

@@ -15,7 +15,7 @@ namespace Dragonbones.Systems
     public class SystemRegistry : ISystemRegistry
     {
         private readonly NamedDataRegistry<ISystem> _systems;
-        private readonly Dictionary<SystemType, int> _typeCounts = new Dictionary<SystemType, int>();
+        private Dictionary<SystemType, int> _typeCounts = new Dictionary<SystemType, int>();
 
         /// <summary>
         /// Constructs an instance of <see cref="SystemRegistry"/>
@@ -179,5 +179,40 @@ namespace Dragonbones.Systems
         {
             return _systems.GetEnumerator();
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        /// <summary>
+        /// Dispose this object
+        /// </summary>
+        /// <param name="disposing">Are managed objects being disposed</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _systems?.Dispose();
+                    _typeCounts = null;
+                    // TODO: dispose managed state (managed objects).
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                disposedValue = true;
+            }
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            GC.SuppressFinalize(this);
+        }
+        #endregion
     }
 }

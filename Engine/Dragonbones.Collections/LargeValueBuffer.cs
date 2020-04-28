@@ -11,9 +11,9 @@ namespace Dragonbones.Collections
     public class LargeValueBuffer<TValue> : IDataBuffer
     where TValue:struct
     {
-        private readonly TValue[] _value = new TValue[3];
-        private readonly object _lock = new object();
-        private readonly bool[] _dirty = new bool[2];
+        private TValue[] _value = new TValue[3];
+        private object _lock = new object();
+        private bool[] _dirty = new bool[2];
 
         /// <summary>
         /// Default Constructor
@@ -83,5 +83,40 @@ namespace Dragonbones.Collections
                 _dirty[1] = true;
             }
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        /// <summary>
+        /// Dispose this object
+        /// </summary>
+        /// <param name="disposing">Are managed objects being disposed</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _dirty = null;
+                    _value = null;
+                    _lock = null;
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                disposedValue = true;
+            }
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            GC.SuppressFinalize(this);
+        }
+        #endregion
     }
 }

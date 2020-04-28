@@ -8,6 +8,12 @@ using Dragonbones.Systems;
 
 namespace Dragonbones.Entities
 {
+    /// <summary>
+    /// The buffer designed to hold entity data
+    /// Entities are simply a name tied to an ID
+    /// Some interactions like remove should be postponed until the end of a frame
+    /// (when SwapWriteBuffer is called)
+    /// </summary>
     public interface IEntityBuffer : IDataBuffer, IEnumerable<Tuple<int, string>>
     {
         /// <summary>
@@ -18,6 +24,12 @@ namespace Dragonbones.Entities
         /// <param name="name">the name of the entity</param>
         /// <returns>the ID associated with the entity</returns>
         int this[SystemType systemType, string name] { get; }
+        /// <summary>
+        /// This is the list of entities removed this frame
+        /// !!! DO NOT EDIT THIS LIST !!!
+        /// This list is for the system to use at the end of an update for object cleanup
+        /// </summary>
+        List<int> RemovedEntities { get; }
         /// <summary>
         /// Access the name associated with an entity
         /// </summary>

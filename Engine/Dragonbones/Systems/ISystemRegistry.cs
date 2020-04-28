@@ -8,7 +8,7 @@ namespace Dragonbones.Systems
     /// A class to control storing systems
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1710:Identifiers should have correct suffix", Justification = "Not a collection it should be smarter, a registry")]
-    public interface ISystemRegistry : IEnumerable<ISystem>
+    public interface ISystemRegistry : IEnumerable<ISystem>, IDisposable
     {
         /// <summary>
         /// Retrieve a particular system

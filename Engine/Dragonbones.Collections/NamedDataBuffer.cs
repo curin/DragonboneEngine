@@ -751,6 +751,119 @@ namespace Dragonbones.Collections
         }
 
         /// <summary>
+        /// Rename the value in the buffer associated with the given id
+        /// (only works in WriteRead transaction types)
+        /// </summary>
+        /// <param name="type">The transaction type</param>
+        /// <param name="id">the id associated with the value to replace</param>
+        /// <param name="newName">the new name to set</param>
+        public void Rename(BufferTransactionType type, int id, string newName)
+        {
+
+            if (id < 0 || id > _capacity)
+                throw new ArgumentOutOfRangeException(nameof(id));
+
+            NamedDataBuffer<TValue>.Entry entry = _buffer.GetSecondary(type, id);
+            if (entry.ID != id)
+                throw new ArgumentException("There is no value in the NamedDataBuffer associated with ID " + id);
+
+            if (entry.Name == newName)
+                return;
+
+            int originalHash = GetHashIndex(entry.Name.GetHashCode());
+            NamedDataBuffer<TValue>.Entry tempEnt;
+            if (entry.Previous != -1)
+            {
+                tempEnt = _buffer.GetSecondary(type, entry.Previous);
+                tempEnt.Next = entry.Next;
+                _buffer.SetSecondary(type, entry.Previous, tempEnt);
+            }
+            else
+            {
+                _hashStarts[type, originalHash] = entry.Next;
+            }
+
+            if (entry.Next != -1)
+            {
+                tempEnt = _buffer.GetSecondary(type, entry.Next);
+                tempEnt.Previous = entry.Previous;
+                _buffer.SetSecondary(type, entry.Next, tempEnt);
+            }
+            else
+            {
+                _hashEnds[originalHash] = entry.Previous;
+            }
+
+            int hash = GetHashIndex(newName.GetHashCode());
+            int end = _hashEnds[hash];
+
+            entry.Next = -1;
+            entry.Previous = end;
+            entry.Name = newName;
+
+            _buffer.SetSecondary(type, id, entry);
+
+            tempEnt = _buffer.GetSecondary(type, end);
+            tempEnt.Next = id;
+            _buffer.SetSecondary(type, end, tempEnt);
+        }
+
+        /// <summary>
+        /// Rename the value in the buffer associated with the given name
+        /// (only works in WriteRead transaction types)
+        /// If a value is not found, the value is added
+        /// </summary>
+        /// <param name="type">the transaction type</param>
+        /// <param name="name">the name associated with the value to replace</param>
+        /// <param name="newName">the new name to set</param>
+        public void Rename(BufferTransactionType type, string name, string newName)
+        {
+            if (name == newName)
+                return;
+
+            int id = FindEntry(type, name, out NamedDataBuffer<TValue>.Entry entry);
+            if (id == -1)
+                throw new ArgumentException("The NamedDataBuffer does not contain the name " + name);
+
+            int originalHash = GetHashIndex(entry.Name.GetHashCode());
+            NamedDataBuffer<TValue>.Entry tempEnt;
+            if (entry.Previous != -1)
+            {
+                tempEnt = _buffer.GetSecondary(type, entry.Previous);
+                tempEnt.Next = entry.Next;
+                _buffer.SetSecondary(type, entry.Previous, tempEnt);
+            }
+            else
+            {
+                _hashStarts[type, originalHash] = entry.Next;
+            }
+
+            if (entry.Next != -1)
+            {
+                tempEnt = _buffer.GetSecondary(type, entry.Next);
+                tempEnt.Previous = entry.Previous;
+                _buffer.SetSecondary(type, entry.Next, tempEnt);
+            }
+            else
+            {
+                _hashEnds[originalHash] = entry.Previous;
+            }
+
+            int hash = GetHashIndex(newName.GetHashCode());
+            int end = _hashEnds[hash];
+
+            entry.Next = -1;
+            entry.Previous = end;
+            entry.Name = newName;
+
+            _buffer.SetSecondary(type, id, entry);
+
+            tempEnt = _buffer.GetSecondary(type, end);
+            tempEnt.Next = id;
+            _buffer.SetSecondary(type, end, tempEnt);
+        }
+
+        /// <summary>
         /// Represents an entry in the hashtable for the named data buffer
         /// </summary>
         private struct Entry
@@ -766,7 +879,7 @@ namespace Dragonbones.Collections
             }
 
             public int ID;
-            public readonly string Name;
+            public string Name;
             public int Next;
             public int Previous;
             public int NextIterator;
@@ -822,6 +935,17 @@ namespace Dragonbones.Collections
             {
                 _next = -2;
             }
+        }
+
+        /// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+        public void Dispose()
+        {
+            _buffer?.Dispose();
+            _hashStarts?.Dispose();
+            _count?.Dispose();
+            _start?.Dispose();
+            _freeIDs = null;
+            _hashEnds = null;
         }
     }
 }

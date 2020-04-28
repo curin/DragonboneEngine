@@ -10,7 +10,7 @@ namespace Dragonbones.Components
     public class ComponentBuffer<TComponent> : IComponentBuffer<TComponent>
     where TComponent: struct, IEquatable<TComponent>
     {
-        private NamedDataBuffer<TComponent> _buffer;
+        private readonly NamedDataBuffer<TComponent> _buffer;
         private string _typeName;
         private int _bufferID;
 
@@ -19,6 +19,7 @@ namespace Dragonbones.Components
         /// </summary>
         /// <param name="initialCapacity">the initial size of the buffer</param>
         /// <param name="hashSize">the size of the buffer's hash table, the larger the faster the name lookup but the more memory used</param>
+        /// <param name="typeName">The name of the component type stored here</param>
         public ComponentBuffer(string typeName, int initialCapacity, int hashSize = 47)
         {
             _buffer = new NamedDataBuffer<TComponent>(initialCapacity, hashSize);
@@ -402,6 +403,24 @@ namespace Dragonbones.Components
         public bool TryPop(SystemType systemType, TComponent value, out TComponent newValue)
         {
             return _buffer.TryPop((BufferTransactionType)systemType, value, out newValue);
+        }
+
+        /// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        /// <param name="managed">dispose managed objects?</param>
+        protected virtual void Dispose(bool managed)
+        {
+            if (!managed) return;
+            _buffer?.Dispose();
+            _typeName = null;
         }
     }
 }

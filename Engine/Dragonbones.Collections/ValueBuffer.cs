@@ -11,8 +11,8 @@ namespace Dragonbones.Collections
     public class ValueBuffer<TValue> : IDataBuffer
     where TValue:struct
     {
-        private readonly TValue[] _value = new TValue[3];
-        private readonly object _lock = new object();
+        private TValue[] _value = new TValue[3];
+        private object _lock = new object();
 
         /// <summary>
         /// Default Constructor
@@ -73,6 +73,13 @@ namespace Dragonbones.Collections
             {
                 _value[1] = _value[0];
             }
+        }
+
+        /// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+        public void Dispose()
+        {
+            _lock = null;
+            _value = null;
         }
     }
 }

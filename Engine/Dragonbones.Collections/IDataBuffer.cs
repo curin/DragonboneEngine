@@ -9,7 +9,7 @@ namespace Dragonbones.Collections
     /// where one thread reads and the other thread writes
     /// The write thread may also need to read what it has written
     /// </summary>
-    public interface IDataBuffer
+    public interface IDataBuffer : IDisposable
     {
         /// <summary>
         /// Swaps the data buffer for reading

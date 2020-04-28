@@ -11,11 +11,17 @@ namespace Dragonbones.Components
     /// A special form of a <see cref="IComponentBuffer"/> designed to store only a single value for all ids
     /// used to retrieve values which are universal over all instances
     /// </summary>
+#pragma warning disable CA1710 // Identifiers should have correct suffix
     public class SingletonBuffer<TComponent> : IComponentBuffer<TComponent>
+#pragma warning restore CA1710 // Identifiers should have correct suffix
         where TComponent : struct, IEquatable<TComponent>
     {
         private string _typeName;
         private int _bufferID;
+        /// <summary>
+        /// Constructs a singleton buffer
+        /// </summary>
+        /// <param name="typeName">the name of the type of value stored</param>
         public SingletonBuffer(string typeName)
         {
             _typeName = typeName;
@@ -350,6 +356,8 @@ namespace Dragonbones.Components
             return _buffer[(BufferTransactionType)systemType];
         }
 
+
+#pragma warning disable CS1723 // XML comment has cref attribute that refers to a type parameter
         /// <summary>
         /// Retrieve current value of a component then remove it from the buffer
         /// This only works if the <see cref="TComponent"/>.Equals(<see cref="TComponent"/>); is written so that the items don't need to be completely identical
@@ -359,6 +367,7 @@ namespace Dragonbones.Components
         /// <param name="value">the component to retrieve and remove</param>
         /// <returns>the updated copy of the component</returns>
         public TComponent Pop(SystemType systemType, TComponent value)
+#pragma warning restore CS1723 // XML comment has cref attribute that refers to a type parameter
         {
             return _buffer[(BufferTransactionType)systemType];
         }
@@ -391,6 +400,8 @@ namespace Dragonbones.Components
             return true;
         }
 
+
+#pragma warning disable CS1723 // XML comment has cref attribute that refers to a type parameter
         /// <summary>
         /// Attempts to retrieve current value of a component then remove it from the buffer
         /// This only works if the <see cref="TComponent"/>.Equals(<see cref="TComponent"/>); is written so that the items don't need to be completely identical
@@ -401,9 +412,44 @@ namespace Dragonbones.Components
         /// <param name="newValue">the current value retrieved</param>
         /// <returns>Whether the pop was successful</returns>
         public bool TryPop(SystemType systemType, TComponent value, out TComponent newValue)
+#pragma warning restore CS1723 // XML comment has cref attribute that refers to a type parameter
         {
             newValue = _buffer[(BufferTransactionType)systemType];
             return true;
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        /// <summary>
+        /// Dispose this object
+        /// </summary>
+        /// <param name="disposing">Are managed objects being disposed</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _buffer?.Dispose();
+                    _typeName = null;
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                disposedValue = true;
+            }
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            GC.SuppressFinalize(this);
+        }
+        #endregion
     }
 }

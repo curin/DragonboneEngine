@@ -53,7 +53,7 @@ namespace Dragonbones.Collections
         public string this[BufferTransactionType type, int id]
         {
             get => GetNameFromID(type, id);
-            set => Set(type, id, value);
+            set => Rename(type, id, value);
         }
 
         /// <summary>
@@ -84,7 +84,6 @@ namespace Dragonbones.Collections
         /// </summary>
         /// <param name="type">the transaction type</param>
         /// <param name="name">the name of the value</param>
-        /// <param name="value">the value</param>
         /// <returns>the ID associated with the name</returns>
         public int Add(BufferTransactionType type, string name)
         {
@@ -150,7 +149,7 @@ namespace Dragonbones.Collections
         /// </summary>
         /// <param name="type">The type of transaction this call represents, changes what buffer the data is pulled from</param>
         /// <param name="id">the ID of the value</param>
-        /// <param name="value">the returned value</param>
+        /// <param name="name">the returned name</param>
         /// <returns>Whether the ID was found</returns>
         public bool TryGet(BufferTransactionType type, int id, out string name)
         {
@@ -183,42 +182,115 @@ namespace Dragonbones.Collections
         }
 
         /// <summary>
-        /// Sets the value in the buffer associated with the given id
+        /// Rename the value in the buffer associated with the given id
         /// (only works in WriteRead transaction types)
         /// </summary>
         /// <param name="type">The transaction type</param>
         /// <param name="id">the id associated with the value to replace</param>
         /// <param name="newName">the new name to set</param>
-        public void Set(BufferTransactionType type, int id, string newName)
+        public void Rename(BufferTransactionType type, int id, string newName)
         {
-            //RENAME
-            //need to move in hashtable
             if (id < 0 || id > _capacity)
                 throw new ArgumentOutOfRangeException(nameof(id));
 
-            Entry entry = _buffer.GetSecondary(type, id);
+            Entry entry = _buffer.Get(type, id);
             if (entry.ID != id)
                 throw new ArgumentException("There is no value in the NamedDataBuffer associated with ID " + id);
 
-            _buffer.SetPrimary(type, id, value);
+            if (entry.Name == newName)
+                return;
+
+            int originalHash = GetHashIndex(entry.Name.GetHashCode());
+            Entry tempEnt;
+            if (entry.Previous != -1)
+            {
+                tempEnt = _buffer.Get(type, entry.Previous);
+                tempEnt.Next = entry.Next;
+                _buffer.Set(type, entry.Previous, tempEnt);
+            }
+            else
+            {
+                _hashStarts[type, originalHash] = entry.Next;
+            }
+
+            if (entry.Next != -1)
+            {
+                tempEnt = _buffer.Get(type, entry.Next);
+                tempEnt.Previous = entry.Previous;
+                _buffer.Set(type, entry.Next, tempEnt);
+            }
+            else
+            {
+                _hashEnds[originalHash] = entry.Previous;
+            }
+
+            int hash = GetHashIndex(newName.GetHashCode());
+            int end = _hashEnds[hash];
+
+            entry.Next = -1;
+            entry.Previous = end;
+            entry.Name = newName;
+
+            _buffer.Set(type, id, entry);
+
+            tempEnt = _buffer.Get(type, end);
+            tempEnt.Next = id;
+            _buffer.Set(type, end, tempEnt);
         }
 
         /// <summary>
-        /// Sets the value in the buffer associated with the given name
+        /// Rename the value in the buffer associated with the given name
         /// (only works in WriteRead transaction types)
         /// If a value is not found, the value is added
         /// </summary>
         /// <param name="type">the transaction type</param>
         /// <param name="name">the name associated with the value to replace</param>
-        /// <param name="value">the new value</param>
-        public void Set(BufferTransactionType type, string name, TValue value)
+        /// <param name="newName">the new name to set</param>
+        public void Rename(BufferTransactionType type, string name, string newName)
         {
-            //Rename
-            //need to move in hashtable
-            if (FindEntry(type, name, out Tuple<TValue, Entry> valueEntry) == -1)
-                Add(type, name, value);
+            if (name == newName)
+                return;
 
-            _buffer.SetPrimary(type, valueEntry.Item2.ID, value);
+            int id = FindEntry(type, name, out Entry entry);
+            if (id == -1)
+                Add(type, name);
+
+            int originalHash = GetHashIndex(entry.Name.GetHashCode());
+            Entry tempEnt;
+            if (entry.Previous != -1)
+            {
+                tempEnt = _buffer.Get(type, entry.Previous);
+                tempEnt.Next = entry.Next;
+                _buffer.Set(type, entry.Previous, tempEnt);
+            }
+            else
+            {
+                _hashStarts[type, originalHash] = entry.Next;
+            }
+
+            if (entry.Next != -1)
+            {
+                tempEnt = _buffer.Get(type, entry.Next);
+                tempEnt.Previous = entry.Previous;
+                _buffer.Set(type, entry.Next, tempEnt);
+            }
+            else
+            {
+                _hashEnds[originalHash] = entry.Previous;
+            }
+
+            int hash = GetHashIndex(newName.GetHashCode());
+            int end = _hashEnds[hash];
+
+            entry.Next = -1;
+            entry.Previous = end;
+            entry.Name = newName;
+
+            _buffer.Set(type, id, entry);
+
+            tempEnt = _buffer.Get(type, end);
+            tempEnt.Next = id;
+            _buffer.Set(type, end, tempEnt);
         }
 
         /// <summary>
@@ -511,7 +583,7 @@ namespace Dragonbones.Collections
             }
 
             public int ID;
-            public readonly string Name;
+            public string Name;
             public int Next;
             public int Previous;
             public int NextIterator;
@@ -567,6 +639,17 @@ namespace Dragonbones.Collections
             {
                 _next = -2;
             }
+        }
+
+        /// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+        public void Dispose()
+        {
+            _buffer?.Dispose();
+            _hashStarts?.Dispose();
+            _count?.Dispose();
+            _start?.Dispose();
+            _hashEnds = null;
+            _freeIDs = null;
         }
     }
 }

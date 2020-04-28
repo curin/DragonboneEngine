@@ -22,9 +22,9 @@ namespace Dragonbones.Collections
         private readonly int _hashSize;
         private int _start = -1;
         private int _end = -1;
-        private readonly int[] _starts;
-        private readonly int[] _ends;
-        private readonly Queue<int> _freeIDs = new Queue<int>();
+        private int[] _starts;
+        private int[] _ends;
+        private Queue<int> _freeIDs = new Queue<int>();
 
         /// <summary>
         /// Constructs a <see cref="NamedDataRegistry{TValue}"/> of the specified size
@@ -500,6 +500,16 @@ namespace Dragonbones.Collections
         IEnumerator IEnumerable.GetEnumerator()
         {
             return new Enumerator(this);
+        }
+
+        /// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+        public void Dispose()
+        {
+            _values = null;
+            _freeIDs = null;
+            _ends = null;
+            _entries = null;
+            _starts = null;
         }
 
         /// <summary>

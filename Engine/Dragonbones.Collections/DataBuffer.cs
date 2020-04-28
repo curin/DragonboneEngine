@@ -17,6 +17,10 @@ namespace Dragonbones.Collections
     /// <typeparam name="TValue">the type of value stored in the buffer</typeparam>
     public class DataBuffer<TValue> : IDataBuffer, IEnumerable<TValue>
     {
+        private TValue[][] _values = new TValue[3][];
+        private Queue<int>[] _dirtyEntries = new Queue<int>[2];
+        private bool[][] _dirtyMarks = new bool[2][];
+
         /// <summary>
         /// Constructs a data buffer of the specified length.
         /// </summary>
@@ -77,10 +81,6 @@ namespace Dragonbones.Collections
                 _dirtyEntries[i] = new Queue<int>(copy._dirtyEntries[i]);
             }
         }
-
-        private readonly TValue[][] _values = new TValue[3][];
-        private readonly Queue<int>[] _dirtyEntries = new Queue<int>[2];
-        private readonly bool[][] _dirtyMarks = new bool[2][];
 
         /// <summary>
         /// Access the data buffer information
@@ -221,6 +221,14 @@ namespace Dragonbones.Collections
         IEnumerator IEnumerable.GetEnumerator()
         {
             return _values[2].GetEnumerator();
+        }
+
+        /// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+        public void Dispose()
+        {
+            _values = null;
+            _dirtyMarks = null;
+            _dirtyEntries = null;
         }
     }
 }
