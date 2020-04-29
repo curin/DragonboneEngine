@@ -7,12 +7,19 @@ using Dragonbones.Systems;
 
 namespace Dragonbones.Components
 {
+    /// <summary>
+    /// A base implementation of <see cref="IComponentBuffer{TComponent}"/>
+    /// </summary>
+    /// <typeparam name="TComponent">the component type stored</typeparam>
+#pragma warning disable CA1710 // Identifiers should have correct suffix
     public class ComponentBuffer<TComponent> : IComponentBuffer<TComponent>
+#pragma warning restore CA1710 // Identifiers should have correct suffix
     where TComponent: struct, IEquatable<TComponent>
     {
         private readonly NamedDataBuffer<TComponent> _buffer;
         private string _typeName;
-        private int _bufferID;
+        private int _bufferID = -1;
+        private bool _waitingClear;
 
         /// <summary>
         /// Constructs the component buffer
@@ -41,6 +48,11 @@ namespace Dragonbones.Components
         /// </summary>
         public void SwapWriteBuffer()
         {
+            if (_waitingClear)
+            {
+                _buffer.Clear(BufferTransactionType.WriteRead);
+                _waitingClear = false;
+            }
             _buffer.SwapWriteBuffer();
         }
 
@@ -70,6 +82,9 @@ namespace Dragonbones.Components
         /// Should be assigned by SetBufferID function
         /// </summary>
         public int BufferID => _bufferID;
+
+        /// <inheritdoc/>
+        public bool WaitingClear => _waitingClear;
 
         /// <summary>
         /// Sets the BufferID field
@@ -173,7 +188,7 @@ namespace Dragonbones.Components
         /// Clear calls are ignored from Render Systems</param>
         public void Clear(SystemType systemType)
         {
-            _buffer.Clear((BufferTransactionType)systemType);
+            _waitingClear = true;
         }
 
         /// <summary>
@@ -352,6 +367,8 @@ namespace Dragonbones.Components
             return _buffer.PopAt((BufferTransactionType)systemType, id);
         }
 
+
+#pragma warning disable CS1723 // XML comment has cref attribute that refers to a type parameter
         /// <summary>
         /// Retrieve current value of a component then remove it from the buffer
         /// This only works if the <see cref="TComponent"/>.Equals(<see cref="TComponent"/>); is written so that the items don't need to be completely identical
@@ -361,6 +378,7 @@ namespace Dragonbones.Components
         /// <param name="value">the component to retrieve and remove</param>
         /// <returns>the updated copy of the component</returns>
         public TComponent Pop(SystemType systemType, TComponent value)
+#pragma warning restore CS1723 // XML comment has cref attribute that refers to a type parameter
         {
             return _buffer.Pop((BufferTransactionType)systemType, value);
         }
@@ -391,6 +409,8 @@ namespace Dragonbones.Components
             return _buffer.TryPopAt((BufferTransactionType)systemType, id, out value);
         }
 
+
+#pragma warning disable CS1723 // XML comment has cref attribute that refers to a type parameter
         /// <summary>
         /// Attempts to retrieve current value of a component then remove it from the buffer
         /// This only works if the <see cref="TComponent"/>.Equals(<see cref="TComponent"/>); is written so that the items don't need to be completely identical
@@ -401,6 +421,7 @@ namespace Dragonbones.Components
         /// <param name="newValue">the current value retrieved</param>
         /// <returns>Whether the pop was successful</returns>
         public bool TryPop(SystemType systemType, TComponent value, out TComponent newValue)
+#pragma warning restore CS1723 // XML comment has cref attribute that refers to a type parameter
         {
             return _buffer.TryPop((BufferTransactionType)systemType, value, out newValue);
         }
@@ -421,6 +442,12 @@ namespace Dragonbones.Components
             if (!managed) return;
             _buffer?.Dispose();
             _typeName = null;
+        }
+
+        ///<inheritdoc/>
+        public bool Equals(IComponentBuffer other)
+        {
+            return other.TypeName == TypeName;
         }
     }
 }

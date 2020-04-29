@@ -4,12 +4,19 @@
         <name>Dragonbones</name>
     </assembly>
     <members>
+        <member name="T:Dragonbones.Components.ComponentBuffer`1">
+            <summary>
+            A base implementation of <see cref="T:Dragonbones.Components.IComponentBuffer`1"/>
+            </summary>
+            <typeparam name="TComponent">the component type stored</typeparam>
+        </member>
         <member name="M:Dragonbones.Components.ComponentBuffer`1.#ctor(System.String,System.Int32,System.Int32)">
             <summary>
             Constructs the component buffer
             </summary>
             <param name="initialCapacity">the initial size of the buffer</param>
             <param name="hashSize">the size of the buffer's hash table, the larger the faster the name lookup but the more memory used</param>
+            <param name="typeName">The name of the component type stored here</param>
         </member>
         <member name="M:Dragonbones.Components.ComponentBuffer`1.SwapReadBuffer">
             <summary>
@@ -42,6 +49,9 @@
             A ID assigned by the system to this Buffer
             Should be assigned by SetBufferID function
             </summary>
+        </member>
+        <member name="P:Dragonbones.Components.ComponentBuffer`1.WaitingClear">
+            <inheritdoc/>
         </member>
         <member name="M:Dragonbones.Components.ComponentBuffer`1.SetBufferID(System.Int32)">
             <summary>
@@ -136,9 +146,9 @@
             <param name="name">the name of the component to access</param>
             <returns>The component associated with the name</returns>
         </member>
-        <member name="M:Dragonbones.Components.ComponentBuffer`1.Register(Dragonbones.Systems.SystemType,System.String,`0)">
+        <member name="M:Dragonbones.Components.ComponentBuffer`1.Add(Dragonbones.Systems.SystemType,System.String,`0)">
             <summary>
-            Registers a component to the buffer
+            Adds a component to the buffer
             </summary>
             <param name="systemType">the type of system making the call, Render systems cannot add components</param>
             <param name="name">the name of the component I suggest something like {entityName}.{ComponentType}#</param>
@@ -288,6 +298,15 @@
             <param name="newValue">the current value retrieved</param>
             <returns>Whether the pop was successful</returns>
         </member>
+        <member name="M:Dragonbones.Components.ComponentBuffer`1.Dispose">
+            <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+        </member>
+        <member name="M:Dragonbones.Components.ComponentBuffer`1.Dispose(System.Boolean)">
+            <summary>
+            Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+            </summary>
+            <param name="managed">dispose managed objects?</param>
+        </member>
         <member name="T:Dragonbones.Components.IComponentBuffer">
             <summary>
             A buffer to store all component types 
@@ -320,6 +339,12 @@
             </summary>
             <param name="systemType">the type of system making the call which affects where in the buffer the data is retrieved</param>
             <returns>the count of entries in the buffer from the perspective of the system</returns>
+        </member>
+        <member name="P:Dragonbones.Components.IComponentBuffer.WaitingClear">
+            <summary>
+            This system is going to be cleared.
+            This is used by the system.
+            </summary>
         </member>
         <member name="M:Dragonbones.Components.IComponentBuffer.Constrict(System.Int32)">
             <summary>
@@ -406,9 +431,9 @@
             <param name="name">the name of the component to access</param>
             <returns>The component associated with the name</returns>
         </member>
-        <member name="M:Dragonbones.Components.IComponentBuffer`1.Register(Dragonbones.Systems.SystemType,System.String,`0)">
+        <member name="M:Dragonbones.Components.IComponentBuffer`1.Add(Dragonbones.Systems.SystemType,System.String,`0)">
             <summary>
-            Registers a component to the buffer
+            Adds a component to the buffer
             </summary>
             <param name="systemType">the type of system making the call, Render systems cannot add components</param>
             <param name="name">the name of the component I suggest something like {entityName}.{ComponentType}#</param>
@@ -564,6 +589,12 @@
             used to retrieve values which are universal over all instances
             </summary>
         </member>
+        <member name="M:Dragonbones.Components.SingletonBuffer`1.#ctor(System.String)">
+            <summary>
+            Constructs a singleton buffer
+            </summary>
+            <param name="typeName">the name of the type of value stored</param>
+        </member>
         <member name="M:Dragonbones.Components.SingletonBuffer`1.SwapReadBuffer">
             <summary>
             Swaps the data buffer for reading
@@ -595,6 +626,9 @@
             A ID assigned by the system to this Buffer
             Should be assigned by SetBufferID function
             </summary>
+        </member>
+        <member name="P:Dragonbones.Components.SingletonBuffer`1.WaitingClear">
+            <inheritdoc/>
         </member>
         <member name="M:Dragonbones.Components.SingletonBuffer`1.SetBufferID(System.Int32)">
             <summary>
@@ -689,9 +723,9 @@
             <param name="name">the name of the component to access</param>
             <returns>The component associated with the name</returns>
         </member>
-        <member name="M:Dragonbones.Components.SingletonBuffer`1.Register(Dragonbones.Systems.SystemType,System.String,`0)">
+        <member name="M:Dragonbones.Components.SingletonBuffer`1.Add(Dragonbones.Systems.SystemType,System.String,`0)">
             <summary>
-            Registers a component to the buffer
+            Adds a component to the buffer
             </summary>
             <param name="systemType">the type of system making the call, Render systems cannot add components</param>
             <param name="name">the name of the component I suggest something like {entityName}.{ComponentType}#</param>
@@ -841,60 +875,467 @@
             <param name="newValue">the current value retrieved</param>
             <returns>Whether the pop was successful</returns>
         </member>
-        <member name="M:Dragonbones.Entities.Entity.RegisterComponent(Dragonbones.Systems.SystemType,System.Int32,System.Int32)">
+        <member name="M:Dragonbones.Components.SingletonBuffer`1.Dispose(System.Boolean)">
             <summary>
-            Registers a component to the entity
+            Dispose this object
             </summary>
-            <param name="systemType">the system type making the call, render types cannot add components</param>
+            <param name="disposing">Are managed objects being disposed</param>
+        </member>
+        <member name="M:Dragonbones.Components.SingletonBuffer`1.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="T:Dragonbones.Components.SingletonBuffer`1.Enumerator">
+            <summary>
+            Implementation of <see cref="T:System.Collections.Generic.IEnumerable`1"/> for a Singleton Buffer
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Components.SingletonBuffer`1.Enumerator.#ctor(Dragonbones.Collections.BufferTransactionType,Dragonbones.Components.SingletonBuffer{`0})">
+            <summary>
+            Basic constructor for the enumerator
+            </summary>
+            <param name="type">the transaction type, used to define where the information comes from</param>
+            <param name="buffer">the buffer data comes from</param>
+        </member>
+        <member name="P:Dragonbones.Components.SingletonBuffer`1.Enumerator.Current">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.Components.SingletonBuffer`1.Enumerator.MoveNext">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.Components.SingletonBuffer`1.Enumerator.Reset">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.Components.SingletonBuffer`1.Enumerator.Dispose(System.Boolean)">
+            <summary>
+            Disposes this object
+            </summary>
+            <param name="disposing">is this disposing managed objects</param>
+        </member>
+        <member name="M:Dragonbones.Components.SingletonBuffer`1.Enumerator.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="T:Dragonbones.Entities.EntityBuffer">
+            <summary>
+            A Default implementation of <see cref="T:Dragonbones.Entities.IEntityBuffer"/>
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityBuffer.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Constructor for Entity buffer
+            </summary>
+            <param name="initialCapacity">the initial capacity for the buffer</param>
+            <param name="hashSize">the size of the buffer's hashtable the larger the quicker name searches are but the more memory used</param>
+        </member>
+        <member name="P:Dragonbones.Entities.EntityBuffer.RemovedEntities">
+            <inheritdoc />
+        </member>
+        <member name="M:Dragonbones.Entities.EntityBuffer.SwapReadBuffer">
+            <summary>
+            Swaps the data buffer for reading
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityBuffer.SwapWriteBuffer">
+            <summary>
+            Swaps the data buffer for writing
+            Should be done when finished writing
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityBuffer.GetEnumerator">
+            <summary>Returns an enumerator that iterates through the collection.</summary>
+            <returns>An enumerator that can be used to iterate through the collection.</returns>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityBuffer.System#Collections#IEnumerable#GetEnumerator">
+            <summary>Returns an enumerator that iterates through a collection.</summary>
+            <returns>An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.</returns>
+        </member>
+        <member name="P:Dragonbones.Entities.EntityBuffer.Item(Dragonbones.Systems.SystemType,System.String)">
+            <summary>
+            Get the ID associated with a specific entity
+            </summary>
+            <param name="systemType">The type of system accessing this buffer
+            This determines where the information comes from</param>
+            <param name="name">the name of the entity</param>
+            <returns>the ID associated with the entity</returns>
+        </member>
+        <member name="P:Dragonbones.Entities.EntityBuffer.Item(Dragonbones.Systems.SystemType,System.Int32)">
+            <summary>
+            Access the name associated with an entity
+            </summary>
+            <param name="systemType">The type of system accessing this buffer
+            This determines where the information comes from</param>
+            <param name="id">the ID associated with the entity</param>
+            <returns>the name of the entity</returns>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityBuffer.Count(Dragonbones.Systems.SystemType)">
+            <summary>
+            retrieve the number of entities contained within this buffer
+            </summary>
+            <param name="systemType">The type of system accessing this buffer
+            This determines where the information comes from</param>
+            <returns>the number of entities contained within this buffer</returns>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityBuffer.Add(Dragonbones.Systems.SystemType,System.String)">
+            <summary>
+            Add a new entity to this buffer
+            </summary>
+            <param name="systemType">The type of system accessing this buffer
+            Render systems cannot create new entities</param>
+            <param name="name">the name of the new entity</param>
+            <returns>the ID associated with the new entity</returns>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityBuffer.GetID(Dragonbones.Systems.SystemType,System.String)">
+            <summary>
+            Get the ID associated with an entity
+            </summary>
+            <param name="systemType">The type of system accessing this buffer
+            This determines where the information comes from</param>
+            <param name="name">the name of the entity</param>
+            <returns>the ID associated with the entity or -1 if not found</returns>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityBuffer.GetName(Dragonbones.Systems.SystemType,System.Int32)">
+            <summary>
+            Get the name of an entity
+            </summary>
+            <param name="systemType">The type of system accessing this buffer
+            This determines where the information comes from</param>
+            <param name="id">the ID associated with the entity</param>
+            <returns>the name of the entity</returns>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityBuffer.Contains(Dragonbones.Systems.SystemType,System.String)">
+            <summary>
+            Does the buffer contain an entity
+            </summary>
+            <param name="systemType">The type of system accessing this buffer
+            This determines where the information comes from</param>
+            <param name="name">the name of the entity</param>
+            <returns>Whether the buffer contains the entity</returns>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityBuffer.Contains(Dragonbones.Systems.SystemType,System.Int32)">
+            <summary>
+            Does the buffer contain an entity
+            </summary>
+            <param name="systemType">The type of system accessing this buffer
+            This determines where the information comes from</param>
+            <param name="id">the ID associated with the entity</param>
+            <returns>Whether the buffer contains the entity</returns>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityBuffer.Rename(Dragonbones.Systems.SystemType,System.String,System.String)">
+            <summary>
+            Rename an entity
+            </summary>
+            <param name="systemType">The type of system accessing this buffer
+            Render systems cannot rename entities</param>
+            <param name="oldName">the current name of the entity</param>
+            <param name="newName">the new name of the entity</param>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityBuffer.Rename(Dragonbones.Systems.SystemType,System.Int32,System.String)">
+            <summary>
+            Rename an entity
+            </summary>
+            <param name="systemType">The type of system accessing this buffer
+            Render systems cannot rename entities</param>
+            <param name="id">the ID associated with the entity</param>
+            <param name="newName">the new name of the entity</param>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityBuffer.Remove(Dragonbones.Systems.SystemType,System.String)">
+            <summary>
+            Remove an entity
+            </summary>
+            <param name="systemType">The type of system accessing this buffer
+            Render systems cannot remove entities</param>
+            <param name="name">the name of the entity to remove</param>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityBuffer.Remove(Dragonbones.Systems.SystemType,System.Int32)">
+            <summary>
+            Remove an entity
+            </summary>
+            <param name="systemType">The type of system accessing this buffer
+            Render systems cannot remove entities</param>
+            <param name="id">the id associated with the entity</param>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityBuffer.Clear(Dragonbones.Systems.SystemType)">
+            <summary>
+            Clears the entity buffer
+            !!! This destroys all entities !!!
+            </summary>
+            <param name="systemType">The type of system accessing this buffer
+            Render systems cannot clear the buffer</param>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityBuffer.Dispose">
+            <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityBuffer.Dispose(System.Boolean)">
+            <summary>
+            Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+            </summary>
+            <param name="managed">should managed resources be disposed</param>
+        </member>
+        <member name="T:Dragonbones.Entities.EntityComponentBuffer">
+            <summary>
+            A buffer containing the links between entities and components
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityComponentBuffer.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Constructs an entity component buffer
+            </summary>
+            <param name="componentTypeCount">the number of different component types</param>
+            <param name="initialComponentSize">the default number of links allocated for a component type. More space is allocated when needed</param>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityComponentBuffer.SwapReadBuffer">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityComponentBuffer.SwapWriteBuffer">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityComponentBuffer.Add(Dragonbones.Systems.SystemType,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Adds a link between a component and an entity
+            Only one link between an entity and a component type can exist
+            </summary>
+            <param name="systemType">the type of system making the call, render systems cannot add entity component links</param>
+            <param name="componentType">The ID of the component type</param>
+            <param name="entityID">the ID of the entity</param>
+            <param name="componentID">the ID of the instance of the component</param>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityComponentBuffer.GetComponent(Dragonbones.Systems.SystemType,System.Int32,System.Int32)">
+            <summary>
+            Retrieve the ID of the component linked to an entity
+            </summary>
+            <param name="systemType">the type of system making the call, this depends on where the data comes from</param>
             <param name="componentType">the ID of the component type</param>
-            <param name="componentID">the ID of the component being added</param>
+            <param name="entity">the ID of the entity</param>
+            <returns>the ID of the component of the type related to the entity or -1 if no such link exists</returns>
         </member>
-        <member name="M:Dragonbones.Entities.Entity.RemoveComponent(Dragonbones.Systems.SystemType,System.Int32)">
+        <member name="M:Dragonbones.Entities.EntityComponentBuffer.GetComponents(Dragonbones.Systems.SystemType,System.Int32)">
             <summary>
-            Remove a component type from the entity
+            Get all components related to an entity
             </summary>
-            <param name="systemType">the type of system making the call render systems cannot remove components</param>
-            <param name="componentType">the ID for the component type</param>
+            <param name="systemType">the type of system making the call, this depends on where the data comes from</param>
+            <param name="entity">the ID of the entity</param>
+            <returns>An array of all the componentTypeIDs with the componentIDs the first ID in the tuple is the type, the second is the instance ID</returns>
         </member>
-        <member name="M:Dragonbones.Entities.Entity.ContainsComponent(Dragonbones.Systems.SystemType,System.Int32)">
+        <member name="M:Dragonbones.Entities.EntityComponentBuffer.GetLinks(Dragonbones.Systems.SystemType,System.Int32)">
             <summary>
-            Does this entity contain a specific component type
+            Get all the entity component links for a specific component type
             </summary>
-            <param name="systemType">the type of system making the call this affects what data is shown</param>
+            <param name="systemType">the type of system making the call, this depends on where the data comes from</param>
+            <param name="componentType">The ID of the type of component</param>
+            <returns></returns>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityComponentBuffer.ContainsLink(Dragonbones.Systems.SystemType,System.Int32,System.Int32)">
+            <summary>
+            Does an entity have a link with a component of a specific type
+            </summary>
+            <param name="systemType">the type of system making the call, this affects what data is retrieved</param>
             <param name="componentType">the ID of the component type</param>
-            <returns>Whether the entity contains that type of component</returns>
+            <param name="entity">the ID of the entity</param>
+            <returns></returns>
         </member>
-        <member name="M:Dragonbones.Entities.Entity.GetComponentData(Dragonbones.Systems.SystemType)">
+        <member name="M:Dragonbones.Entities.EntityComponentBuffer.FindIndex(Dragonbones.Collections.BufferTransactionType,Dragonbones.Entities.EntityComponentBuffer.Entry,System.Int32,System.Int32@)">
             <summary>
-            Returns the component data for this entity
+            Find where an entity exists in an Entry or where it should go
             </summary>
-            <param name="systemType">the type of system making the call this affects what data is shown</param>
-            <returns>An array of component data the first index is either 0 for componentType, or 1 for componentData, the second index is for each component</returns>
+            <param name="type">the type of buffer transaction, depends on where the data comes from</param>
+            <param name="ent">the entry to search</param>
+            <param name="entityID">the entity ID</param>
+            <param name="index">the returned index of where the entity is or should go</param>
+            <returns>If the entity already has a link in the entry</returns>
         </member>
-        <member name="M:Dragonbones.Entities.Entity.FindLocation(Dragonbones.Collections.BufferTransactionType,System.Int32)">
+        <member name="M:Dragonbones.Entities.EntityComponentBuffer.FindIndex(Dragonbones.Collections.BufferTransactionType,Dragonbones.Entities.EntityComponentBuffer.Entry,System.Int32,System.Int32@,Dragonbones.Entities.EntityComponentLink@)">
             <summary>
-            Find the location of a specific component type in the entity
+            Find where an entity exists in an Entry or where it should go
             </summary>
-            <param name="type">the type of transaction usually from system type</param>
-            <param name="componentType">the ID of the type of component</param>
-            <returns>The index of the component type in the componentData</returns>
+            <param name="type">the type of buffer transaction, depends on where the data comes from</param>
+            <param name="ent">the entry to search</param>
+            <param name="entityID">the entity ID</param>
+            <param name="index">the returned index of where the entity is or should go</param>
+            <param name="link">the returned link data of the entity found</param>
+            <returns>If the entity already has a link in the entry</returns>
         </member>
-        <member name="M:Dragonbones.Entities.Entity.ContainsComponents(Dragonbones.Systems.SystemType,System.Int32[],System.Int32[]@)">
+        <member name="P:Dragonbones.Entities.EntityComponentBuffer.Entry.Top">
             <summary>
-            Informs if this entity contains a list of components
+            The top entry in the Links buffer
             </summary>
-            <param name="systemType">the type of system making the call this determines what data is accessed</param>
-            <param name="componentTypes">the component type IDs to check</param>
-            <param name="componentIDs">the IDs of the components of the types of the corresponding index from the entity</param>
-            <returns>Whether the entity contains the given component types</returns>
         </member>
-        <member name="M:Dragonbones.Entities.Entity.SetID(System.Int32)">
+        <member name="P:Dragonbones.Entities.EntityComponentBuffer.Entry.Links">
             <summary>
-            Sets the Entity's ID
-            Designed to be used by System only
-            !!! DO NOT USE THIS FUNCTION !!!
+            The buffer of entity component links for this component type
             </summary>
-            <param name="id">the id of the entity</param>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityComponentBuffer.Dispose(System.Boolean)">
+            <summary>
+            Dispose this object
+            </summary>
+            <param name="disposing">Are managed objects being disposed</param>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityComponentBuffer.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="T:Dragonbones.Entities.EntityComponentLink">
+            <summary>
+            A structure that represents a link between an Entity and a Component
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityComponentLink.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Default constructor
+            </summary>
+            <param name="entity">the ID of the entity</param>
+            <param name="component">the ID of the component instance</param>
+        </member>
+        <member name="P:Dragonbones.Entities.EntityComponentLink.EntityID">
+            <summary>
+            The ID of the entity that this link involves
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Entities.EntityComponentLink.ComponentID">
+            <summary>
+            The ID of the component that this link involves
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityComponentLink.Equals(Dragonbones.Entities.EntityComponentLink)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityComponentLink.Equals(System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityComponentLink.GetHashCode">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityComponentLink.op_Equality(Dragonbones.Entities.EntityComponentLink,Dragonbones.Entities.EntityComponentLink)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityComponentLink.op_Inequality(Dragonbones.Entities.EntityComponentLink,Dragonbones.Entities.EntityComponentLink)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Dragonbones.Entities.IEntityBuffer">
+            <summary>
+            The buffer designed to hold entity data
+            Entities are simply a name tied to an ID
+            Some interactions like remove should be postponed until the end of a frame
+            (when SwapWriteBuffer is called)
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Entities.IEntityBuffer.Item(Dragonbones.Systems.SystemType,System.String)">
+            <summary>
+            Get the ID associated with a specific entity
+            </summary>
+            <param name="systemType">The type of system accessing this buffer
+            This determines where the information comes from</param>
+            <param name="name">the name of the entity</param>
+            <returns>the ID associated with the entity</returns>
+        </member>
+        <member name="P:Dragonbones.Entities.IEntityBuffer.RemovedEntities">
+            <summary>
+            This is the list of entities removed this frame
+            !!! DO NOT EDIT THIS LIST !!!
+            This list is for the system to use at the end of an update for object cleanup
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Entities.IEntityBuffer.Item(Dragonbones.Systems.SystemType,System.Int32)">
+            <summary>
+            Access the name associated with an entity
+            </summary>
+            <param name="systemType">The type of system accessing this buffer
+            This determines where the information comes from</param>
+            <param name="id">the ID associated with the entity</param>
+            <returns>the name of the entity</returns>
+        </member>
+        <member name="M:Dragonbones.Entities.IEntityBuffer.Count(Dragonbones.Systems.SystemType)">
+            <summary>
+            retrieve the number of entities contained within this buffer
+            </summary>
+            <param name="systemType">The type of system accessing this buffer
+            This determines where the information comes from</param>
+            <returns>the number of entities contained within this buffer</returns>
+        </member>
+        <member name="M:Dragonbones.Entities.IEntityBuffer.Add(Dragonbones.Systems.SystemType,System.String)">
+            <summary>
+            Add a new entity to this buffer
+            </summary>
+            <param name="systemType">The type of system accessing this buffer
+            Render systems cannot create new entities</param>
+            <param name="name">the name of the new entity</param>
+            <returns>the ID associated with the new entity</returns>
+        </member>
+        <member name="M:Dragonbones.Entities.IEntityBuffer.GetID(Dragonbones.Systems.SystemType,System.String)">
+            <summary>
+            Get the ID associated with an entity
+            </summary>
+            <param name="systemType">The type of system accessing this buffer
+            This determines where the information comes from</param>
+            <param name="name">the name of the entity</param>
+            <returns>the ID associated with the entity or -1 if not found</returns>
+        </member>
+        <member name="M:Dragonbones.Entities.IEntityBuffer.GetName(Dragonbones.Systems.SystemType,System.Int32)">
+            <summary>
+            Get the name of an entity
+            </summary>
+            <param name="systemType">The type of system accessing this buffer
+            This determines where the information comes from</param>
+            <param name="id">the ID associated with the entity</param>
+            <returns>the name of the entity</returns>
+        </member>
+        <member name="M:Dragonbones.Entities.IEntityBuffer.Contains(Dragonbones.Systems.SystemType,System.String)">
+            <summary>
+            Does the buffer contain an entity
+            </summary>
+            <param name="systemType">The type of system accessing this buffer
+            This determines where the information comes from</param>
+            <param name="name">the name of the entity</param>
+            <returns>Whether the buffer contains the entity</returns>
+        </member>
+        <member name="M:Dragonbones.Entities.IEntityBuffer.Contains(Dragonbones.Systems.SystemType,System.Int32)">
+            <summary>
+            Does the buffer contain an entity
+            </summary>
+            <param name="systemType">The type of system accessing this buffer
+            This determines where the information comes from</param>
+            <param name="id">the ID associated with the entity</param>
+            <returns>Whether the buffer contains the entity</returns>
+        </member>
+        <member name="M:Dragonbones.Entities.IEntityBuffer.Rename(Dragonbones.Systems.SystemType,System.String,System.String)">
+            <summary>
+            Rename an entity
+            </summary>
+            <param name="systemType">The type of system accessing this buffer
+            Render systems cannot rename entities</param>
+            <param name="oldName">the current name of the entity</param>
+            <param name="newName">the new name of the entity</param>
+        </member>
+        <member name="M:Dragonbones.Entities.IEntityBuffer.Rename(Dragonbones.Systems.SystemType,System.Int32,System.String)">
+            <summary>
+            Rename an entity
+            </summary>
+            <param name="systemType">The type of system accessing this buffer
+            Render systems cannot rename entities</param>
+            <param name="id">the ID associated with the entity</param>
+            <param name="newName">the new name of the entity</param>
+        </member>
+        <member name="M:Dragonbones.Entities.IEntityBuffer.Remove(Dragonbones.Systems.SystemType,System.String)">
+            <summary>
+            Remove an entity
+            </summary>
+            <param name="systemType">The type of system accessing this buffer
+            Render systems cannot remove entities</param>
+            <param name="name">the name of the entity to remove</param>
+        </member>
+        <member name="M:Dragonbones.Entities.IEntityBuffer.Remove(Dragonbones.Systems.SystemType,System.Int32)">
+            <summary>
+            Remove an entity
+            </summary>
+            <param name="systemType">The type of system accessing this buffer
+            Render systems cannot remove entities</param>
+            <param name="id">the id associated with the entity</param>
+        </member>
+        <member name="M:Dragonbones.Entities.IEntityBuffer.Clear(Dragonbones.Systems.SystemType)">
+            <summary>
+            Clears the entity buffer
+            !!! This destroys all entities !!!
+            </summary>
+            <param name="systemType">The type of system accessing this buffer
+            Render systems cannot clear the buffer</param>
         </member>
         <member name="T:Dragonbones.MathHelper">
             <summary>
@@ -1104,15 +1545,15 @@
             <param name="systemLaneID">The id of system lane to provide a system for</param>
             <returns>if thereare more systems to run</returns>
         </member>
-        <member name="M:Dragonbones.Systems.ISystemSchedule.Register(Dragonbones.Systems.SystemInfo)">
+        <member name="M:Dragonbones.Systems.ISystemSchedule.Add(Dragonbones.Systems.SystemInfo)">
             <summary>
             Register the next system to the schedule
             </summary>
             <param name="systemBatch">the batch of systems</param>
         </member>
-        <member name="M:Dragonbones.Systems.ISystemSchedule.RegisterFromRegistry(Dragonbones.Systems.ISystemRegistry)">
+        <member name="M:Dragonbones.Systems.ISystemSchedule.AddFromRegistry(Dragonbones.Systems.ISystemRegistry)">
             <summary>
-            Registers all systems from the attached registry
+            Adds all systems from the attached registry
             </summary>
             <param name="registry">the system registry to add</param>
         </member>
@@ -1388,6 +1829,15 @@
         <member name="M:Dragonbones.Systems.SystemRegistry.System#Collections#IEnumerable#GetEnumerator">
             <inheritdoc />
         </member>
+        <member name="M:Dragonbones.Systems.SystemRegistry.Dispose(System.Boolean)">
+            <summary>
+            Dispose this object
+            </summary>
+            <param name="disposing">Are managed objects being disposed</param>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemRegistry.Dispose">
+            <inheritdoc />
+        </member>
         <member name="T:Dragonbones.Systems.SystemSchedule">
             <summary>
             A base implementation of <see cref="T:Dragonbones.Systems.ISystemSchedule"/>
@@ -1413,7 +1863,7 @@
             <inheritdoc />
             </summary>
         </member>
-        <member name="M:Dragonbones.Systems.SystemSchedule.Register(Dragonbones.Systems.SystemInfo)">
+        <member name="M:Dragonbones.Systems.SystemSchedule.Add(Dragonbones.Systems.SystemInfo)">
             <summary>
             <inheritdoc />
             Only sorted on insertion
@@ -1475,7 +1925,7 @@
             <inheritdoc />
             </summary>
         </member>
-        <member name="M:Dragonbones.Systems.SystemSchedule.RegisterFromRegistry(Dragonbones.Systems.ISystemRegistry)">
+        <member name="M:Dragonbones.Systems.SystemSchedule.AddFromRegistry(Dragonbones.Systems.ISystemRegistry)">
             <summary>
             <inheritdoc />
             </summary>
@@ -1497,6 +1947,12 @@
             Logic systems run on a multiple of 1/60th of a second time step
             Should only be used for logic
             Should not be used to draw anything to screen
+            </summary>
+        </member>
+        <member name="F:Dragonbones.Systems.SystemType.SystemReadonly">
+            <summary>
+            This is used by the system for readonly calls
+            DO NOT USE THIS
             </summary>
         </member>
     </members>

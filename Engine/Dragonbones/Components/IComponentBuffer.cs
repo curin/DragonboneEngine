@@ -10,7 +10,11 @@ namespace Dragonbones.Components
     /// <summary>
     /// A buffer to store all component types 
     /// </summary>
-    public interface IComponentBuffer : IDataBuffer, IEnumerable
+#pragma warning disable CA1710 // Identifiers should have correct suffix
+#pragma warning disable CA1010 // Collections should implement generic interface
+    public interface IComponentBuffer : IDataBuffer, IEnumerable, IEquatable<IComponentBuffer>
+#pragma warning restore CA1010 // Collections should implement generic interface
+#pragma warning restore CA1710 // Identifiers should have correct suffix
     {
         /// <summary>
         /// The user defined typeName
@@ -21,6 +25,7 @@ namespace Dragonbones.Components
         /// <summary>
         /// A ID assigned by the system to this Buffer
         /// Should be assigned by SetBufferID function
+        /// Should default to -1
         /// </summary>
         int BufferID { get; }
         /// <summary>
@@ -35,8 +40,12 @@ namespace Dragonbones.Components
         /// </summary>
         /// <param name="systemType">the type of system making the call which affects where in the buffer the data is retrieved</param>
         /// <returns>the count of entries in the buffer from the perspective of the system</returns>
-
         int Count(SystemType systemType);
+        /// <summary>
+        /// This system is going to be cleared.
+        /// This is used by the system.
+        /// </summary>
+        bool WaitingClear { get; }
 
         /// <summary>
         /// Attempts to shrink the buffer to a new capacity.

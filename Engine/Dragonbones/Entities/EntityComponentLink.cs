@@ -34,5 +34,29 @@ namespace Dragonbones.Entities
         {
             return other.EntityID == EntityID;
         }
+
+        ///<inheritdoc/>
+        public override bool Equals(object obj)
+        {
+            return base.Equals(obj);
+        }
+
+        ///<inheritdoc/>
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        ///<inheritdoc/>
+        public static bool operator ==(EntityComponentLink left, EntityComponentLink right)
+        {
+            return left.Equals(right);
+        }
+
+        ///<inheritdoc/>
+        public static bool operator !=(EntityComponentLink left, EntityComponentLink right)
+        {
+            return !(left == right);
+        }
     }
 }

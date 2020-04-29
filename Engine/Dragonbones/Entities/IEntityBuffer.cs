@@ -14,7 +14,9 @@ namespace Dragonbones.Entities
     /// Some interactions like remove should be postponed until the end of a frame
     /// (when SwapWriteBuffer is called)
     /// </summary>
+#pragma warning disable CA1710 // Identifiers should have correct suffix
     public interface IEntityBuffer : IDataBuffer, IEnumerable<Tuple<int, string>>
+#pragma warning restore CA1710 // Identifiers should have correct suffix
     {
         /// <summary>
         /// Get the ID associated with a specific entity

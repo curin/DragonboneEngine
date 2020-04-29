@@ -11,7 +11,9 @@ namespace Dragonbones.Components
     /// This contains information specific to the component
     /// </summary>
     /// <typeparam name="TComponent">The component type being stored</typeparam>
+#pragma warning disable CA1710 // Identifiers should have correct suffix
     public interface IComponentBuffer<TComponent> : IComponentBuffer, IEnumerable<TComponent>
+#pragma warning restore CA1710 // Identifiers should have correct suffix
         where TComponent : struct, IEquatable<TComponent>
     {
         /// <summary>
@@ -57,12 +59,14 @@ namespace Dragonbones.Components
         /// <returns>Whether a component is associated with the given name</returns>
         bool TryGet(SystemType systemType, string name, out TComponent value);
 
+
         /// <summary>
         /// Retrieve a component for a system
         /// </summary>
         /// <param name="systemType">the type of system making the call</param>
         /// <param name="id">the ID associated with the component</param>
         /// <returns>the component associated with the ID</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "Get is not a keyword get is")]
         TComponent Get(SystemType systemType, int id);
         /// <summary>
         /// Retrieve a component for a system
@@ -70,6 +74,7 @@ namespace Dragonbones.Components
         /// <param name="systemType">the type of system making the call</param>
         /// <param name="name">the name associated with the component</param>
         /// <returns>the component associated with the name</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "Get is not a keyword get is")]
         TComponent Get(SystemType systemType, string name);
 
         /// <summary>
@@ -79,6 +84,7 @@ namespace Dragonbones.Components
         /// Set calls are ignored from Render Systems</param>
         /// <param name="id">the ID associated with component</param>
         /// <param name="value">the value to set</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "Set is not a keyword set is")]
         void Set(SystemType systemType, int id, TComponent value);
         /// <summary>
         /// Set the value of a component from a system
@@ -87,6 +93,7 @@ namespace Dragonbones.Components
         /// Set calls are ignored from Render Systems</param>
         /// <param name="name">the name associated with component</param>
         /// <param name="value">the value to set</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "Set is not a keyword set is")]
         void Set(SystemType systemType, string name, TComponent value);
 
         /// <summary>
@@ -135,6 +142,8 @@ namespace Dragonbones.Components
         /// <param name="id">the ID associated with the component</param>
         /// <returns>the component associated with the ID</returns>
         TComponent PopAt(SystemType systemType, int id);
+
+#pragma warning disable CS1723 // XML comment has cref attribute that refers to a type parameter
         /// <summary>
         /// Retrieve current value of a component then remove it from the buffer
         /// This only works if the <see cref="TComponent"/>.Equals(<see cref="TComponent"/>); is written so that the items don't need to be completely identical
@@ -144,6 +153,7 @@ namespace Dragonbones.Components
         /// <param name="value">the component to retrieve and remove</param>
         /// <returns>the updated copy of the component</returns>
         TComponent Pop(SystemType systemType, TComponent value);
+#pragma warning restore CS1723 // XML comment has cref attribute that refers to a type parameter
 
         /// <summary>
         /// Attempts to retrieve then remove a component from the buffer
@@ -163,6 +173,8 @@ namespace Dragonbones.Components
         /// <param name="value">the current value retrieved</param>
         /// <returns>Whether the pop was successful</returns>
         bool TryPopAt(SystemType systemType, int id, out TComponent value);
+
+#pragma warning disable CS1723 // XML comment has cref attribute that refers to a type parameter
         /// <summary>
         /// Attempts to retrieve current value of a component then remove it from the buffer
         /// This only works if the <see cref="TComponent"/>.Equals(<see cref="TComponent"/>); is written so that the items don't need to be completely identical
@@ -173,5 +185,6 @@ namespace Dragonbones.Components
         /// <param name="newValue">the current value retrieved</param>
         /// <returns>Whether the pop was successful</returns>
         bool TryPop(SystemType systemType, TComponent value, out TComponent newValue);
+#pragma warning restore CS1723 // XML comment has cref attribute that refers to a type parameter
     }
 }

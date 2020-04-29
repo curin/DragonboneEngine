@@ -17,7 +17,7 @@ namespace Dragonbones.Components
         where TComponent : struct, IEquatable<TComponent>
     {
         private string _typeName;
-        private int _bufferID;
+        private int _bufferID = -1;
         /// <summary>
         /// Constructs a singleton buffer
         /// </summary>
@@ -49,7 +49,7 @@ namespace Dragonbones.Components
         /// <returns>An enumerator that can be used to iterate through the collection.</returns>
         public IEnumerator<TComponent> GetEnumerator()
         {
-            throw new NotImplementedException();
+            return new Enumerator(BufferTransactionType.ReadOnly, this);
         }
 
         /// <summary>Returns an enumerator that iterates through a collection.</summary>
@@ -71,6 +71,9 @@ namespace Dragonbones.Components
         /// Should be assigned by SetBufferID function
         /// </summary>
         public int BufferID => _bufferID;
+
+        /// <inheritdoc/>
+        public bool WaitingClear => false;
 
         /// <summary>
         /// Sets the BufferID field
@@ -451,5 +454,88 @@ namespace Dragonbones.Components
             GC.SuppressFinalize(this);
         }
         #endregion
+
+
+        ///<inheritdoc/>
+        public bool Equals(IComponentBuffer other)
+        {
+            return other.TypeName == TypeName;
+        }
+
+        /// <summary>
+        /// Implementation of <see cref="IEnumerable{TComponent}"/> for a Singleton Buffer
+        /// </summary>
+        public class Enumerator : IEnumerator<TComponent>
+        {
+            SingletonBuffer<TComponent> _buffer;
+            int num = 0;
+            BufferTransactionType _type;
+
+            /// <summary>
+            /// Basic constructor for the enumerator
+            /// </summary>
+            /// <param name="type">the transaction type, used to define where the information comes from</param>
+            /// <param name="buffer">the buffer data comes from</param>
+            public Enumerator(BufferTransactionType type, SingletonBuffer<TComponent> buffer)
+            {
+                _type = type;
+                _buffer = buffer;
+            }
+
+            /// <inheritdoc/>
+            public TComponent Current => _buffer._buffer[_type];
+
+            object IEnumerator.Current => _buffer._buffer[_type];
+
+            /// <inheritdoc/>
+            public bool MoveNext()
+            {
+                if (num <= 1)
+                {
+                    num++;
+                    return true;
+                }
+                return false;
+            }
+
+            /// <inheritdoc/>
+            public void Reset()
+            {
+                num = 0;
+            }
+
+            #region IDisposable Support
+            private bool disposedValue = false; // To detect redundant calls
+
+            /// <summary>
+            /// Disposes this object
+            /// </summary>
+            /// <param name="disposing">is this disposing managed objects</param>
+            protected virtual void Dispose(bool disposing)
+            {
+                if (!disposedValue)
+                {
+                    if (disposing)
+                    {
+                        _buffer = null;
+                    }
+
+                    // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                    // TODO: set large fields to null.
+
+                    disposedValue = true;
+                }
+            }
+
+            /// <inheritdoc/>
+            public void Dispose()
+            {
+                // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+                Dispose(true);
+                // TODO: uncomment the following line if the finalizer is overridden above.
+                GC.SuppressFinalize(this);
+            }
+            #endregion
+        }
     }
 }

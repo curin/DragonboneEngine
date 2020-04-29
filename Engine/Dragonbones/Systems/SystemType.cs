@@ -20,6 +20,16 @@ namespace Dragonbones.Systems
         /// Should only be used for logic
         /// Should not be used to draw anything to screen
         /// </summary>
-        Logic = 0
+        Logic = 0,
+        /// <summary>
+        /// This is used by the system for readonly calls
+        /// DO NOT USE THIS
+        /// </summary>
+        SystemReadonly = 2,
+        /// <summary>
+        /// This is used by the system for write/read calls
+        /// DO NOT USE THIS
+        /// </summary>
+        SystemWriteRead = 0
     }
 }
