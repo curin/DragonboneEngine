@@ -12,7 +12,9 @@ namespace Dragonbones.Entities
     /// <summary>
     /// A Default implementation of <see cref="IEntityBuffer"/>
     /// </summary>
+#pragma warning disable CA1710 // Identifiers should have correct suffix
     public class EntityBuffer : IEntityBuffer
+#pragma warning restore CA1710 // Identifiers should have correct suffix
     {
         private NameBuffer _buffer;
         private List<int> _removeList = new List<int>();
