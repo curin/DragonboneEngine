@@ -167,9 +167,21 @@ namespace Dragonbones.Collections
         /// <param name="type">the transaction type which determines whether the write buffer or read buffer is copied</param>
         /// <param name="array">the array to copy to</param>
         /// <param name="index">the index to start the copy at</param>
-        public void CopyTo(BufferTransactionType type, Array array, int index)
+        public void CopyTo(BufferTransactionType type, TValue[] array, int index)
         {
             _values[(int)type].CopyTo(array, index);
+        }
+
+        /// <summary>
+        /// Copies buffer contents to an array at the specified index
+        /// </summary>
+        /// <param name="type">the transaction type which determines whether the write buffer or read buffer is copied</param>
+        /// <param name="array">the array to copy to</param>
+        /// <param name="index">the index to start the copy at</param>
+        /// <param name="length">the number of entries to copy</param>
+        public void CopyTo(BufferTransactionType type, TValue[] array, int index, int length)
+        {
+            Array.Copy(_values[(int)type], 0, array, index, length);
         }
 
         /// <summary>

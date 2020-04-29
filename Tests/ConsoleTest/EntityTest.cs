@@ -12,9 +12,7 @@ namespace ConsoleTest
         public static void Run(int entityCount, int componentCount)
         {
             PrecisionTimer timer = new PrecisionTimer();
-            Entity ent = new Entity("Bob", componentCount);
             List<int>[] componentLists = new List<int>[componentCount];
-            List<Entity> entityList = new List<Entity>(entityCount);
             int[] requiredComponents = new int[componentCount];
             Random rand = new Random();
             
@@ -29,8 +27,6 @@ namespace ConsoleTest
                 for (int j = 0; j < componentCount; j++)
                     if (rand.Next(10) > 5)
                         componentLists[j].Add(i);
-                entityList.Add(ent);
-                entityList[i].SetID(i);
             }
 
             Console.WriteLine("Time to Create Entity : " + timer.ElapsedSeconds);
