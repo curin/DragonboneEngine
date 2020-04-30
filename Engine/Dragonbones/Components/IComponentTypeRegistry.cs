@@ -5,16 +5,21 @@ using Dragonbones.Systems;
 
 namespace Dragonbones.Components
 {
+    /// <summary>
+    /// A Data Registry meant to store the different types of <see cref="IComponentBuffer"/>
+    /// This is suited for quick lookup and not quick removal as it should happen rarely that a component type is removed.
+    /// </summary>
+#pragma warning disable CA1710 // Identifiers should have correct suffix
     public interface IComponentTypeRegistry : IEnumerable<IComponentBuffer>
+#pragma warning restore CA1710 // Identifiers should have correct suffix
     {
         /// <summary>
         /// Registers a componentBuffer with this registry
         /// </summary>
-        /// <param name="systemType">The type of system making the call, render systems cannot register new component types</param>
         /// <param name="typeName">the name of the type of component stored in the buffer</param>
         /// <param name="buffer">the buffer to register</param>
         /// <returns>the ID associated with the componentbuffer</returns>
-        int Register(SystemType systemType, string typeName, IComponentBuffer buffer);
+        int Register(string typeName, IComponentBuffer buffer);
 
 
         /// <summary>
@@ -94,5 +99,9 @@ namespace Dragonbones.Components
         /// </summary>
         /// <param name="buffer">the buffer to remove</param>
         void Remove(IComponentBuffer buffer);
+        /// <summary>
+        /// Clears all the registry data
+        /// </summary>
+        void Clear();
     }
 }
