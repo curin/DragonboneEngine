@@ -346,7 +346,7 @@
         <member name="M:Dragonbones.Components.ComponentTypeRegistry.GetName(Dragonbones.Components.IComponentBuffer)">
             <inheritdoc/>
         </member>
-        <member name="M:Dragonbones.Components.ComponentTypeRegistry.Register(System.String,Dragonbones.Components.IComponentBuffer)">
+        <member name="M:Dragonbones.Components.ComponentTypeRegistry.Register(Dragonbones.Components.IComponentBuffer)">
             <inheritdoc/>
         </member>
         <member name="M:Dragonbones.Components.ComponentTypeRegistry.Remove(System.Int32)">
@@ -650,11 +650,10 @@
             This is suited for quick lookup and not quick removal as it should happen rarely that a component type is removed.
             </summary>
         </member>
-        <member name="M:Dragonbones.Components.IComponentTypeRegistry.Register(System.String,Dragonbones.Components.IComponentBuffer)">
+        <member name="M:Dragonbones.Components.IComponentTypeRegistry.Register(Dragonbones.Components.IComponentBuffer)">
             <summary>
             Registers a componentBuffer with this registry
             </summary>
-            <param name="typeName">the name of the type of component stored in the buffer</param>
             <param name="buffer">the buffer to register</param>
             <returns>the ID associated with the componentbuffer</returns>
         </member>

@@ -10,16 +10,15 @@ namespace Dragonbones.Components
     /// This is suited for quick lookup and not quick removal as it should happen rarely that a component type is removed.
     /// </summary>
 #pragma warning disable CA1710 // Identifiers should have correct suffix
-    public interface IComponentTypeRegistry : IEnumerable<IComponentBuffer>
+    public interface IComponentTypeRegistry : IEnumerable<IComponentBuffer>, IDisposable
 #pragma warning restore CA1710 // Identifiers should have correct suffix
     {
         /// <summary>
         /// Registers a componentBuffer with this registry
         /// </summary>
-        /// <param name="typeName">the name of the type of component stored in the buffer</param>
         /// <param name="buffer">the buffer to register</param>
         /// <returns>the ID associated with the componentbuffer</returns>
-        int Register(string typeName, IComponentBuffer buffer);
+        int Register(IComponentBuffer buffer);
 
 
         /// <summary>

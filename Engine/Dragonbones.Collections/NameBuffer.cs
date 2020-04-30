@@ -35,6 +35,7 @@ namespace Dragonbones.Collections
         {
             _buffer = new DataBuffer<Entry>(initialCapacity);
             _hashStarts = new DataBuffer<int>(hashSize, -1);
+            _hashEnds = new int[hashSize];
             _hashSize = hashSize;
             _capacity = initialCapacity;
 

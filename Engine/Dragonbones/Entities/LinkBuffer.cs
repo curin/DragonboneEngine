@@ -10,7 +10,7 @@ namespace Dragonbones.Entities
     /// <summary>
     /// A default implementation of <see cref="ILinkBuffer"/>
     /// </summary>
-    public class LinkBuffer : IDataBuffer
+    public class LinkBuffer : ILinkBuffer
     {
         /// <summary>
         /// Constructs an entity component buffer
@@ -30,25 +30,27 @@ namespace Dragonbones.Entities
         ///<inheritdoc/>
         public void SwapReadBuffer()
         {
+            _entries.SwapReadBuffer();
             for (int i = 0; i < _entries.GetLength(); i++)
             {
                 Entry ent = _entries.Get(BufferTransactionType.ReadOnly, i);
                 ent.Top?.SwapReadBuffer();
                 ent.Links?.SwapReadBuffer();
             }
-            _entries.SwapReadBuffer();
+            
         }
 
         ///<inheritdoc/>
         public void SwapWriteBuffer()
         {
+            _entries.SwapWriteBuffer();
             for (int i = 0; i < _entries.GetLength(); i++)
             {
                 Entry ent = _entries.Get(BufferTransactionType.WriteRead, i);
                 ent.Top?.SwapWriteBuffer();
                 ent.Links?.SwapWriteBuffer();
             }
-            _entries.SwapWriteBuffer();
+            
         }
 
         /// <summary>
@@ -91,6 +93,7 @@ namespace Dragonbones.Entities
                     ent.Links.ShiftData(type, index, ent.Top[type] - index, index + 1);
                 }
                 ent.Links.Set(type, index, new EntityComponentLink(entityID, componentID));
+                ent.Top[type]++;
             }
         }
 
