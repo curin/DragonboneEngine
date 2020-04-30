@@ -563,8 +563,14 @@
             The enumerator for <see cref="T:Dragonbones.Collections.NameBuffer"/>
             </summary>
         </member>
+        <member name="M:Dragonbones.Collections.NameBuffer.Dispose(System.Boolean)">
+            <summary>
+            Disposes of this object
+            </summary>
+            <param name="disposing">Should managed objects be disposed</param>
+        </member>
         <member name="M:Dragonbones.Collections.NameBuffer.Dispose">
-            <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+            <inheritdoc />
         </member>
         <member name="T:Dragonbones.Collections.NamedDataBuffer`1">
             <summary>
@@ -903,8 +909,14 @@
             The enumerator for <see cref="T:Dragonbones.Collections.NamedDataBuffer`1"/>
             </summary>
         </member>
+        <member name="M:Dragonbones.Collections.NamedDataBuffer`1.Dispose(System.Boolean)">
+            <summary>
+            Disposes of this object
+            </summary>
+            <param name="disposing">Should managed objects be disposed</param>
+        </member>
         <member name="M:Dragonbones.Collections.NamedDataBuffer`1.Dispose">
-            <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+            <inheritdoc/>
         </member>
         <member name="T:Dragonbones.Collections.NamedDataRegistry`1">
             <summary>

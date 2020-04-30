@@ -149,6 +149,16 @@ namespace ConsoleTest
                 Console.WriteLine(_entities.GetName(_sysInf.Type, links[0].EntityID) + ": " + tests.Get(_sysInf.Type, links[0].ComponentID).Test);
             }
         }
+
+        public void Initialize()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class TestLogic : ISystem
@@ -190,6 +200,16 @@ namespace ConsoleTest
             _timer.Stop();
             Console.WriteLine(_timer.ElapsedSecondsF);
             _timer.Reset();
+        }
+
+        public void Initialize()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
         }
     }
 }

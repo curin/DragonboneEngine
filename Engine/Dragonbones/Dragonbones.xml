@@ -367,6 +367,15 @@
         <member name="M:Dragonbones.Components.ComponentTypeRegistry.System#Collections#IEnumerable#GetEnumerator">
             <inheritdoc/>
         </member>
+        <member name="M:Dragonbones.Components.ComponentTypeRegistry.Dispose(System.Boolean)">
+            <summary>
+            Disposes of this object
+            </summary>
+            <param name="disposing">Should managed objects be disposed</param>
+        </member>
+        <member name="M:Dragonbones.Components.ComponentTypeRegistry.Dispose">
+            <inheritdoc/>
+        </member>
         <member name="T:Dragonbones.Components.IComponentBuffer">
             <summary>
             A buffer to store all component types 
@@ -1689,6 +1698,11 @@
             The system's header info
             </summary>
         </member>
+        <member name="M:Dragonbones.Systems.ISystem.Initialize">
+            <summary>
+            Method for required setup period prior to system run
+            </summary>
+        </member>
         <member name="M:Dragonbones.Systems.ISystem.Run(System.Single)">
             <summary>
             The method run for this system
@@ -2102,6 +2116,12 @@
             ID as set by System Registry
             </summary>
             <param name="id">the system's ID</param>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemInfo.SetAdmin(Dragonbones.IEntityAdmin)">
+            <summary>
+            Sets the Admin field so that this system has access to the admin
+            </summary>
+            <param name="admin">the admin controlling this system</param>
         </member>
         <member name="M:Dragonbones.Systems.SystemInfo.SetComponentIDs(System.Int32[])">
             <summary>

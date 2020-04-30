@@ -61,6 +61,8 @@ namespace Dragonbones.Systems
         private readonly string _name;
         private int _id;
         private int[] _componentIDs;
+
+        public IEntityAdmin Admin { get; private set; }
         /// <summary>
         /// The type of system, which defines when it is run
         /// </summary>
@@ -139,6 +141,15 @@ namespace Dragonbones.Systems
         public void SetID(int id)
         {
             _id = id;
+        }
+
+        /// <summary>
+        /// Sets the Admin field so that this system has access to the admin
+        /// </summary>
+        /// <param name="admin">the admin controlling this system</param>
+        public void SetAdmin(IEntityAdmin admin)
+        {
+            Admin = admin;
         }
         /// <summary>
         /// Method so system can set the component ids from the names

@@ -79,6 +79,8 @@ namespace Dragonbones.Components
         ///<inheritdoc/>
         public int Register(IComponentBuffer buffer)
         {
+            if (buffer == null)
+                throw new ArgumentNullException(nameof(buffer));
             return _registry.Add(buffer.TypeName, buffer);
         }
 
@@ -127,6 +129,10 @@ namespace Dragonbones.Components
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
 
+        /// <summary>
+        /// Disposes of this object
+        /// </summary>
+        /// <param name="disposing">Should managed objects be disposed</param>
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -143,14 +149,7 @@ namespace Dragonbones.Components
             }
         }
 
-        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-        // ~ComponentTypeRegistry()
-        // {
-        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-        //   Dispose(false);
-        // }
-
-        // This code added to correctly implement the disposable pattern.
+        /// <inheritdoc/>
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
