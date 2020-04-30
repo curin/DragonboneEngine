@@ -7,7 +7,7 @@ namespace Dragonbones
     /// <summary>
     /// A helper class filled with some useful math functions
     /// </summary>
-    public static class MathHelper
+    public static partial class MathHelper
     {
         /// <summary>
         /// Calculates an average for a stream of data

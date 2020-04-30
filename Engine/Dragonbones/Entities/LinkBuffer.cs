@@ -414,7 +414,7 @@ namespace Dragonbones.Entities
         /// <param name="entityID">the entity ID</param>
         /// <param name="index">the returned index of where the entity is or should go</param>
         /// <returns>If the entity already has a link in the entry</returns>
-        private bool FindIndex(BufferTransactionType type, Entry ent, int entityID, out int index)
+        private static bool FindIndex(BufferTransactionType type, Entry ent, int entityID, out int index)
         {
             if (ent.Links == null)
             {
@@ -505,7 +505,7 @@ namespace Dragonbones.Entities
         /// <param name="index">the returned index of where the entity is or should go</param>
         /// <param name="link">the returned link data of the entity found</param>
         /// <returns>If the entity already has a link in the entry</returns>
-        private bool FindIndex(BufferTransactionType type, Entry ent, int entityID, out int index, out EntityComponentLink link)
+        private static bool FindIndex(BufferTransactionType type, Entry ent, int entityID, out int index, out EntityComponentLink link)
         {
             
             if (ent.Links == null)
@@ -623,6 +623,7 @@ namespace Dragonbones.Entities
                             Entry ent = _entries[BufferTransactionType.WriteRead, i];
                             ent.Top?.Dispose();
                             ent.Links?.Dispose();
+                            _lock?.Dispose();
                         }
                         _entries?.Dispose();
                     }

@@ -447,7 +447,9 @@ namespace Dragonbones.Components
         ///<inheritdoc/>
         public bool Equals(IComponentBuffer other)
         {
+#pragma warning disable CA1062 // Validate arguments of public methods
             return other.TypeName == TypeName;
+#pragma warning restore CA1062 // Validate arguments of public methods
         }
     }
 }
