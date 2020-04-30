@@ -6,18 +6,19 @@ using System.Linq;
 namespace Dragonbones.Systems
 {
     /// <summary>
-    /// A base implementation of <see cref="ISystemSchedule"/>
+    /// A base implementation of <see cref="ISystemSchedule"/> for Logic Systems
     /// uses a priority list to sort ahead of time
+    /// Checks for conflicts in components to avoid parallel access
     /// </summary>
-    public class SystemSchedule : ISystemSchedule
+    public class SafeSystemSchedule : ISystemSchedule
     {
         /// <summary>
-        /// constructs an instance of <see cref="SystemSchedule"/>
+        /// constructs an instance of <see cref="SafeSystemSchedule"/>
         /// </summary>
         /// <param name="laneCount">the number of concurrent systems that can be run</param>
         /// <param name="maxSize">the maximum number of systems to be stored</param>
         /// <param name="type">the type of systems for this schedule</param>
-        public SystemSchedule(SystemType type, int laneCount, int maxSize)
+        public SafeSystemSchedule(SystemType type, int laneCount, int maxSize)
         {
             //initialize all fields
             _laneCount = laneCount;
@@ -31,10 +32,10 @@ namespace Dragonbones.Systems
         }
 
         /// <summary>
-        /// copies an instance of <see cref="SystemSchedule"/>
+        /// copies an instance of <see cref="SafeSystemSchedule"/>
         /// </summary>
         /// <param name="copy">the schedule to copy</param>
-        public SystemSchedule(SystemSchedule copy)
+        public SafeSystemSchedule(SafeSystemSchedule copy)
         {
             if (copy == null)
                 throw new ArgumentNullException(nameof(copy));
@@ -247,7 +248,7 @@ namespace Dragonbones.Systems
             return;
         }
 
-        private Entry _current;
+        private Entry _current, _searcher;
         private bool _started;
         /// <summary>
         /// <inheritdoc />
@@ -260,6 +261,8 @@ namespace Dragonbones.Systems
                 _running[systemLaneID] = false;
 
             systemBatch = null;
+            _searcher = _current;
+
             if (!_started)
             {
                 if (_start == -1)
@@ -271,12 +274,30 @@ namespace Dragonbones.Systems
                 _started = true;
                 return ScheduleResult.Supplied;
             }
-            if (_current.NextEntry == -1)
-                return ScheduleResult.Finished;
 
-            _current = _entries[_current.NextEntry];
-            systemBatch = _systemCache[_current.CacheIndex];
+            bool invalid;
+            while (systemBatch == null)
+            {
+                if (_searcher.NextEntry == -1) 
+                    return _searcher.CacheIndex == _current.CacheIndex ? ScheduleResult.Finished : ScheduleResult.Conflict;
 
+                _searcher = _entries[_searcher.NextEntry];
+                systemBatch = _systemCache[_searcher.CacheIndex];
+
+                invalid = !(systemBatch.Active || systemBatch.Run);
+                for (int i = 0; i < _laneCount; i++)
+                    if (_running[i])
+                        if (systemBatch.GetComponentsUsedIDs().Any((val) => { return _lanes[i].GetComponentsUsedIDs().Contains(val); }))
+                            invalid = true;
+
+                if (invalid)
+                {
+                    systemBatch = null;
+                }
+            }
+
+            if (_searcher.CacheIndex == _current.NextEntry)
+                _current = _searcher;
             systemBatch.Run = true;
             systemBatch.Age = 0;
             _lanes[systemLaneID] = systemBatch;

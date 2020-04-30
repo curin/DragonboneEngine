@@ -51,7 +51,7 @@ namespace ConsoleTest
                 if (systems[i].Type == type)
                     typeCount++;
 
-            SystemSchedule schedule = new SystemSchedule(SystemType.Logic, laneCount, typeCount);
+            SafeSystemSchedule schedule = new SafeSystemSchedule(SystemType.Logic, laneCount, typeCount);
 
             processTimer.Start();
             for (int i = 0; i < systems.Length; i++)
@@ -125,7 +125,7 @@ namespace ConsoleTest
             Console.WriteLine("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
             Console.WriteLine("Test 3 - Clear List and Readd");
 
-            SystemSchedule copy = new SystemSchedule(schedule);
+            SafeSystemSchedule copy = new SafeSystemSchedule(schedule);
             foreach (SystemInfo sysinf in systems)
                 SystemUpdate(sysinf);
 

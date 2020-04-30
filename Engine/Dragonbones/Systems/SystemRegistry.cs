@@ -60,7 +60,7 @@ namespace Dragonbones.Systems
         ///<inheritdoc/>
         public ISystemSchedule CreateSchedule(SystemType type, int lanes)
         {
-            SystemSchedule schedule = new SystemSchedule(type, lanes, (int)((GetTypeCount(type) * 1.1f) + 1));
+            SafeSystemSchedule schedule = new SafeSystemSchedule(type, lanes, (int)((GetTypeCount(type) * 1.1f) + 1));
 
             schedule.AddFromRegistry(this);
 
