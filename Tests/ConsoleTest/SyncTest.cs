@@ -72,7 +72,9 @@ namespace ConsoleTest
                 }
             }
 
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
             Console.WriteLine("-------------------------");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
             for (int i = 0; i < 5; i++)
                 Console.WriteLine(Arrays[2][i]);
         }
