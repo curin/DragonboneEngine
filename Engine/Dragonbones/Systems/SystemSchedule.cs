@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using System.Threading();
 
 namespace Dragonbones.Systems
 {
@@ -248,6 +249,7 @@ namespace Dragonbones.Systems
         }
 
         private Entry _current;
+        private SemaphoreSlim _lock = new SemaphoreSlim(1,1);
         private bool _started;
         /// <summary>
         /// <inheritdoc />
@@ -258,21 +260,26 @@ namespace Dragonbones.Systems
                 throw new ArgumentOutOfRangeException(nameof(systemLaneID));
             if (_running[systemLaneID])
                 _running[systemLaneID] = false;
-
+            _lock.Wait();
             systemBatch = null;
             if (!_started)
             {
                 if (_start == -1)
                 {
+                    _lock.Release();
                     return ScheduleResult.Finished;
                 }
                 _current = _entries[_start];
                 systemBatch = _systemCache[_current.CacheIndex];
                 _started = true;
+                _lock.Release();
                 return ScheduleResult.Supplied;
             }
             if (_current.NextEntry == -1)
+            {
+                _lock.Release();
                 return ScheduleResult.Finished;
+            }
 
             _current = _entries[_current.NextEntry];
             systemBatch = _systemCache[_current.CacheIndex];
@@ -281,6 +288,7 @@ namespace Dragonbones.Systems
             systemBatch.Age = 0;
             _lanes[systemLaneID] = systemBatch;
             _running[systemLaneID] = true;
+            _lock.Release();
             return ScheduleResult.Supplied;
         }
 

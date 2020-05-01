@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using System.Threading();
 
 namespace Dragonbones.Systems
 {
@@ -249,17 +250,19 @@ namespace Dragonbones.Systems
         }
 
         private Entry _current, _searcher;
+        private SemaphoreSlim _lock = new SemaphoreSlim(1,1);
         private bool _started;
         /// <summary>
         /// <inheritdoc />
         /// </summary>
         public ScheduleResult NextSystem(int systemLaneID, out SystemInfo systemBatch)
         {
+            
             if (systemLaneID >= _laneCount)
                 throw new ArgumentOutOfRangeException(nameof(systemLaneID));
             if (_running[systemLaneID])
                 _running[systemLaneID] = false;
-
+            _lock.Wait();
             systemBatch = null;
             _searcher = _current;
 
@@ -267,19 +270,24 @@ namespace Dragonbones.Systems
             {
                 if (_start == -1)
                 {
+                    _lock.Release();
                     return ScheduleResult.Finished;
                 }
                 _current = _entries[_start];
                 systemBatch = _systemCache[_current.CacheIndex];
                 _started = true;
+                _lock.Release();
                 return ScheduleResult.Supplied;
             }
 
             bool invalid;
             while (systemBatch == null)
             {
-                if (_searcher.NextEntry == -1) 
+                if (_searcher.NextEntry == -1)
+                {
+                    _lock.Release();
                     return _searcher.CacheIndex == _current.CacheIndex ? ScheduleResult.Finished : ScheduleResult.Conflict;
+                }
 
                 _searcher = _entries[_searcher.NextEntry];
                 systemBatch = _systemCache[_searcher.CacheIndex];
@@ -298,6 +306,7 @@ namespace Dragonbones.Systems
 
             if (_searcher.CacheIndex == _current.NextEntry)
                 _current = _searcher;
+            _lock.Release();
             systemBatch.Run = true;
             systemBatch.Age = 0;
             _lanes[systemLaneID] = systemBatch;

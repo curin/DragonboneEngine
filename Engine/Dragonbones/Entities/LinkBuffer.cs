@@ -61,7 +61,7 @@ namespace Dragonbones.Entities
         /// <param name="componentType">The ID of the component type</param>
         /// <param name="entityID">the ID of the entity</param>
         /// <param name="componentID">the ID of the instance of the component</param>
-        public void Add(SystemType systemType,int componentType, int entityID, int componentID)
+        public void Add(SystemType systemType, int componentType, int entityID, int componentID)
         {
             if (systemType == SystemType.Render)
                 return;
@@ -76,25 +76,26 @@ namespace Dragonbones.Entities
             if (ent.Links == null)
             {
                 ent.Links = new DataBuffer<EntityComponentLink>(_initialSize);
-                ent.Lock = new object();
+                ent.Lock = new ReaderWriterLockSlim();
                 ent.Top = new ValueBuffer<int>();
             }
             _entries.Set(type, componentType, ent);
             _lock.ExitWriteLock();
             _lock.ExitUpgradeableReadLock();
 
-            lock (ent.Lock)
-            {
-                if (ent.Links.GetLength() == ent.Top[type])
-                    ent.Links = new DataBuffer<EntityComponentLink>(ent.Links, ent.Top[type] << 1);
+            ent.Lock.EnterWriteLock();
 
-                if (!FindIndex(type, ent, entityID, out int index))
-                {
-                    ent.Links.ShiftData(type, index, ent.Top[type] - index, index + 1);
-                }
-                ent.Links.Set(type, index, new EntityComponentLink(entityID, componentID));
-                ent.Top[type]++;
+            if (ent.Links.GetLength() == ent.Top[type])
+                ent.Links = new DataBuffer<EntityComponentLink>(ent.Links, ent.Top[type] << 1);
+
+            if (!FindIndex(type, ent, entityID, out int index))
+            {
+                ent.Links.ShiftData(type, index, ent.Top[type] - index, index + 1);
             }
+            ent.Links.Set(type, index, new EntityComponentLink(entityID, componentID));
+            ent.Top[type]++;
+
+            ent.Lock.ExitWriteLock();
         }
 
         /// <summary>
@@ -162,11 +163,11 @@ namespace Dragonbones.Entities
             if (ent.Links == null)
                 return Array.Empty<EntityComponentLink>();
             if (type == BufferTransactionType.WriteRead)
-                Monitor.Enter(ent.Lock);
+                ent.Lock.EnterReadLock();
             EntityComponentLink[] ret = new EntityComponentLink[ent.Top[type]];
             ent.Links.CopyTo(type, ret, 0, ent.Top[type]);
             if (type == BufferTransactionType.WriteRead)
-                Monitor.Exit(ent.Lock);
+                ent.Lock.ExitReadLock();
             return ret;
         }
 
@@ -221,7 +222,7 @@ namespace Dragonbones.Entities
             {
                 entries[i] = _entries.Get(type, componentTypes[i]);
                 if (type == BufferTransactionType.WriteRead)
-                    Monitor.Enter(entries[i].Lock);
+                    entries[i].Lock.EnterReadLock();
                 if (entries[i].Top[type] < length)
                 {
                     smallest = i;
@@ -272,7 +273,7 @@ namespace Dragonbones.Entities
 
             if (type == BufferTransactionType.WriteRead)
                 for (int i = 0; i < componentTypes.Length; i++)
-                    Monitor.Exit(entries[i].Lock);
+                    entries[i].Lock.ExitReadLock();
             return ret;
         }
 
@@ -293,11 +294,13 @@ namespace Dragonbones.Entities
             Entry ent = _entries.Get(type, componentType);
             if (FindIndex(type, ent, entity, out int index))
             {
-                lock (ent.Lock)
-                {
-                    ent.Links.ShiftData(type, index + 1, ent.Top[type] - index - 1, index);
-                    ent.Top[type]--;
-                }
+                bool lockVal = false;
+                ent.Lock.EnterWriteLock();
+
+                ent.Links.ShiftData(type, index + 1, ent.Top[type] - index - 1, index);
+                ent.Top[type]--;
+
+                ent.Lock.ExitWriteLock();
             }
 
             _lock.ExitReadLock();
@@ -425,12 +428,12 @@ namespace Dragonbones.Entities
                 return false;
             }
             if (type == BufferTransactionType.WriteRead)
-                Monitor.Enter(ent.Lock);
+                ent.Lock.EnterReadLock();
             if (ent.Top[type] == 0)
             {
                 index = 0;
                 if (type == BufferTransactionType.WriteRead)
-                    Monitor.Exit(ent.Lock);
+                    ent.Lock.ExitReadLock();
                 return false;
             }
             EntityComponentLink val = ent.Links.Get(type, 0);
@@ -438,14 +441,14 @@ namespace Dragonbones.Entities
             {
                 index = -1;
                 if (type == BufferTransactionType.WriteRead)
-                    Monitor.Exit(ent.Lock);
+                    ent.Lock.ExitReadLock();
                 return false;
             }
             if (val.EntityID == entityID)
             {
                 index = 0;
                 if (type == BufferTransactionType.WriteRead)
-                    Monitor.Exit(ent.Lock);
+                    ent.Lock.ExitReadLock();
                 return true;
             }
 
@@ -455,13 +458,13 @@ namespace Dragonbones.Entities
             {
                 index = ent.Top[type];
                 if (type == BufferTransactionType.WriteRead)
-                    Monitor.Exit(ent.Lock);
+                    ent.Lock.ExitReadLock();
                 return false;
             }
             if (val.EntityID == entityID)
             {
                 if (type == BufferTransactionType.WriteRead)
-                    Monitor.Exit(ent.Lock);
+                    ent.Lock.ExitReadLock();
                 return true;
             }
 
@@ -491,11 +494,11 @@ namespace Dragonbones.Entities
                     continue;
                 }
                 if (type == BufferTransactionType.WriteRead)
-                    Monitor.Exit(ent.Lock);
+                    ent.Lock.ExitReadLock();
                 return true;
             }
             if (type == BufferTransactionType.WriteRead)
-                Monitor.Exit(ent.Lock);
+                ent.Lock.ExitReadLock();
             return false;
         }
 
@@ -518,13 +521,13 @@ namespace Dragonbones.Entities
                 return false;
             }
             if (type == BufferTransactionType.WriteRead)
-                Monitor.Enter(ent.Lock);
+                ent.Lock.EnterReadLock();
             if (ent.Top[type] == 0)
             {
                 index = 0;
                 link = default;
                 if (type == BufferTransactionType.WriteRead)
-                    Monitor.Exit(ent.Lock);
+                    ent.Lock.ExitReadLock();
                 return false;
             }
             link = ent.Links.Get(type, 0);
@@ -532,14 +535,14 @@ namespace Dragonbones.Entities
             {
                 index = -1;
                 if (type == BufferTransactionType.WriteRead)
-                    Monitor.Exit(ent.Lock);
+                    ent.Lock.ExitReadLock();
                 return false;
             }
             if (link.EntityID == entityID)
             {
                 index = 0;
                 if (type == BufferTransactionType.WriteRead)
-                    Monitor.Exit(ent.Lock);
+                    ent.Lock.ExitReadLock();
                 return true;
             }
 
@@ -549,13 +552,13 @@ namespace Dragonbones.Entities
             {
                 index = ent.Top[type];
                 if (type == BufferTransactionType.WriteRead)
-                    Monitor.Exit(ent.Lock);
+                    ent.Lock.ExitReadLock();
                 return false;
             }
             if (link.EntityID == entityID)
             {
                 if (type == BufferTransactionType.WriteRead)
-                    Monitor.Exit(ent.Lock);
+                    ent.Lock.ExitReadLock();
                 return true;
             }
 
@@ -585,11 +588,11 @@ namespace Dragonbones.Entities
                     continue;
                 }
                 if (type == BufferTransactionType.WriteRead)
-                    Monitor.Exit(ent.Lock);
+                    ent.Lock.ExitReadLock();
                 return true;
             }
             if (type == BufferTransactionType.WriteRead)
-                Monitor.Exit(ent.Lock);
+                ent.Lock.ExitReadLock();
             return false;
         }
 
@@ -599,7 +602,7 @@ namespace Dragonbones.Entities
             /// The top entry in the Links buffer
             /// </summary>
             public ValueBuffer<int> Top { get; set; }
-            public object Lock { get; set; }
+            public ReaderWriterLockSlim Lock { get; set; }
             /// <summary>
             /// The buffer of entity component links for this component type
             /// </summary>
