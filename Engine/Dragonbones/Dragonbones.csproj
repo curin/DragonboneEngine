@@ -17,6 +17,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Dragonbones.Collections\Dragonbones.Collections.csproj" />
+    <ProjectReference Include="..\Dragonbones.Skeleton\Dragonbones.Skeleton.csproj" />
+    <ProjectReference Include="..\Dragonbones.Utility\Dragonbones.Utility.csproj" />
     <ProjectReference Include="..\Native\DirectX.Net\Dragonbones.Native\Dragonbones.Native.DXN.csproj" />
   </ItemGroup>
 

@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Dragonbones</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>J:\Programming Projects\Dragonbones\DragonboneEngine\Engine\Dragonbones.Skeleton\Dragonbones.Skeleton.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Dragonbones.Collections\Dragonbones.Collections.csproj" />
+    <ProjectReference Include="..\Dragonbones.Utility\Dragonbones.Utility.csproj" />
+  </ItemGroup>
+
+</Project>

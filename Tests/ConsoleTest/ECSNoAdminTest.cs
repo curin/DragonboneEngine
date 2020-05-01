@@ -157,7 +157,7 @@ namespace ConsoleTest
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            
         }
     }
 
@@ -209,7 +209,7 @@ namespace ConsoleTest
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            
         }
     }
 }

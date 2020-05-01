@@ -228,7 +228,7 @@ namespace Dragonbones.Systems
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            return Name.GetHashCode(StringComparison.InvariantCulture);
+            return Name.GetHashCode();
         }
     }
 }
