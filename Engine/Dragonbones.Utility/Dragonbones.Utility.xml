@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Dragonbones.Utility</name>
+    </assembly>
+    <members>
+        <member name="T:Dragonbones.MathHelper">
+            <summary>
+            A helper class filled with some useful math functions
+            </summary>
+        </member>
+        <member name="M:Dragonbones.MathHelper.MovingAverage(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Calculates an average for a stream of data
+            </summary>
+            <param name="currentAverage">the current average</param>
+            <param name="addedValue">the new value to add to the set</param>
+            <param name="numberCount">the total number of values including the new one</param>
+            <returns>the new average</returns>
+        </member>
+        <member name="M:Dragonbones.MathHelper.MovingAverage(System.Single,System.Single,System.Int64)">
+            <summary>
+            Calculates an average for a stream of data
+            </summary>
+            <param name="currentAverage">the current average</param>
+            <param name="addedValue">the new value to add to the set</param>
+            <param name="numberCount">the total number of values including the new one</param>
+            <returns>the new average</returns>
+        </member>
+        <member name="M:Dragonbones.MathHelper.MovingAverage(System.Int64,System.Int64,System.Int64)">
+            <summary>
+            Calculates an average for a stream of data
+            </summary>
+            <param name="currentAverage">the current average</param>
+            <param name="addedValue">the new value to add to the set</param>
+            <param name="numberCount">the total number of values including the new one</param>
+            <returns>the new average</returns>
+        </member>
+        <member name="M:Dragonbones.MathHelper.MovingAverage(System.Double,System.Double,System.Int64)">
+            <summary>
+            Calculates an average for a stream of data
+            </summary>
+            <param name="currentAverage">the current average</param>
+            <param name="addedValue">the new value to add to the set</param>
+            <param name="numberCount">the total number of values including the new one</param>
+            <returns>the new average</returns>
+        </member>
+    </members>
+</doc>

@@ -16,14 +16,17 @@ namespace Dragonbones.Systems
     {
         private readonly NamedDataRegistry<ISystem> _systems;
         private Dictionary<SystemType, int> _typeCounts = new Dictionary<SystemType, int>();
+        private IEntityAdmin _admin;
 
         /// <summary>
         /// Constructs an instance of <see cref="SystemRegistry"/>
         /// </summary>
         /// <param name="maxSystemCount">the maximum number of systems to every be added to the registry</param>
+        /// <param name="admin">The controlling admin used to set admin in systemInfo when a system is registered</param>
         /// <param name="hashSize">the hash size used by the internal hashtable. Higher makes for faster searching but increases memory usage</param>
-        public SystemRegistry(int maxSystemCount, int hashSize = 47)
+        public SystemRegistry(IEntityAdmin admin, int maxSystemCount, int hashSize = 47)
         {
+            _admin = admin;
             _systems = new NamedDataRegistry<ISystem>(maxSystemCount, hashSize);
         }
 
@@ -45,6 +48,7 @@ namespace Dragonbones.Systems
             if (id == -1)
                 return false;
             system.SystemInfo.SetID(id);
+            system.SystemInfo.SetAdmin(_admin);
             if (!_typeCounts.ContainsKey(system.SystemInfo.Type))
                 _typeCounts.Add(system.SystemInfo.Type, 0);
             _typeCounts[system.SystemInfo.Type]++;
@@ -60,11 +64,22 @@ namespace Dragonbones.Systems
         ///<inheritdoc/>
         public ISystemSchedule CreateSchedule(SystemType type, int lanes)
         {
-            SafeSystemSchedule schedule = new SafeSystemSchedule(type, lanes, (int)((GetTypeCount(type) * 1.1f) + 1));
+            if (type == SystemType.Logic)
+            {
+                SafeSystemSchedule schedule = new SafeSystemSchedule(type, lanes, (int)((GetTypeCount(type)) + 1));
 
-            schedule.AddFromRegistry(this);
+                schedule.AddFromRegistry(this);
 
-            return schedule;
+                return schedule;
+            }
+            else
+            {
+                SystemSchedule schedule = new SystemSchedule(type, lanes, (int)((GetTypeCount(type)) + 1));
+
+                schedule.AddFromRegistry(this);
+
+                return schedule;
+            }
         }
 
         ///<inheritdoc/>

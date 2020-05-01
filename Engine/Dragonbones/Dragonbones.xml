@@ -1012,6 +1012,15 @@
         <member name="M:Dragonbones.Entities.LinkBuffer.Dispose">
             <inheritdoc/>
         </member>
+        <member name="M:Dragonbones.EntityAdmin.Dispose(System.Boolean)">
+            <summary>
+            Disposes this object
+            </summary>
+            <param name="disposing">should the managed objects also be disposed</param>
+        </member>
+        <member name="M:Dragonbones.EntityAdmin.Dispose">
+            <inheritdoc/>
+        </member>
         <member name="T:Dragonbones.Systems.SafeSystemSchedule">
             <summary>
             A base implementation of <see cref="T:Dragonbones.Systems.ISystemSchedule"/> for Logic Systems
@@ -1112,11 +1121,12 @@
              This uses a <see cref="T:Dragonbones.Collections.NamedDataRegistry`1"/> to store the systems
              </summary>
         </member>
-        <member name="M:Dragonbones.Systems.SystemRegistry.#ctor(System.Int32,System.Int32)">
+        <member name="M:Dragonbones.Systems.SystemRegistry.#ctor(Dragonbones.IEntityAdmin,System.Int32,System.Int32)">
             <summary>
             Constructs an instance of <see cref="T:Dragonbones.Systems.SystemRegistry"/>
             </summary>
             <param name="maxSystemCount">the maximum number of systems to every be added to the registry</param>
+            <param name="admin">The controlling admin used to set admin in systemInfo when a system is registered</param>
             <param name="hashSize">the hash size used by the internal hashtable. Higher makes for faster searching but increases memory usage</param>
         </member>
         <member name="P:Dragonbones.Systems.SystemRegistry.Item(System.String)">

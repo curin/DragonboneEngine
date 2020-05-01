@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Dragonbones.Systems;
+using Dragonbones.Collections;
 
 namespace Dragonbones.Components
 {
@@ -10,7 +11,7 @@ namespace Dragonbones.Components
     /// This is suited for quick lookup and not quick removal as it should happen rarely that a component type is removed.
     /// </summary>
 #pragma warning disable CA1710 // Identifiers should have correct suffix
-    public interface IComponentTypeRegistry : IEnumerable<IComponentBuffer>, IDisposable
+    public interface IComponentTypeRegistry : IEnumerable<IComponentBuffer>, IDataBuffer
 #pragma warning restore CA1710 // Identifiers should have correct suffix
     {
         /// <summary>

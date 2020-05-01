@@ -62,6 +62,9 @@ namespace Dragonbones.Systems
         private int _id;
         private int[] _componentIDs;
 
+        /// <summary>
+        /// The controlling <see cref="IEntityAdmin"/>
+        /// </summary>
         public IEntityAdmin Admin { get; private set; }
         /// <summary>
         /// The type of system, which defines when it is run

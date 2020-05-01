@@ -638,6 +638,43 @@
             <param name="systemType">the type of system making the call, render systems cannot make the call</param>
             <param name="componentType">the ID of the component type to clear</param>
         </member>
+        <member name="T:Dragonbones.IEntityAdmin">
+            <summary>
+            The central controller of the whole engine
+            An Entity Admin is responsible for 
+            - scheduling and running systems
+            - providing access to other resources
+            </summary>
+        </member>
+        <member name="P:Dragonbones.IEntityAdmin.Components">
+            <summary>
+            The container for all component buffers
+            attempt to find component types before adding them
+            </summary>
+        </member>
+        <member name="P:Dragonbones.IEntityAdmin.Systems">
+            <summary>
+            The container for all systems
+            Systems need only be registered once
+            </summary>
+        </member>
+        <member name="P:Dragonbones.IEntityAdmin.Entities">
+            <summary>
+            The container for all entities
+            Entities are simply a name given to an ID and should most often be referenced by their ID
+            </summary>
+        </member>
+        <member name="P:Dragonbones.IEntityAdmin.Links">
+            <summary>
+            The container for all the links between entities and components
+            This is used to provide systems with component groups to run on
+            </summary>
+        </member>
+        <member name="M:Dragonbones.IEntityAdmin.Run">
+            <summary>
+            Starts the engine running
+            </summary>
+        </member>
         <member name="T:Dragonbones.Systems.ISystem">
             <summary>
             The interface which all systems are derived from
@@ -894,6 +931,11 @@
             <param name="active">is this system currently active</param>
             <param name="priority">the priority of the system. Higher number is higher priority</param>
             <param name="componentsUsed">the names of the components used by this system</param>
+        </member>
+        <member name="P:Dragonbones.Systems.SystemInfo.Admin">
+            <summary>
+            The controlling <see cref="T:Dragonbones.IEntityAdmin"/>
+            </summary>
         </member>
         <member name="P:Dragonbones.Systems.SystemInfo.Type">
             <summary>

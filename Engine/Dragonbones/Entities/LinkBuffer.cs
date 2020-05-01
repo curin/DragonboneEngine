@@ -294,7 +294,6 @@ namespace Dragonbones.Entities
             Entry ent = _entries.Get(type, componentType);
             if (FindIndex(type, ent, entity, out int index))
             {
-                bool lockVal = false;
                 ent.Lock.EnterWriteLock();
 
                 ent.Links.ShiftData(type, index + 1, ent.Top[type] - index - 1, index);

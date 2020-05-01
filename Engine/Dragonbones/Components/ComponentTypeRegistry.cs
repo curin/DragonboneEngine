@@ -157,6 +157,20 @@ namespace Dragonbones.Components
             // TODO: uncomment the following line if the finalizer is overridden above.
             GC.SuppressFinalize(this);
         }
+
+        ///<inheritdoc/>
+        public void SwapReadBuffer()
+        {
+            foreach (IComponentBuffer buffer in this)
+                buffer.SwapReadBuffer();
+        }
+
+        ///<inheritdoc/>
+        public void SwapWriteBuffer()
+        {
+            foreach (IComponentBuffer buffer in this)
+                buffer.SwapWriteBuffer();
+        }
         #endregion
     }
 }

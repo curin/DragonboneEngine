@@ -30,10 +30,10 @@ namespace ConsoleTest
             links.Add(SystemType.SystemWriteRead, c, t, tc);
             
             entities.SwapWriteBuffer();
-            tests.SwapWriteBuffer();
+            components.SwapWriteBuffer();
             links.SwapWriteBuffer();
             entities.SwapReadBuffer();
-            tests.SwapReadBuffer();
+            components.SwapReadBuffer();
             links.SwapReadBuffer();
             
 
@@ -71,10 +71,10 @@ namespace ConsoleTest
             float runTime = timer.ElapsedSecondsF;
 
             entities.SwapWriteBuffer();
-            tests.SwapWriteBuffer();
+            components.SwapWriteBuffer();
             links.SwapWriteBuffer();
             entities.SwapReadBuffer();
-            tests.SwapReadBuffer();
+            components.SwapReadBuffer();
             links.SwapReadBuffer();
             logicSchedule.Reset();
             renderSchedule.Reset();

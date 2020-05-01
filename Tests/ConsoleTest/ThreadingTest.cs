@@ -30,7 +30,7 @@ namespace ConsoleTest
                 threads[j].Start(j);
             for (int i = 0; i < 1000; i++)
             {
-                Primes[0] = FindPrimeNumber(1000);
+                Primes[0] = FindPrimeNumber(10000);
                 barrier.SignalAndWait();
             }
             Running = false;
@@ -45,7 +45,7 @@ namespace ConsoleTest
         public static void ThreadMethodStart(object oi)
         {
             int i = (int)oi;
-            Primes[i] = FindPrimeNumber(1000);
+            Primes[i] = FindPrimeNumber(10000);
             barrier.SignalAndWait();
         }
 
@@ -54,7 +54,7 @@ namespace ConsoleTest
             while (Running)
             {
                 int i = (int)oi;
-                Primes[i] = FindPrimeNumber(1000);
+                Primes[i] = FindPrimeNumber(10000);
                 barrier.SignalAndWait();
             }
         }

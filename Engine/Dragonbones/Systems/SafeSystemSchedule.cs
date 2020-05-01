@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
-using System.Threading();
+using System.Threading;
 
 namespace Dragonbones.Systems
 {
@@ -604,5 +604,39 @@ namespace Dragonbones.Systems
             foreach (ISystem system in registry)
                 Add(system.SystemInfo);
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        /// <summary>
+        /// Disposes this object
+        /// </summary>
+        /// <param name="disposing">should managed objects be disposed</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _lock.Dispose();
+                    // TODO: dispose managed state (managed objects).
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                disposedValue = true;
+            }
+        }
+
+        ///<inheritdoc/>
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            GC.SuppressFinalize(this);
+        }
+        #endregion
     }
 }

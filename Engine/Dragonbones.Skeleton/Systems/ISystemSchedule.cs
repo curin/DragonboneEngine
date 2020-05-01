@@ -7,7 +7,7 @@ namespace Dragonbones.Systems
     /// <summary>
     /// A class that orders systems by priority for running and handles supplying systems one at a time for each lane of systems running.
     /// </summary>
-    public interface ISystemSchedule
+    public interface ISystemSchedule : IDisposable
     {
         /// <summary>
         /// Has the schedule been finished?
