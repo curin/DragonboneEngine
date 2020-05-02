@@ -95,7 +95,7 @@ namespace Dragonbones.Systems
         private readonly Entry[] _entries;
         private readonly List<RREntry> _runRecurrences = new List<RREntry>();
         private readonly Queue<int> freeSpace = new Queue<int>();
-        private SystemType _type;
+        private readonly SystemType _type;
 
         /// <summary>
         /// <inheritdoc />
@@ -249,7 +249,7 @@ namespace Dragonbones.Systems
         }
 
         private Entry _current;
-        private SemaphoreSlim _lock = new SemaphoreSlim(1,1);
+        private readonly SemaphoreSlim _lock = new SemaphoreSlim(1,1);
         private bool _started;
         /// <summary>
         /// <inheritdoc />

@@ -11,83 +11,47 @@ namespace Dragonbones
 {
     public class EntityAdmin : IEntityAdmin
     {
-        private Thread[] _renderThreads;
-        private Thread[] _logicThreads;
-        private AutoResetEvent[] _logicEvents;
-        private AutoResetEvent[] _renderEvents;
+        private Thread[] _threads;
+        private AutoResetEvent[] _events;
+        private int _logicLaneCount;
+        private int _renderLaneCount;
+        private readonly int _totalLaneCount;
 
         /// <summary>
-        /// An array of all threads used for rendering
+        /// An array of all the threads used for computing
         /// index 0 is the main thread
         /// </summary>
-        protected Thread[] GetRenderThreads()
+        protected Thread[] GetThreads()
         {
-            return _renderThreads;
+            return _threads;
         }
 
         /// <summary>
-        /// An array of all threads used for rendering
+        /// An array of all the threads used for computing
         /// index 0 is the main thread
         /// </summary>
-        protected void SetRenderThreads(Thread[] value)
+        protected void SetThreads(Thread[] value)
         {
-            _renderThreads = value;
+            _threads = value;
         }
 
         /// <summary>
-        /// An array of all the threads used for logic
-        /// index 0 is the main thread
-        /// </summary>
-        protected Thread[] GetLogicThreads()
-        {
-            return _logicThreads;
-        }
-
-        /// <summary>
-        /// An array of all the threads used for logic
-        /// index 0 is the main thread
-        /// </summary>
-        protected void SetLogicThreads(Thread[] value)
-        {
-            _logicThreads = value;
-        }
-
-        /// <summary>
-        /// Event handlers used to wait on individual threads for logic threads
+        /// Event handlers used to wait on individual threads for all threads
         /// Main use is to wait when systemSchedule is conflicting
         /// </summary>
-        protected AutoResetEvent[] GetLogicEvents()
+        protected AutoResetEvent[] GetEvents()
         {
-            return _logicEvents;
+            return _events;
         }
 
         /// <summary>
-        /// Event handlers used to wait on individual threads for logic threads
+        /// Event handlers used to wait on individual threads for all threads
         /// Main use is to wait when systemSchedule is conflicting
         /// </summary>
         /// <param name="value">the new value for the events array</param>
-        protected void SetLogicEvents(AutoResetEvent[] value)
+        protected void SetEvents(AutoResetEvent[] value)
         {
-            _logicEvents = value;
-        }
-
-        /// <summary>
-        /// Event handlers used to wait on individual threads for render threads
-        /// Main use is to wait when systemSchedule is conflicting
-        /// </summary>
-        protected AutoResetEvent[] GetRenderEvents()
-        {
-            return _renderEvents;
-        }
-
-        /// <summary>
-        /// Event handlers used to wait on individual threads for render threads
-        /// Main use is to wait when systemSchedule is conflicting
-        /// </summary>
-        /// <param name="value">the new value for the events array</param>
-        protected void SetRenderEvents(AutoResetEvent[] value)
-        {
-            _renderEvents = value;
+            _events = value;
         }
 
         /// <summary>
@@ -110,7 +74,7 @@ namespace Dragonbones
         /// <summary>
         /// The current schedule being used for logic systems
         /// </summary>
-        protected ISystemSchedule LogicSchedule { get; set; }
+        protected ISystemSchedule CurrentLogicSchedule { get; set; }
         /// <summary>
         /// The next schedule to be used or the old schedule if schedule was just replaced
         /// </summary>
@@ -122,7 +86,7 @@ namespace Dragonbones
         /// <summary>
         /// The current schedule being used for render systems
         /// </summary>
-        protected ISystemSchedule RenderSchedule { get; set; }
+        protected ISystemSchedule CurrentRenderSchedule { get; set; }
         /// <summary>
         /// The next schedule to be used or the old schedule if the schedule was just replaced
         /// </summary>
@@ -136,9 +100,17 @@ namespace Dragonbones
         /// </summary>
         protected float LogicDeltaTime { get; set; }
         /// <summary>
+        /// The amount of time taken for all logic system to run
+        /// </summary>
+        protected float LogicTime { get; set; }
+        /// <summary>
         /// The desired time interval in seconds between logic runs
         /// </summary>
         protected float LogicInterval { get; set; }
+        /// <summary>
+        /// The minimum time interval in seconds between render runs
+        /// </summary>
+        protected float MinimumRenderInterval { get; set; }
         /// <summary>
         /// The amount of time in seconds between render runs
         /// </summary>
@@ -160,21 +132,63 @@ namespace Dragonbones
         public IEntityBuffer Entities { get; set; }
         /// <inheritdoc/>
         public ILinkBuffer Links { get; set; }
+        ///<inheritdoc/>
+        public ISystemSchedule LogicSchedule
+        {
+            get => NewLogicSchedule; 
+            set
+            {
+                if (CurrentLogicSchedule == null)
+                {
+                    CurrentLogicSchedule = value;
+                    return;
+                }
 
+                NewLogicSchedule = value;
+                LogicScheduleAvailable = true;
+            }
+        }
+        ///<inheritdoc/>
+        public ISystemSchedule RenderSchedule 
+        { 
+            get => NewRenderSchedule; 
+            set
+            {
+                if (CurrentRenderSchedule == null)
+                {
+                    CurrentRenderSchedule = value;
+                    return;
+                }
 
-        public EntityAdmin(float logicUpdateInterval, IComponentTypeRegistry components, ISystemRegistry systems, IEntityBuffer entities, ILinkBuffer links,
-            ISystemSchedule initialLogicSchedule, ISystemSchedule initialRenderSchedule)
+                NewRenderSchedule = value;
+                RenderScheduleAvailable = true;
+            }
+        }
+
+        ///<inheritdoc/>
+        public int LogicLaneCount => _logicLaneCount;
+
+        ///<inheritdoc/>
+        public int RenderLaneCount => _renderLaneCount;
+
+        public int TotalLaneCount => _totalLaneCount;
+
+        public EntityAdmin(float logicUpdateInterval, IComponentTypeRegistry components, ISystemRegistry systems, IEntityBuffer entities, ILinkBuffer links)
         {
             LogicInterval = logicUpdateInterval;
             Components = components;
             Systems = systems;
             Entities = entities;
             Links = links;
-            LogicSchedule = initialLogicSchedule;
-            RenderSchedule = initialRenderSchedule;
 #pragma warning disable CA1062 // Validate arguments of public methods
             Systems.SetAdmin(this);
 #pragma warning restore CA1062 // Validate arguments of public methods
+            _logicLaneCount = Environment.ProcessorCount;
+            _logicLaneCount >>= 1;
+            if (_logicLaneCount == 0)
+                _logicLaneCount = 1;
+            _renderLaneCount = _logicLaneCount;
+            _totalLaneCount = _renderLaneCount + _logicLaneCount;
         }
 
         ///<inheritdoc/>
@@ -182,40 +196,41 @@ namespace Dragonbones
         {
             LogicTimer = new PrecisionTimer();
             RenderTimer = new PrecisionTimer();
+            RenderTimer.Start();
 
-            int threadCount = Environment.ProcessorCount;
-            threadCount >>= 1;
-            if (threadCount == 0)
-                threadCount = 1;
+            _threads = new Thread[_totalLaneCount];
+            _events = new AutoResetEvent[_totalLaneCount];
 
-            _logicThreads = new Thread[threadCount];
-            _renderThreads = new Thread[threadCount];
-            _logicEvents = new AutoResetEvent[threadCount];
-            _renderEvents = new AutoResetEvent[threadCount];
+            _threads[0] = Thread.CurrentThread;
+            _threads[_totalLaneCount - 1] = new Thread(MainRenderMethod);
 
-            _logicThreads[0] = Thread.CurrentThread;
-            _renderThreads[0] = new Thread(MainRenderMethod);
 
-            for (int i = 1; i < threadCount; i++)
+            for (int i = 0; i < _totalLaneCount; i++)
             {
-                _logicThreads[i] = new Thread(SecondaryLogicMethod);
-                _renderThreads[i] = new Thread(SecondaryRenderMethod);
-                _logicEvents[i] = new AutoResetEvent(false);
-                _renderEvents[i] = new AutoResetEvent(false);
+                _events[i] = new AutoResetEvent(false);
+
+                if (i > 0 && i < _totalLaneCount - 1)
+                    _threads[i] = new Thread(SecondaryMethod);
             }
+            
+            LogicBarrier = new Barrier(_logicLaneCount);
+            RenderBarrier = new Barrier(_renderLaneCount);
+            SystemBarrier = new Barrier(_logicLaneCount + _renderLaneCount);
 
-            LogicBarrier = new Barrier(threadCount);
-            RenderBarrier = new Barrier(threadCount);
-            SystemBarrier = new Barrier(threadCount << 1);
+            if (CurrentLogicSchedule == null)
+                CurrentLogicSchedule = Systems.CreateSchedule(SystemType.Logic, _totalLaneCount);
 
+            if (CurrentRenderSchedule == null)
+                CurrentRenderSchedule = Systems.CreateSchedule(SystemType.Logic, _totalLaneCount);
+
+            LogicTime = LogicInterval;
             Running = true;
 
-            _renderThreads[0].Start();
-            for (int i = 1; i < threadCount; i++)
+            for (int i = 1; i < _totalLaneCount; i++)
             {
-                _logicThreads[i].Start(i);
-                _renderThreads[i].Start(i);
+                _threads[i].Start(i);
             }
+
             MainLogicMethod();
         }
 
@@ -228,9 +243,9 @@ namespace Dragonbones
         /// </summary>
         protected virtual void MainLogicMethod()
         {
-            SystemInitialize(0, LogicSchedule, _logicEvents);
+            SystemInitialize(0, CurrentLogicSchedule);
 
-            LogicSchedule.Reset();
+            CurrentLogicSchedule.Reset();
 
             Components.SwapWriteBuffer();
             Entities.SwapWriteBuffer();
@@ -242,75 +257,121 @@ namespace Dragonbones
                 LogicTimer.Stop();
                 LogicDeltaTime = LogicTimer.ElapsedSecondsF;
                 LogicTimer.Reset();
-                LogicBarrier.SignalAndWait();
                 LogicTimer.Start();
 
-                SystemRun(0, LogicSchedule, _logicEvents, LogicDeltaTime);
+                float renderTime = RenderDeltaTime;
+                if (LogicTime < LogicInterval)
+                {
+                    float percent = LogicTime / LogicInterval;
+                    int count = _logicLaneCount - 1;
+                    _logicLaneCount = (int)(MathF.Ceiling(percent * count)) + 1;
+                    _renderLaneCount = _totalLaneCount - _logicLaneCount;
+                }
+                else if (renderTime < MinimumRenderInterval)
+                {
+                    float percent = LogicTime / renderTime;
+                    int count = _totalLaneCount - 2;
+                    _logicLaneCount = (int)(_totalLaneCount * count) + 1;
+                    _renderLaneCount = _totalLaneCount - _logicLaneCount;
+                }
+
+                LogicBarrier.SignalAndWait();
+
+                if (_logicLaneCount < LogicBarrier.ParticipantCount)
+                {
+                    LogicBarrier.RemoveParticipants(LogicBarrier.ParticipantCount - _logicLaneCount);
+                    
+                }
+
+                if (_logicLaneCount > LogicBarrier.ParticipantCount)
+                {
+                    LogicBarrier.AddParticipants(_logicLaneCount - LogicBarrier.ParticipantCount);
+                }
+
+                SystemRun(0, CurrentLogicSchedule, LogicDeltaTime);
 
                 LogicBarrier.SignalAndWait();
                 if (LogicScheduleAvailable)
                 {
-                    ISystemSchedule temp = LogicSchedule;
-                    LogicSchedule = NewLogicSchedule;
+                    ISystemSchedule temp = CurrentLogicSchedule;
+                    CurrentLogicSchedule = NewLogicSchedule;
                     NewLogicSchedule = temp;
                     LogicScheduleAvailable = false;
                 }
-                LogicSchedule.Reset();
+                CurrentLogicSchedule.Reset();
 
                 Components.SwapWriteBuffer();
                 Entities.SwapWriteBuffer();
                 Links.SwapWriteBuffer();
+                LogicTime = LogicTimer.ElapsedSecondsF;
                 SpinWait.SpinUntil(() => { return LogicTimer.ElapsedSecondsF >= LogicInterval; });
             } while (Running);
 
             LogicBarrier.SignalAndWait();
             SystemBarrier.SignalAndWait();
-            SystemDispose(0, LogicSchedule, _logicEvents);
+            SystemDispose(0, CurrentLogicSchedule);
         }
 
         /// <summary>
-        /// The method run on secondary logic threads
-        /// Use this to supplement the computing power of the main thread
+        /// The method run on secondary threads
+        /// Use this to supplement the computing power of the main threads
         /// Do not count on having any threads run this method
         /// </summary>
         /// <param name="laneObject">the index of this thread (index 0 is reserved for the main thread)</param>
-        protected virtual void SecondaryLogicMethod(object laneObject)
+        protected virtual void SecondaryMethod(object laneObject)
         {
             int lane = (int)laneObject;
-            SystemInitialize(lane, LogicSchedule, _logicEvents);
+            SystemInitialize(lane, CurrentLogicSchedule);
 
             SystemBarrier.SignalAndWait();
-            LogicBarrier.SignalAndWait();
+
+            if (lane < _logicLaneCount)
+            {
+                LogicBarrier.SignalAndWait();
+            }
+            else
+            {
+                RenderBarrier.SignalAndWait();
+            }
 
             do
             {
-                SystemRun(lane, LogicSchedule, _logicEvents, LogicDeltaTime);
-
-                LogicBarrier.SignalAndWait();
-                LogicBarrier.SignalAndWait();
+                if (lane < _logicLaneCount)
+                {
+                    SystemRun(lane, CurrentLogicSchedule, LogicDeltaTime);
+                    LogicBarrier.SignalAndWait();
+                    LogicBarrier.SignalAndWait();
+                }
+                else
+                {
+                    SystemRun(lane, CurrentRenderSchedule, RenderDeltaTime);
+                    RenderBarrier.SignalAndWait();
+                    RenderBarrier.SignalAndWait();
+                }
+                
             } while (Running);
 
             SystemBarrier.SignalAndWait();
-            SystemDispose(lane, LogicSchedule, _logicEvents);
+            SystemDispose(lane, CurrentLogicSchedule);
         }
 
         /// <summary>
         /// The main thread for rendering
         /// This should be used to handle anything that should be done only once and used to control the other threads
         /// </summary>
-        protected virtual void MainRenderMethod()
+        protected virtual void MainRenderMethod(object lane)
         {
-            SystemInitialize(0, RenderSchedule, _logicEvents);
+            int laneID = (int)lane;
+            SystemInitialize(laneID, CurrentRenderSchedule);
 
             SystemBarrier.SignalAndWait();
             do
             {
-                RenderSchedule.Reset();
+                CurrentRenderSchedule.Reset();
 
                 Components.SwapReadBuffer();
                 Entities.SwapReadBuffer();
                 Links.SwapReadBuffer();
-
 
                 RenderTimer.Stop();
                 RenderDeltaTime = RenderTimer.ElapsedSecondsF;
@@ -319,15 +380,26 @@ namespace Dragonbones
                 RenderBarrier.SignalAndWait();
                 RenderTimer.Start();
 
-                SystemRun(0, RenderSchedule, _renderEvents, RenderDeltaTime);
+                if (_renderLaneCount < RenderBarrier.ParticipantCount)
+                {
+                    RenderBarrier.RemoveParticipants(RenderBarrier.ParticipantCount - _renderLaneCount);
+                }
 
+                if (_renderLaneCount > RenderBarrier.ParticipantCount)
+                {
+                    RenderBarrier.AddParticipants(_renderLaneCount - RenderBarrier.ParticipantCount);
+                }
+
+                SystemRun(laneID, CurrentRenderSchedule, RenderDeltaTime);
+
+                Console.WriteLine(RenderLaneCount);
                 RenderBarrier.SignalAndWait();
 
 
                 if (RenderScheduleAvailable)
                 {
-                    ISystemSchedule temp = RenderSchedule;
-                    RenderSchedule = NewRenderSchedule;
+                    ISystemSchedule temp = CurrentRenderSchedule;
+                    CurrentRenderSchedule = NewRenderSchedule;
                     NewRenderSchedule = temp;
                     RenderScheduleAvailable = false;
                 }
@@ -336,33 +408,7 @@ namespace Dragonbones
 
             RenderBarrier.SignalAndWait();
             SystemBarrier.SignalAndWait();
-            SystemDispose(0, RenderSchedule, _logicEvents);
-        }
-
-        /// <summary>
-        /// The method run on secondary render threads
-        /// Use this to supplement the computing power of the main thread
-        /// Do not count on having any threads run this method
-        /// </summary>
-        /// <param name="laneObject">the index of this thread (index 0 is reserved for the main thread)</param>
-        protected virtual void SecondaryRenderMethod(object laneObject)
-        {
-            int lane = (int)laneObject;
-            SystemInitialize(lane, RenderSchedule, _renderEvents);
-
-            SystemBarrier.SignalAndWait();
-            RenderBarrier.SignalAndWait();
-
-            do
-            {
-                SystemRun(lane, RenderSchedule, _renderEvents, RenderDeltaTime);
-
-                RenderBarrier.SignalAndWait();
-                RenderBarrier.SignalAndWait();
-            } while (Running);
-
-            SystemBarrier.SignalAndWait();
-            SystemDispose(lane, RenderSchedule, _renderEvents);
+            SystemDispose(laneID, CurrentRenderSchedule);
         }
 
         /// <summary>
@@ -372,13 +418,13 @@ namespace Dragonbones
         /// <param name="schedule">the schedule of systems to run</param>
         /// <param name="events">the reset events used when a system is stopped due to conflict</param>
         /// <param name="deltaTime">the time since last run</param>
-        private void SystemRun(int laneID, ISystemSchedule schedule, AutoResetEvent[] events, float deltaTime)
+        private void SystemRun(int laneID, ISystemSchedule schedule, float deltaTime)
         {
             ScheduleResult result = schedule.NextSystem(laneID, out SystemInfo sysInf);
 
             while (result == ScheduleResult.Conflict)
             {
-                events[laneID].WaitOne();
+                _events[laneID].WaitOne();
                 result = schedule.NextSystem(laneID, out sysInf);
             }
 
@@ -389,12 +435,16 @@ namespace Dragonbones
 
                 result = schedule.NextSystem(laneID, out sysInf);
                 if (result == ScheduleResult.Supplied)
-                    for (int i = 0; i < events.Length; i++)
-                        events[i].Set();
+                    if (laneID < _logicLaneCount)
+                        for (int i = 0; i < _logicLaneCount; i++)
+                            _events[i].Set();
+                    else
+                        for (int i = _logicLaneCount; i < _events.Length; i++)
+                            _events[i].Set();
 
                 while (result == ScheduleResult.Conflict)
                 {
-                    events[laneID].WaitOne();
+                    _events[laneID].WaitOne();
                     result = schedule.NextSystem(laneID, out sysInf);
                 }
             }
@@ -406,13 +456,13 @@ namespace Dragonbones
         /// <param name="laneID">what lane is calling</param>
         /// <param name="schedule">the schedule of systems to run</param>
         /// <param name="events">the reset events used when a system is stopped due to conflict</param>
-        private void SystemInitialize(int laneID, ISystemSchedule schedule, AutoResetEvent[] events)
+        private void SystemInitialize(int laneID, ISystemSchedule schedule)
         {
             ScheduleResult result = schedule.NextSystem(laneID, out SystemInfo sysInf);
 
             while (result == ScheduleResult.Conflict)
             {
-                events[laneID].WaitOne();
+                _events[laneID].WaitOne();
                 result = schedule.NextSystem(laneID, out sysInf);
             }
 
@@ -423,12 +473,16 @@ namespace Dragonbones
 
                 result = schedule.NextSystem(laneID, out sysInf);
                 if (result == ScheduleResult.Supplied)
-                    for (int i = 0; i < events.Length; i++)
-                        events[i].Set();
+                    if (laneID < _logicLaneCount)
+                        for (int i = 0; i < _logicLaneCount; i++)
+                            _events[i].Set();
+                    else
+                        for (int i = _logicLaneCount; i < _events.Length; i++)
+                            _events[i].Set();
 
                 while (result == ScheduleResult.Conflict)
                 {
-                    events[laneID].WaitOne();
+                    _events[laneID].WaitOne();
                     result = schedule.NextSystem(laneID, out sysInf);
                 }
             }
@@ -440,13 +494,13 @@ namespace Dragonbones
         /// <param name="laneID">what lane is calling</param>
         /// <param name="schedule">the schedule of systems to run</param>
         /// <param name="events">the reset events used when a system is stopped due to conflict</param>
-        private void SystemDispose(int laneID, ISystemSchedule schedule, AutoResetEvent[] events)
+        private void SystemDispose(int laneID, ISystemSchedule schedule)
         {
             ScheduleResult result = schedule.NextSystem(laneID, out SystemInfo sysInf);
 
             while (result == ScheduleResult.Conflict)
             {
-                events[laneID].WaitOne();
+                _events[laneID].WaitOne();
                 result = schedule.NextSystem(laneID, out sysInf);
             }
 
@@ -457,12 +511,16 @@ namespace Dragonbones
 
                 result = schedule.NextSystem(laneID, out sysInf);
                 if (result == ScheduleResult.Supplied)
-                    for (int i = 0; i < events.Length; i++)
-                        events[i].Set();
+                    if (laneID < _logicLaneCount)
+                        for (int i = 0; i < _logicLaneCount; i++)
+                            _events[i].Set();
+                    else
+                        for (int i = _logicLaneCount; i < _events.Length; i++)
+                            _events[i].Set();
 
                 while (result == ScheduleResult.Conflict)
                 {
-                    events[laneID].WaitOne();
+                    _events[laneID].WaitOne();
                     result = schedule.NextSystem(laneID, out sysInf);
                 }
             }

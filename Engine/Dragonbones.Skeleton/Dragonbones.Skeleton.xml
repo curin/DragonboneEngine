@@ -646,6 +646,21 @@
             - providing access to other resources
             </summary>
         </member>
+        <member name="P:Dragonbones.IEntityAdmin.LogicLaneCount">
+            <summary>
+            The number of computational lanes runnning for the logic systems
+            </summary>
+        </member>
+        <member name="P:Dragonbones.IEntityAdmin.RenderLaneCount">
+            <summary>
+            the number of computational lanes running for the render systems
+            </summary>
+        </member>
+        <member name="P:Dragonbones.IEntityAdmin.TotalLaneCount">
+            <summary>
+            the number of computational lanes total
+            </summary>
+        </member>
         <member name="P:Dragonbones.IEntityAdmin.Components">
             <summary>
             The container for all component buffers
@@ -673,6 +688,18 @@
         <member name="M:Dragonbones.IEntityAdmin.Run">
             <summary>
             Starts the engine running
+            </summary>
+        </member>
+        <member name="P:Dragonbones.IEntityAdmin.LogicSchedule">
+            <summary>
+            The schedule to be used for logic systems
+            Schedule should be filled with systems when being set
+            </summary>
+        </member>
+        <member name="P:Dragonbones.IEntityAdmin.RenderSchedule">
+            <summary>
+            The schedule to be used for render systems
+            Schedule should be filled with systems when being set
             </summary>
         </member>
         <member name="T:Dragonbones.Systems.ISystem">

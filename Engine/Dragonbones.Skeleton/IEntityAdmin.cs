@@ -16,6 +16,18 @@ namespace Dragonbones
     public interface IEntityAdmin : IDisposable
     {
         /// <summary>
+        /// The number of computational lanes runnning for the logic systems
+        /// </summary>
+        int LogicLaneCount { get; }
+        /// <summary>
+        /// the number of computational lanes running for the render systems
+        /// </summary>
+        int RenderLaneCount { get; }
+        /// <summary>
+        /// the number of computational lanes total
+        /// </summary>
+        int TotalLaneCount { get; }
+        /// <summary>
         /// The container for all component buffers
         /// attempt to find component types before adding them
         /// </summary>
@@ -39,5 +51,15 @@ namespace Dragonbones
         /// Starts the engine running
         /// </summary>
         void Run();
+        /// <summary>
+        /// The schedule to be used for logic systems
+        /// Schedule should be filled with systems when being set
+        /// </summary>
+        ISystemSchedule LogicSchedule { get; set; }
+        /// <summary>
+        /// The schedule to be used for render systems
+        /// Schedule should be filled with systems when being set
+        /// </summary>
+        ISystemSchedule RenderSchedule { get; set; }
     }
 }
