@@ -560,7 +560,7 @@ namespace Dragonbones.Collections
             {
                 if (_next == -1)
                     return false;
-                Entry ent = default;
+                Entry ent;
                 if (_next == -2)
                 {
                     _current = _reg._start;

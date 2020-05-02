@@ -14,7 +14,7 @@ namespace Dragonbones.Components
     public class ComponentTypeRegistry : IComponentTypeRegistry
 #pragma warning restore CA1710 // Identifiers should have correct suffix
     {
-        private NamedDataRegistry<IComponentBuffer> _registry;
+        private readonly NamedDataRegistry<IComponentBuffer> _registry;
 
         /// <summary>
         /// Constructor for <see cref="ComponentTypeRegistry"/>

@@ -15,13 +15,13 @@ namespace Dragonbones.Collections
     public class NamedDataBuffer<TValue>: IDataBuffer,  IEnumerable<TValue>
     {
         private DoubleDataBuffer<TValue, Entry> _buffer;
-        private DataBuffer<int> _hashStarts;
-        private ValueBuffer<int> _count = new ValueBuffer<int>();
-        private ValueBuffer<int> _start = new ValueBuffer<int>(-1);
+        private readonly DataBuffer<int> _hashStarts;
+        private readonly ValueBuffer<int> _count = new ValueBuffer<int>();
+        private readonly ValueBuffer<int> _start = new ValueBuffer<int>(-1);
 
         private int[] _hashEnds;
         private int _capacity;
-        private int _hashSize;
+        private readonly int _hashSize;
         private int _end = -1;
         private int _next;
         private int _top;
@@ -93,8 +93,7 @@ namespace Dragonbones.Collections
         {
             if (type == BufferTransactionType.ReadOnly)
                 return -1;
-
-            int find = FindEntry(type, name, out Entry findEnt);
+            int find = FindEntry(type, name, out Entry _);
             if (find != -1)
             {
                 _buffer.SetPrimary(type, find, value);
@@ -276,7 +275,7 @@ namespace Dragonbones.Collections
         /// <returns>Whether the value associated with the name is within the buffer</returns>
         public bool ContainsName(BufferTransactionType type, string name)
         {
-            return FindEntry(type, name, out Entry entry) != -1;
+            return FindEntry(type, name, out Entry _) != -1;
         }
 
         /// <summary>
@@ -298,7 +297,7 @@ namespace Dragonbones.Collections
         /// <returns>The ID associated the given name or -1 if not found</returns>
         public int GetIDFromName(BufferTransactionType type, string name)
         {
-            return FindEntry(type, name, out Entry ent);
+            return FindEntry(type, name, out Entry _);
         }
 
         /// <summary>
@@ -893,7 +892,7 @@ namespace Dragonbones.Collections
         private class Enumerator : IEnumerator<TValue>
         {
             private NamedDataBuffer<TValue> _buff;
-            private BufferTransactionType _type;
+            private readonly BufferTransactionType _type;
             public Enumerator(BufferTransactionType type, NamedDataBuffer<TValue> buff)
             {
                 _buff = buff;
@@ -915,7 +914,7 @@ namespace Dragonbones.Collections
             {
                 if (_next == -1)
                     return false;
-                NamedDataBuffer<TValue>.Entry ent = default;
+                Entry ent;
                 if (_next == -2)
                 {
                     _current = _buff._start[_type];

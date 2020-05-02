@@ -172,7 +172,9 @@ namespace Dragonbones
             Links = links;
             LogicSchedule = initialLogicSchedule;
             RenderSchedule = initialRenderSchedule;
+#pragma warning disable CA1062 // Validate arguments of public methods
             Systems.SetAdmin(this);
+#pragma warning restore CA1062 // Validate arguments of public methods
         }
 
         ///<inheritdoc/>
@@ -313,8 +315,6 @@ namespace Dragonbones
                 RenderTimer.Stop();
                 RenderDeltaTime = RenderTimer.ElapsedSecondsF;
                 RenderTimer.Reset();
-
-                Console.WriteLine(RenderDeltaTime / LogicInterval * 100);
 
                 RenderBarrier.SignalAndWait();
                 RenderTimer.Start();

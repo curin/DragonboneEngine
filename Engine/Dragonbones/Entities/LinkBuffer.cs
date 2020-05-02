@@ -23,9 +23,9 @@ namespace Dragonbones.Entities
             _initialSize = initialComponentSize;
         }
 
-        DataBuffer<Entry> _entries;
-        ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
-        int _initialSize;
+        private DataBuffer<Entry> _entries;
+        private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
+        private readonly int _initialSize;
 
         ///<inheritdoc/>
         public void SwapReadBuffer()
