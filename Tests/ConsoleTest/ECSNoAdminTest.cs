@@ -14,7 +14,7 @@ namespace ConsoleTest
         public static void Run()
         {
             PrecisionTimer timer = new PrecisionTimer();
-            SystemRegistry systems = new SystemRegistry(null, 64);
+            SystemRegistry systems = new SystemRegistry(64);
             ComponentTypeRegistry components = new ComponentTypeRegistry(64);
             EntityBuffer entities = new EntityBuffer();
             LinkBuffer links = new LinkBuffer(64, 64);

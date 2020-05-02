@@ -162,12 +162,17 @@ namespace Dragonbones
         public ILinkBuffer Links { get; set; }
 
 
-        public EntityAdmin(IComponentTypeRegistry components, ISystemRegistry systems, IEntityBuffer entities, ILinkBuffer links)
+        public EntityAdmin(float logicUpdateInterval, IComponentTypeRegistry components, ISystemRegistry systems, IEntityBuffer entities, ILinkBuffer links,
+            ISystemSchedule initialLogicSchedule, ISystemSchedule initialRenderSchedule)
         {
+            LogicInterval = logicUpdateInterval;
             Components = components;
             Systems = systems;
             Entities = entities;
             Links = links;
+            LogicSchedule = initialLogicSchedule;
+            RenderSchedule = initialRenderSchedule;
+            Systems.SetAdmin(this);
         }
 
         ///<inheritdoc/>
@@ -201,7 +206,15 @@ namespace Dragonbones
             RenderBarrier = new Barrier(threadCount);
             SystemBarrier = new Barrier(threadCount << 1);
 
-            
+            Running = true;
+
+            _renderThreads[0].Start();
+            for (int i = 1; i < threadCount; i++)
+            {
+                _logicThreads[i].Start(i);
+                _renderThreads[i].Start(i);
+            }
+            MainLogicMethod();
         }
 
         /// <summary>
@@ -222,12 +235,11 @@ namespace Dragonbones
             Links.SwapWriteBuffer();
             SystemBarrier.SignalAndWait();
 
-            while (Running)
+            do
             {
                 LogicTimer.Stop();
                 LogicDeltaTime = LogicTimer.ElapsedSecondsF;
                 LogicTimer.Reset();
-
                 LogicBarrier.SignalAndWait();
                 LogicTimer.Start();
 
@@ -247,8 +259,9 @@ namespace Dragonbones
                 Entities.SwapWriteBuffer();
                 Links.SwapWriteBuffer();
                 SpinWait.SpinUntil(() => { return LogicTimer.ElapsedSecondsF >= LogicInterval; });
-            }
+            } while (Running);
 
+            LogicBarrier.SignalAndWait();
             SystemBarrier.SignalAndWait();
             SystemDispose(0, LogicSchedule, _logicEvents);
         }
@@ -267,13 +280,13 @@ namespace Dragonbones
             SystemBarrier.SignalAndWait();
             LogicBarrier.SignalAndWait();
 
-            while (Running)
+            do
             {
                 SystemRun(lane, LogicSchedule, _logicEvents, LogicDeltaTime);
 
                 LogicBarrier.SignalAndWait();
                 LogicBarrier.SignalAndWait();
-            }
+            } while (Running);
 
             SystemBarrier.SignalAndWait();
             SystemDispose(lane, LogicSchedule, _logicEvents);
@@ -288,7 +301,7 @@ namespace Dragonbones
             SystemInitialize(0, RenderSchedule, _logicEvents);
 
             SystemBarrier.SignalAndWait();
-            while (Running)
+            do
             {
                 RenderSchedule.Reset();
 
@@ -296,9 +309,12 @@ namespace Dragonbones
                 Entities.SwapReadBuffer();
                 Links.SwapReadBuffer();
 
+
                 RenderTimer.Stop();
-                RenderDeltaTime = LogicTimer.ElapsedSecondsF;
+                RenderDeltaTime = RenderTimer.ElapsedSecondsF;
                 RenderTimer.Reset();
+
+                Console.WriteLine(RenderDeltaTime / LogicInterval * 100);
 
                 RenderBarrier.SignalAndWait();
                 RenderTimer.Start();
@@ -306,6 +322,8 @@ namespace Dragonbones
                 SystemRun(0, RenderSchedule, _renderEvents, RenderDeltaTime);
 
                 RenderBarrier.SignalAndWait();
+
+
                 if (RenderScheduleAvailable)
                 {
                     ISystemSchedule temp = RenderSchedule;
@@ -313,8 +331,10 @@ namespace Dragonbones
                     NewRenderSchedule = temp;
                     RenderScheduleAvailable = false;
                 }
-            }
 
+            } while (Running);
+
+            RenderBarrier.SignalAndWait();
             SystemBarrier.SignalAndWait();
             SystemDispose(0, RenderSchedule, _logicEvents);
         }
@@ -333,13 +353,13 @@ namespace Dragonbones
             SystemBarrier.SignalAndWait();
             RenderBarrier.SignalAndWait();
 
-            while (Running)
+            do
             {
                 SystemRun(lane, RenderSchedule, _renderEvents, RenderDeltaTime);
 
                 RenderBarrier.SignalAndWait();
                 RenderBarrier.SignalAndWait();
-            }
+            } while (Running);
 
             SystemBarrier.SignalAndWait();
             SystemDispose(lane, RenderSchedule, _renderEvents);

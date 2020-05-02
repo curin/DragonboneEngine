@@ -22,11 +22,9 @@ namespace Dragonbones.Systems
         /// Constructs an instance of <see cref="SystemRegistry"/>
         /// </summary>
         /// <param name="maxSystemCount">the maximum number of systems to every be added to the registry</param>
-        /// <param name="admin">The controlling admin used to set admin in systemInfo when a system is registered</param>
         /// <param name="hashSize">the hash size used by the internal hashtable. Higher makes for faster searching but increases memory usage</param>
-        public SystemRegistry(IEntityAdmin admin, int maxSystemCount, int hashSize = 47)
+        public SystemRegistry(int maxSystemCount, int hashSize = 47)
         {
-            _admin = admin;
             _systems = new NamedDataRegistry<ISystem>(maxSystemCount, hashSize);
         }
 
@@ -187,6 +185,15 @@ namespace Dragonbones.Systems
             if (preCount < _systems.Count)
                 _typeCounts[system.SystemInfo.Type]--;
             system.SystemInfo.SetID(-1);
+        }
+
+        /// <summary>
+        /// Sets the controlling admin for this registry
+        /// </summary>
+        /// <param name="admin">The controlling admin used to set admin in systemInfo when a system is registered</param>
+        public void SetAdmin(IEntityAdmin admin)
+        {
+            _admin = admin;
         }
 
         /// <inheritdoc />

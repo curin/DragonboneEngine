@@ -47,6 +47,11 @@ namespace Dragonbones.Systems
         /// <param name="system">the system</param>
         /// <returns>the id of the system</returns>
         int GetID(ISystem system);
+        /// <summary>
+        /// Sets the controlling admin for this registry
+        /// </summary>
+        /// <param name="admin">The controlling admin used to set admin in systemInfo when a system is registered</param>
+        void SetAdmin(IEntityAdmin admin);
 
         /// <summary>
         /// Get a system's name

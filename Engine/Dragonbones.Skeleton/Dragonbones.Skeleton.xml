@@ -742,6 +742,12 @@
             <param name="system">the system</param>
             <returns>the id of the system</returns>
         </member>
+        <member name="M:Dragonbones.Systems.ISystemRegistry.SetAdmin(Dragonbones.IEntityAdmin)">
+            <summary>
+            Sets the controlling admin for this registry
+            </summary>
+            <param name="admin">The controlling admin used to set admin in systemInfo when a system is registered</param>
+        </member>
         <member name="M:Dragonbones.Systems.ISystemRegistry.GetName(System.Int32)">
             <summary>
             Get a system's name

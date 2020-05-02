@@ -12,6 +12,7 @@ namespace ConsoleTest
     {
         private static void Main()
         {
+            AdminTest.Run();
             ThreadingTest.Run();
             ECSNoAdminTest.Run();
             EntityTest.Run(100000, 10000);

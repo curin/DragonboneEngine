@@ -376,6 +376,12 @@
         <member name="M:Dragonbones.Components.ComponentTypeRegistry.Dispose">
             <inheritdoc/>
         </member>
+        <member name="M:Dragonbones.Components.ComponentTypeRegistry.SwapReadBuffer">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.Components.ComponentTypeRegistry.SwapWriteBuffer">
+            <inheritdoc/>
+        </member>
         <member name="T:Dragonbones.Components.SingletonBuffer`1">
             <summary>
             A special form of a <see cref="T:Dragonbones.Components.IComponentBuffer"/> designed to store only a single value for all ids
@@ -1012,6 +1018,203 @@
         <member name="M:Dragonbones.Entities.LinkBuffer.Dispose">
             <inheritdoc/>
         </member>
+        <member name="M:Dragonbones.EntityAdmin.GetRenderThreads">
+            <summary>
+            An array of all threads used for rendering
+            index 0 is the main thread
+            </summary>
+        </member>
+        <member name="M:Dragonbones.EntityAdmin.SetRenderThreads(System.Threading.Thread[])">
+            <summary>
+            An array of all threads used for rendering
+            index 0 is the main thread
+            </summary>
+        </member>
+        <member name="M:Dragonbones.EntityAdmin.GetLogicThreads">
+            <summary>
+            An array of all the threads used for logic
+            index 0 is the main thread
+            </summary>
+        </member>
+        <member name="M:Dragonbones.EntityAdmin.SetLogicThreads(System.Threading.Thread[])">
+            <summary>
+            An array of all the threads used for logic
+            index 0 is the main thread
+            </summary>
+        </member>
+        <member name="M:Dragonbones.EntityAdmin.GetLogicEvents">
+            <summary>
+            Event handlers used to wait on individual threads for logic threads
+            Main use is to wait when systemSchedule is conflicting
+            </summary>
+        </member>
+        <member name="M:Dragonbones.EntityAdmin.SetLogicEvents(System.Threading.AutoResetEvent[])">
+            <summary>
+            Event handlers used to wait on individual threads for logic threads
+            Main use is to wait when systemSchedule is conflicting
+            </summary>
+            <param name="value">the new value for the events array</param>
+        </member>
+        <member name="M:Dragonbones.EntityAdmin.GetRenderEvents">
+            <summary>
+            Event handlers used to wait on individual threads for render threads
+            Main use is to wait when systemSchedule is conflicting
+            </summary>
+        </member>
+        <member name="M:Dragonbones.EntityAdmin.SetRenderEvents(System.Threading.AutoResetEvent[])">
+            <summary>
+            Event handlers used to wait on individual threads for render threads
+            Main use is to wait when systemSchedule is conflicting
+            </summary>
+            <param name="value">the new value for the events array</param>
+        </member>
+        <member name="P:Dragonbones.EntityAdmin.LogicBarrier">
+            <summary>
+            The barrier used to syncronize logic threads
+            </summary>
+        </member>
+        <member name="P:Dragonbones.EntityAdmin.RenderBarrier">
+            <summary>
+            The barrier used to syncronize render threads
+            </summary>
+        </member>
+        <member name="P:Dragonbones.EntityAdmin.SystemBarrier">
+            <summary>
+            The barrier used to syncronize all threads
+            </summary>
+        </member>
+        <member name="P:Dragonbones.EntityAdmin.Running">
+            <summary>
+            is the game still running
+            used to stop the game when finished and then cleanup after finished running
+            </summary>
+        </member>
+        <member name="P:Dragonbones.EntityAdmin.LogicSchedule">
+            <summary>
+            The current schedule being used for logic systems
+            </summary>
+        </member>
+        <member name="P:Dragonbones.EntityAdmin.NewLogicSchedule">
+            <summary>
+            The next schedule to be used or the old schedule if schedule was just replaced
+            </summary>
+        </member>
+        <member name="P:Dragonbones.EntityAdmin.LogicScheduleAvailable">
+            <summary>
+            Is a new schedule available for logic systems
+            </summary>
+        </member>
+        <member name="P:Dragonbones.EntityAdmin.RenderSchedule">
+            <summary>
+            The current schedule being used for render systems
+            </summary>
+        </member>
+        <member name="P:Dragonbones.EntityAdmin.NewRenderSchedule">
+            <summary>
+            The next schedule to be used or the old schedule if the schedule was just replaced
+            </summary>
+        </member>
+        <member name="P:Dragonbones.EntityAdmin.RenderScheduleAvailable">
+            <summary>
+            Is a new schedule available for render systems
+            </summary>
+        </member>
+        <member name="P:Dragonbones.EntityAdmin.LogicDeltaTime">
+            <summary>
+            The amount of time in seconds between logic runs
+            </summary>
+        </member>
+        <member name="P:Dragonbones.EntityAdmin.LogicInterval">
+            <summary>
+            The desired time interval in seconds between logic runs
+            </summary>
+        </member>
+        <member name="P:Dragonbones.EntityAdmin.RenderDeltaTime">
+            <summary>
+            The amount of time in seconds between render runs
+            </summary>
+        </member>
+        <member name="P:Dragonbones.EntityAdmin.LogicTimer">
+            <summary>
+            The timer used to time logic threads
+            </summary>
+        </member>
+        <member name="P:Dragonbones.EntityAdmin.RenderTimer">
+            <summary>
+            The timer used to time render threads
+            </summary>
+        </member>
+        <member name="P:Dragonbones.EntityAdmin.Components">
+            <inheritdoc/>
+        </member>
+        <member name="P:Dragonbones.EntityAdmin.Systems">
+            <inheritdoc/>
+        </member>
+        <member name="P:Dragonbones.EntityAdmin.Entities">
+            <inheritdoc/>
+        </member>
+        <member name="P:Dragonbones.EntityAdmin.Links">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.EntityAdmin.Run">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.EntityAdmin.MainLogicMethod">
+            <summary>
+            The method run on the main logic thread
+            This should be used to handle anything that should be done only once and used to control the other threads
+            Logic threads should handle the logic systems
+            Main priority is running logic systems and swapping write buffers
+            
+            </summary>
+        </member>
+        <member name="M:Dragonbones.EntityAdmin.SecondaryLogicMethod(System.Object)">
+            <summary>
+            The method run on secondary logic threads
+            Use this to supplement the computing power of the main thread
+            Do not count on having any threads run this method
+            </summary>
+            <param name="laneObject">the index of this thread (index 0 is reserved for the main thread)</param>
+        </member>
+        <member name="M:Dragonbones.EntityAdmin.MainRenderMethod">
+            <summary>
+            The main thread for rendering
+            This should be used to handle anything that should be done only once and used to control the other threads
+            </summary>
+        </member>
+        <member name="M:Dragonbones.EntityAdmin.SecondaryRenderMethod(System.Object)">
+            <summary>
+            The method run on secondary render threads
+            Use this to supplement the computing power of the main thread
+            Do not count on having any threads run this method
+            </summary>
+            <param name="laneObject">the index of this thread (index 0 is reserved for the main thread)</param>
+        </member>
+        <member name="M:Dragonbones.EntityAdmin.SystemRun(System.Int32,Dragonbones.Systems.ISystemSchedule,System.Threading.AutoResetEvent[],System.Single)">
+            <summary>
+            The general method for how systems are run.
+            </summary>
+            <param name="laneID">what lane is calling</param>
+            <param name="schedule">the schedule of systems to run</param>
+            <param name="events">the reset events used when a system is stopped due to conflict</param>
+            <param name="deltaTime">the time since last run</param>
+        </member>
+        <member name="M:Dragonbones.EntityAdmin.SystemInitialize(System.Int32,Dragonbones.Systems.ISystemSchedule,System.Threading.AutoResetEvent[])">
+            <summary>
+            The general method for how systems are initialized.
+            </summary>
+            <param name="laneID">what lane is calling</param>
+            <param name="schedule">the schedule of systems to run</param>
+            <param name="events">the reset events used when a system is stopped due to conflict</param>
+        </member>
+        <member name="M:Dragonbones.EntityAdmin.SystemDispose(System.Int32,Dragonbones.Systems.ISystemSchedule,System.Threading.AutoResetEvent[])">
+            <summary>
+            The general method for how systems are initialized.
+            </summary>
+            <param name="laneID">what lane is calling</param>
+            <param name="schedule">the schedule of systems to run</param>
+            <param name="events">the reset events used when a system is stopped due to conflict</param>
+        </member>
         <member name="M:Dragonbones.EntityAdmin.Dispose(System.Boolean)">
             <summary>
             Disposes this object
@@ -1114,6 +1317,15 @@
             <inheritdoc />
             </summary>
         </member>
+        <member name="M:Dragonbones.Systems.SafeSystemSchedule.Dispose(System.Boolean)">
+            <summary>
+            Disposes this object
+            </summary>
+            <param name="disposing">should managed objects be disposed</param>
+        </member>
+        <member name="M:Dragonbones.Systems.SafeSystemSchedule.Dispose">
+            <inheritdoc/>
+        </member>
         <member name="T:Dragonbones.Systems.SystemRegistry">
              <summary>
              A base version of the <see cref="T:Dragonbones.Systems.SystemRegistry"/>
@@ -1121,12 +1333,11 @@
              This uses a <see cref="T:Dragonbones.Collections.NamedDataRegistry`1"/> to store the systems
              </summary>
         </member>
-        <member name="M:Dragonbones.Systems.SystemRegistry.#ctor(Dragonbones.IEntityAdmin,System.Int32,System.Int32)">
+        <member name="M:Dragonbones.Systems.SystemRegistry.#ctor(System.Int32,System.Int32)">
             <summary>
             Constructs an instance of <see cref="T:Dragonbones.Systems.SystemRegistry"/>
             </summary>
             <param name="maxSystemCount">the maximum number of systems to every be added to the registry</param>
-            <param name="admin">The controlling admin used to set admin in systemInfo when a system is registered</param>
             <param name="hashSize">the hash size used by the internal hashtable. Higher makes for faster searching but increases memory usage</param>
         </member>
         <member name="P:Dragonbones.Systems.SystemRegistry.Item(System.String)">
@@ -1188,6 +1399,12 @@
         </member>
         <member name="M:Dragonbones.Systems.SystemRegistry.Remove(Dragonbones.Systems.ISystem)">
             <inheritdoc />
+        </member>
+        <member name="M:Dragonbones.Systems.SystemRegistry.SetAdmin(Dragonbones.IEntityAdmin)">
+            <summary>
+            Sets the controlling admin for this registry
+            </summary>
+            <param name="admin">The controlling admin used to set admin in systemInfo when a system is registered</param>
         </member>
         <member name="M:Dragonbones.Systems.SystemRegistry.System#Collections#IEnumerable#GetEnumerator">
             <inheritdoc />
@@ -1292,6 +1509,15 @@
             <summary>
             <inheritdoc />
             </summary>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemSchedule.Dispose(System.Boolean)">
+            <summary>
+            Disposes this object
+            </summary>
+            <param name="disposing">should managed objects be disposed</param>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemSchedule.Dispose">
+            <inheritdoc/>
         </member>
     </members>
 </doc>
