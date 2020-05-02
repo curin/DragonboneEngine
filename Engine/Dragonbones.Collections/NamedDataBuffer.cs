@@ -918,10 +918,10 @@ namespace Dragonbones.Collections
                 NamedDataBuffer<TValue>.Entry ent = default;
                 if (_next == -2)
                 {
-
                     _current = _buff._start[_type];
-                    if (_current != -1)
-                        ent = _buff._buffer[_type, _current].Item2;
+                    if (_current == -1)
+                        return false;
+                    ent = _buff._buffer[_type, _current].Item2;
                     _next = ent.NextIterator;
                     return true;
                 }

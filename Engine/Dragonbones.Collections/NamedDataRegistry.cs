@@ -563,10 +563,10 @@ namespace Dragonbones.Collections
                 Entry ent = default;
                 if (_next == -2)
                 {
-                    
                     _current = _reg._start;
-                    if (_current != -1)
-                        ent = _reg._entries[_current];
+                    if (_current == -1)
+                        return false;
+                    ent = _reg._entries[_current];
                     _next = ent.NextEnumerator;
                     return true;
                 }
