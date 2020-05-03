@@ -9,10 +9,16 @@ using System.Threading;
 
 namespace Dragonbones
 {
+    /// <summary>
+    /// A Default implementation for <see cref="IEntityAdmin"/>
+    /// This implementation focuses on running the systems using a load balance system to allow as much rendering power when available, 
+    /// but when not available attempting to give enough power so that updates can smoothly run
+    /// </summary>
     public class EntityAdmin : IEntityAdmin
     {
         private Thread[] _threads;
         private AutoResetEvent[] _events;
+        private PrecisionTimer[] _laneTimers;
         private int _logicLaneCount;
         private int _renderLaneCount;
         private readonly int _totalLaneCount;
@@ -110,7 +116,7 @@ namespace Dragonbones
         /// <summary>
         /// The minimum time interval in seconds between render runs
         /// </summary>
-        protected float MinimumRenderInterval { get; set; }
+        protected float MaxRenderInterval { get; set; }
         /// <summary>
         /// The amount of time in seconds between render runs
         /// </summary>
@@ -171,10 +177,21 @@ namespace Dragonbones
         ///<inheritdoc/>
         public int RenderLaneCount => _renderLaneCount;
 
+        ///<inheritdoc/>
         public int TotalLaneCount => _totalLaneCount;
 
-        public EntityAdmin(float logicUpdateInterval, IComponentTypeRegistry components, ISystemRegistry systems, IEntityBuffer entities, ILinkBuffer links)
+        /// <summary>
+        /// A constructor for the EntityAdmin
+        /// </summary>
+        /// <param name="logicUpdateInterval">the minimum interval of time for it to run updates in seconds</param>
+        /// <param name="maxRenderInterval">the maximum desired interval for it to take for a render frame</param>
+        /// <param name="components">the <see cref="IComponentTypeRegistry"/> to use to store component buffers</param>
+        /// <param name="systems">the <see cref="ISystemRegistry"/> to use to store systems</param>
+        /// <param name="entities">the <see cref="IEntityBuffer"/> to use to store entities</param>
+        /// <param name="links">the <see cref="ILinkBuffer"/> to use to store links between entities and components</param>
+        public EntityAdmin(float logicUpdateInterval, float maxRenderInterval, IComponentTypeRegistry components, ISystemRegistry systems, IEntityBuffer entities, ILinkBuffer links)
         {
+            MaxRenderInterval = maxRenderInterval;
             LogicInterval = logicUpdateInterval;
             Components = components;
             Systems = systems;
@@ -199,6 +216,7 @@ namespace Dragonbones
             RenderTimer.Start();
 
             _threads = new Thread[_totalLaneCount];
+            _laneTimers = new PrecisionTimer[_totalLaneCount];
             _events = new AutoResetEvent[_totalLaneCount];
 
             _threads[0] = Thread.CurrentThread;
@@ -208,6 +226,7 @@ namespace Dragonbones
             for (int i = 0; i < _totalLaneCount; i++)
             {
                 _events[i] = new AutoResetEvent(false);
+                _laneTimers[i] = new PrecisionTimer();
 
                 if (i > 0 && i < _totalLaneCount - 1)
                     _threads[i] = new Thread(SecondaryMethod);
@@ -243,7 +262,8 @@ namespace Dragonbones
         /// </summary>
         protected virtual void MainLogicMethod()
         {
-            SystemInitialize(0, CurrentLogicSchedule);
+            int laneID = 0;
+            SystemInitialize(laneID, CurrentLogicSchedule);
 
             CurrentLogicSchedule.Reset();
 
@@ -267,7 +287,7 @@ namespace Dragonbones
                     _logicLaneCount = (int)(MathF.Ceiling(percent * count)) + 1;
                     _renderLaneCount = _totalLaneCount - _logicLaneCount;
                 }
-                else if (renderTime < MinimumRenderInterval)
+                else if (renderTime < MaxRenderInterval)
                 {
                     float percent = LogicTime / renderTime;
                     int count = _totalLaneCount - 2;
@@ -278,17 +298,12 @@ namespace Dragonbones
                 LogicBarrier.SignalAndWait();
 
                 if (_logicLaneCount < LogicBarrier.ParticipantCount)
-                {
                     LogicBarrier.RemoveParticipants(LogicBarrier.ParticipantCount - _logicLaneCount);
-                    
-                }
 
                 if (_logicLaneCount > LogicBarrier.ParticipantCount)
-                {
                     LogicBarrier.AddParticipants(_logicLaneCount - LogicBarrier.ParticipantCount);
-                }
 
-                SystemRun(0, CurrentLogicSchedule, LogicDeltaTime);
+                SystemRun(laneID, CurrentLogicSchedule, LogicTimer, LogicInterval, LogicDeltaTime);
 
                 LogicBarrier.SignalAndWait();
                 if (LogicScheduleAvailable)
@@ -309,7 +324,7 @@ namespace Dragonbones
 
             LogicBarrier.SignalAndWait();
             SystemBarrier.SignalAndWait();
-            SystemDispose(0, CurrentLogicSchedule);
+            SystemDispose(laneID, CurrentLogicSchedule);
         }
 
         /// <summary>
@@ -321,16 +336,17 @@ namespace Dragonbones
         protected virtual void SecondaryMethod(object laneObject)
         {
             int lane = (int)laneObject;
-            SystemInitialize(lane, CurrentLogicSchedule);
-
-            SystemBarrier.SignalAndWait();
-
+            
             if (lane < _logicLaneCount)
             {
+                SystemInitialize(lane, CurrentLogicSchedule);
+                SystemBarrier.SignalAndWait();
                 LogicBarrier.SignalAndWait();
             }
             else
             {
+                SystemInitialize(lane, CurrentRenderSchedule);
+                SystemBarrier.SignalAndWait();
                 RenderBarrier.SignalAndWait();
             }
 
@@ -338,13 +354,13 @@ namespace Dragonbones
             {
                 if (lane < _logicLaneCount)
                 {
-                    SystemRun(lane, CurrentLogicSchedule, LogicDeltaTime);
+                    SystemRun(lane, CurrentLogicSchedule, LogicTimer, LogicInterval, LogicDeltaTime);
                     LogicBarrier.SignalAndWait();
                     LogicBarrier.SignalAndWait();
                 }
                 else
                 {
-                    SystemRun(lane, CurrentRenderSchedule, RenderDeltaTime);
+                    SystemRun(lane, CurrentRenderSchedule, RenderTimer, MaxRenderInterval, RenderDeltaTime);
                     RenderBarrier.SignalAndWait();
                     RenderBarrier.SignalAndWait();
                 }
@@ -352,7 +368,10 @@ namespace Dragonbones
             } while (Running);
 
             SystemBarrier.SignalAndWait();
-            SystemDispose(lane, CurrentLogicSchedule);
+            if (lane < _logicLaneCount)
+                SystemDispose(lane, CurrentLogicSchedule);
+            else
+                SystemDispose(lane, CurrentRenderSchedule);
         }
 
         /// <summary>
@@ -390,11 +409,9 @@ namespace Dragonbones
                     RenderBarrier.AddParticipants(_renderLaneCount - RenderBarrier.ParticipantCount);
                 }
 
-                SystemRun(laneID, CurrentRenderSchedule, RenderDeltaTime);
+                SystemRun(laneID, CurrentRenderSchedule, RenderTimer, MaxRenderInterval, RenderDeltaTime);
 
-                Console.WriteLine(RenderLaneCount);
                 RenderBarrier.SignalAndWait();
-
 
                 if (RenderScheduleAvailable)
                 {
@@ -416,25 +433,38 @@ namespace Dragonbones
         /// </summary>
         /// <param name="laneID">what lane is calling</param>
         /// <param name="schedule">the schedule of systems to run</param>
-        /// <param name="events">the reset events used when a system is stopped due to conflict</param>
+        /// <param name="time">The current time in the frame</param>
+        /// <param name="interval">the maximum amount of time to take on a frame</param>
         /// <param name="deltaTime">the time since last run</param>
-        private void SystemRun(int laneID, ISystemSchedule schedule, float deltaTime)
+        private void SystemRun(int laneID, ISystemSchedule schedule, PrecisionTimer time, float interval, float deltaTime)
         {
             ScheduleResult result = schedule.NextSystem(laneID, out SystemInfo sysInf);
 
             while (result == ScheduleResult.Conflict)
             {
                 _events[laneID].WaitOne();
-                result = schedule.NextSystem(laneID, out sysInf);
+                if (time.ElapsedSecondsF < interval)
+                    result = schedule.NextSystem(laneID, out sysInf);
+                else
+                    result = ScheduleResult.Finished;
             }
 
             while (result == ScheduleResult.Supplied)
             {
                 ISystem system = Systems.GetSystem(sysInf.ID);
-                system.Run(deltaTime);
 
-                result = schedule.NextSystem(laneID, out sysInf);
-                if (result == ScheduleResult.Supplied)
+                _laneTimers[laneID].Start();
+                system.Run(deltaTime);
+                _laneTimers[laneID].Stop();
+
+                sysInf.Update(_laneTimers[laneID].ElapsedSeconds);
+                _laneTimers[laneID].Reset();
+
+                if (time.ElapsedSecondsF < interval)
+                    result = schedule.NextSystem(laneID, out sysInf);
+                else
+                    result = ScheduleResult.Finished;
+                if (result != ScheduleResult.Conflict)
                     if (laneID < _logicLaneCount)
                         for (int i = 0; i < _logicLaneCount; i++)
                             _events[i].Set();
@@ -445,7 +475,10 @@ namespace Dragonbones
                 while (result == ScheduleResult.Conflict)
                 {
                     _events[laneID].WaitOne();
-                    result = schedule.NextSystem(laneID, out sysInf);
+                    if (time.ElapsedSecondsF < interval)
+                        result = schedule.NextSystem(laneID, out sysInf);
+                    else
+                        result = ScheduleResult.Finished;
                 }
             }
         }
@@ -455,7 +488,6 @@ namespace Dragonbones
         /// </summary>
         /// <param name="laneID">what lane is calling</param>
         /// <param name="schedule">the schedule of systems to run</param>
-        /// <param name="events">the reset events used when a system is stopped due to conflict</param>
         private void SystemInitialize(int laneID, ISystemSchedule schedule)
         {
             ScheduleResult result = schedule.NextSystem(laneID, out SystemInfo sysInf);
@@ -493,7 +525,6 @@ namespace Dragonbones
         /// </summary>
         /// <param name="laneID">what lane is calling</param>
         /// <param name="schedule">the schedule of systems to run</param>
-        /// <param name="events">the reset events used when a system is stopped due to conflict</param>
         private void SystemDispose(int laneID, ISystemSchedule schedule)
         {
             ScheduleResult result = schedule.NextSystem(laneID, out SystemInfo sysInf);

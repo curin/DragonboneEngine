@@ -180,6 +180,8 @@ namespace Dragonbones.Systems
         /// <param name="newTime">the time it took for the system to run</param>
         public void Update(double newTime)
         {
+            if (RunCount == long.MaxValue)
+                RunCount = 1;
             RunCount++;
             AverageRunTime = MathHelper.MovingAverage(AverageRunTime, newTime, RunCount);
             PriorityComposite = Age * Priority;

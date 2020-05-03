@@ -88,8 +88,10 @@ namespace Dragonbones.Entities
             if (ent.Links.GetLength() == ent.Top[type])
                 ent.Links = new DataBuffer<EntityComponentLink>(ent.Links, ent.Top[type] << 1);
 
+            ent.Lock.ExitWriteLock();
             if (!FindIndex(type, ent, entityID, out int index))
             {
+                ent.Lock.EnterWriteLock();
                 ent.Links.ShiftData(type, index, ent.Top[type] - index, index + 1);
             }
             ent.Links.Set(type, index, new EntityComponentLink(entityID, componentID));

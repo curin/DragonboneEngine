@@ -1018,6 +1018,13 @@
         <member name="M:Dragonbones.Entities.LinkBuffer.Dispose">
             <inheritdoc/>
         </member>
+        <member name="T:Dragonbones.EntityAdmin">
+            <summary>
+            A Default implementation for <see cref="T:Dragonbones.IEntityAdmin"/>
+            This implementation focuses on running the systems using a load balance system to allow as much rendering power when available, 
+            but when not available attempting to give enough power so that updates can smoothly run
+            </summary>
+        </member>
         <member name="M:Dragonbones.EntityAdmin.GetThreads">
             <summary>
             An array of all the threads used for computing
@@ -1109,7 +1116,7 @@
             The desired time interval in seconds between logic runs
             </summary>
         </member>
-        <member name="P:Dragonbones.EntityAdmin.MinimumRenderInterval">
+        <member name="P:Dragonbones.EntityAdmin.MaxRenderInterval">
             <summary>
             The minimum time interval in seconds between render runs
             </summary>
@@ -1153,6 +1160,20 @@
         <member name="P:Dragonbones.EntityAdmin.RenderLaneCount">
             <inheritdoc/>
         </member>
+        <member name="P:Dragonbones.EntityAdmin.TotalLaneCount">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.EntityAdmin.#ctor(System.Single,System.Single,Dragonbones.Components.IComponentTypeRegistry,Dragonbones.Systems.ISystemRegistry,Dragonbones.Entities.IEntityBuffer,Dragonbones.Entities.ILinkBuffer)">
+            <summary>
+            A constructor for the EntityAdmin
+            </summary>
+            <param name="logicUpdateInterval">the minimum interval of time for it to run updates in seconds</param>
+            <param name="maxRenderInterval">the maximum desired interval for it to take for a render frame</param>
+            <param name="components">the <see cref="T:Dragonbones.Components.IComponentTypeRegistry"/> to use to store component buffers</param>
+            <param name="systems">the <see cref="T:Dragonbones.Systems.ISystemRegistry"/> to use to store systems</param>
+            <param name="entities">the <see cref="T:Dragonbones.Entities.IEntityBuffer"/> to use to store entities</param>
+            <param name="links">the <see cref="T:Dragonbones.Entities.ILinkBuffer"/> to use to store links between entities and components</param>
+        </member>
         <member name="M:Dragonbones.EntityAdmin.Run">
             <inheritdoc/>
         </member>
@@ -1179,13 +1200,14 @@
             This should be used to handle anything that should be done only once and used to control the other threads
             </summary>
         </member>
-        <member name="M:Dragonbones.EntityAdmin.SystemRun(System.Int32,Dragonbones.Systems.ISystemSchedule,System.Single)">
+        <member name="M:Dragonbones.EntityAdmin.SystemRun(System.Int32,Dragonbones.Systems.ISystemSchedule,Dragonbones.Native.PrecisionTimer,System.Single,System.Single)">
             <summary>
             The general method for how systems are run.
             </summary>
             <param name="laneID">what lane is calling</param>
             <param name="schedule">the schedule of systems to run</param>
-            <param name="events">the reset events used when a system is stopped due to conflict</param>
+            <param name="time">The current time in the frame</param>
+            <param name="interval">the maximum amount of time to take on a frame</param>
             <param name="deltaTime">the time since last run</param>
         </member>
         <member name="M:Dragonbones.EntityAdmin.SystemInitialize(System.Int32,Dragonbones.Systems.ISystemSchedule)">
@@ -1194,7 +1216,6 @@
             </summary>
             <param name="laneID">what lane is calling</param>
             <param name="schedule">the schedule of systems to run</param>
-            <param name="events">the reset events used when a system is stopped due to conflict</param>
         </member>
         <member name="M:Dragonbones.EntityAdmin.SystemDispose(System.Int32,Dragonbones.Systems.ISystemSchedule)">
             <summary>
@@ -1202,7 +1223,6 @@
             </summary>
             <param name="laneID">what lane is calling</param>
             <param name="schedule">the schedule of systems to run</param>
-            <param name="events">the reset events used when a system is stopped due to conflict</param>
         </member>
         <member name="M:Dragonbones.EntityAdmin.Dispose(System.Boolean)">
             <summary>
