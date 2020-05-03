@@ -235,12 +235,40 @@ namespace Dragonbones.Collections
             return _values[2].GetEnumerator();
         }
 
-        /// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        /// <summary>
+        /// Disposes of this object
+        /// </summary>
+        /// <param name="disposing">should the managed objects be disposed</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _values = null;
+                    _dirtyMarks = null;
+                    _dirtyEntries = null;
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                disposedValue = true;
+            }
+        }
+
+        ///<inheritdoc/>
         public void Dispose()
         {
-            _values = null;
-            _dirtyMarks = null;
-            _dirtyEntries = null;
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            GC.SuppressFinalize(this);
         }
+        #endregion
+
     }
 }
