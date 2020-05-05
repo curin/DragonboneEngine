@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
+using Dragonbones.Native;
 
 namespace Dragonbones.Collections
 {
@@ -912,23 +913,14 @@ namespace Dragonbones.Collections
 
             public bool MoveNext()
             {
-                if (_next == -1)
-                    return false;
-                Entry ent;
-                if (_next == -2)
-                {
-                    _current = _buff._start[_type];
-                    if (_current == -1)
-                        return false;
-                    ent = _buff._buffer[_type, _current].Item2;
-                    _next = ent.NextIterator;
-                    return true;
-                }
-
-                _current = _next;
-                ent = _buff._buffer[_type, _current].Item2;
-                _next = ent.NextIterator;
-                return true;
+                int iConditional = NativeMath.ToInt(_next == -2);
+                _current = MathHelper.FastConditional(_buff._start[_type], _next, iConditional);
+                
+                bool ret = _current != -1;
+                int iCon2 = NativeMath.ToInt(ret);
+                Entry ent = _buff._buffer[_type, MathHelper.FastConditional(0, _current, iCon2)].Item2;
+                _next = MathHelper.FastConditional(-1, ent.NextIterator, iCon2);
+                return ret;
             }
 
             public void Reset()

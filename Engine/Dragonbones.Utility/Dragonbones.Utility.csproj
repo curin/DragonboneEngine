@@ -1,12 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <RootNamespace>Dragonbones</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DocumentationFile>J:\Programming Projects\Dragonbones\DragonboneEngine\Engine\Dragonbones.Utility\Dragonbones.Utility.xml</DocumentationFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Native\Dragonbones.Native.Common\Dragonbones.Native.Common.csproj" />
+  </ItemGroup>
 
 </Project>

@@ -133,8 +133,14 @@
             <summary>Returns an enumerator that iterates through a collection.</summary>
             <returns>An <see cref="T:System.Collections.IEnumerator"></see> object that can be used to iterate through the collection.</returns>
         </member>
+        <member name="M:Dragonbones.Collections.DataBuffer`1.Dispose(System.Boolean)">
+            <summary>
+            Disposes of this object
+            </summary>
+            <param name="disposing">should the managed objects be disposed</param>
+        </member>
         <member name="M:Dragonbones.Collections.DataBuffer`1.Dispose">
-            <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+            <inheritdoc/>
         </member>
         <member name="T:Dragonbones.Collections.DoubleDataBuffer`2">
             <summary>
@@ -1137,6 +1143,16 @@
             <summary>
             The enumerator for <see cref="T:Dragonbones.Collections.NamedDataRegistry`1"/>
             </summary>
+        </member>
+        <member name="M:Dragonbones.Collections.PagedArray`1.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Constructor for the PagedArray
+            </summary>
+            <param name="pagePower">the power of two for the size of pages (example: </param>
+            <param name="initialPageCount"></param>
+        </member>
+        <member name="M:Dragonbones.Collections.PagedArray`1.Enumerator.Dispose">
+            <inheritdoc/>
         </member>
         <member name="T:Dragonbones.Collections.ValueBuffer`1">
             <summary>

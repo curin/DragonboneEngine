@@ -45,5 +45,51 @@
             <param name="numberCount">the total number of values including the new one</param>
             <returns>the new average</returns>
         </member>
+        <member name="M:Dragonbones.MathHelper.MathShiftRem(System.Int32,System.Int32,System.Int32,System.Int32@)">
+            <summary>
+            Fast Division and remainder if divisor is a power of two
+            </summary>
+            <param name="dividend">the number to be divided</param>
+            <param name="divisor">the number to be divided by (must be a power of two)</param>
+            <param name="shiftCount">the power of two the divisor is (or number of shifts left from 1)</param>
+            <param name="remainder">the returned remainder from division</param>
+            <returns>the result of the division</returns>
+        </member>
+        <member name="M:Dragonbones.MathHelper.FastConditional(System.Int32,System.Int32,System.Boolean)">
+            <summary>
+            Faster way to do a value conditional for ints
+            </summary>
+            <param name="trueVal">the value to return on true</param>
+            <param name="falseVal">the value to return on false</param>
+            <param name="condition">the conditional</param>
+            <returns></returns>
+        </member>
+        <member name="M:Dragonbones.MathHelper.FastConditional(System.Single,System.Single,System.Boolean)">
+            <summary>
+            Faster way to do a value conditional for ints
+            </summary>
+            <param name="trueVal">the value to return on true</param>
+            <param name="falseVal">the value to return on false</param>
+            <param name="condition">the conditional</param>
+            <returns></returns>
+        </member>
+        <member name="M:Dragonbones.MathHelper.FastConditional(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Faster way to do a value conditional for ints
+            </summary>
+            <param name="trueVal">the value to return on true</param>
+            <param name="falseVal">the value to return on false</param>
+            <param name="condition">the conditional</param>
+            <returns></returns>
+        </member>
+        <member name="M:Dragonbones.MathHelper.FastConditional(System.Single,System.Single,System.Single)">
+            <summary>
+            Faster way to do a value conditional for ints
+            </summary>
+            <param name="trueVal">the value to return on true</param>
+            <param name="falseVal">the value to return on false</param>
+            <param name="condition">the conditional</param>
+            <returns></returns>
+        </member>
     </members>
 </doc>

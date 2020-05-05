@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using System.Threading;
+using Dragonbones.Native;
 
 namespace Dragonbones.Systems
 {
@@ -286,7 +287,7 @@ namespace Dragonbones.Systems
                 if (_searcher.NextEntry == -1)
                 {
                     _lock.Release();
-                    return _searcher.CacheIndex == _current.CacheIndex ? ScheduleResult.Finished : ScheduleResult.Conflict;
+                    return (ScheduleResult)MathHelper.FastConditional(1,2,_searcher.CacheIndex == _current.CacheIndex);
                 }
 
                 _searcher = _entries[_searcher.NextEntry];

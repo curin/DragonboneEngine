@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>Dragonbones.Native</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>J:\Programming Projects\Dragonbones\DragonboneEngine\Engine\Native\Dragonbones.Native.Common\Dragonbones.Native.Common.xml</DocumentationFile>
+  </PropertyGroup>
+
+</Project>

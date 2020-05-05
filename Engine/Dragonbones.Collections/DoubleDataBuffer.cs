@@ -98,8 +98,7 @@ namespace Dragonbones.Collections
         /// <param name="length">the length of the new buffer</param>
         public DoubleDataBuffer(DoubleDataBuffer<TPrimary, TSecondary> copy, int length = -1)
         {
-            if (length == -1)
-                length = copy.GetLength();
+            length = MathHelper.FastConditional(copy.GetLength(), length, length == -1);
 
             if (length > copy._value1s.Length)
             {

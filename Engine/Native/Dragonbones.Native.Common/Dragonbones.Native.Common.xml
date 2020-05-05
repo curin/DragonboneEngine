@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Dragonbones.Native.Common</name>
+    </assembly>
+    <members>
+        <member name="T:Dragonbones.Native.PrecisionTimer">
+            <summary>
+            A precision timer used to profile functions
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Native.PrecisionTimer.Frequency">
+            <summary>
+            The frequency which the timer runs on
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Native.PrecisionTimer.FrequencyF">
+            <summary>
+            The frequency which the timer runs on
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Native.PrecisionTimer.#ctor">
+            <summary>
+            Creates a <see cref="T:Dragonbones.Native.PrecisionTimer"/>
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Native.PrecisionTimer.IsRunning">
+            <summary>
+            Is the timer currently runnning
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Native.PrecisionTimer.Elapsed">
+            <summary>
+            The total time elapsed as a timespan
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Native.PrecisionTimer.ElapsedSeconds">
+            <summary>
+            The amount of seconds elapsed
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Native.PrecisionTimer.ElapsedSecondsF">
+            <summary>
+            the amount of seconds elapsed in single precision floating point value
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Native.PrecisionTimer.Start">
+            <summary>
+            Starts Timer
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Native.PrecisionTimer.Stop">
+            <summary>
+            Stops timer
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Native.PrecisionTimer.Reset">
+            <summary>
+            Stops timer and resets elapsed to zero
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Native.PrecisionTimer.Restart">
+            <summary>
+            Stops timer, resets elapsed to zero, and starts timer anew
+            </summary>
+        </member>
+    </members>
+</doc>

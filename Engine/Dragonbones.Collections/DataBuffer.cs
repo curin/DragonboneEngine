@@ -65,8 +65,8 @@ namespace Dragonbones.Collections
         /// <param name="length">the length of the new buffer</param>
         public DataBuffer(DataBuffer<TValue> copy, int length = -1)
         {
-            if (length == -1)
-                length = copy.GetLength();
+            length = MathHelper.FastConditional(copy.GetLength(), length, length == -1);
+
             for (int i = 0; i < 3; i++)
             {
                 _values[i] = new TValue[length];

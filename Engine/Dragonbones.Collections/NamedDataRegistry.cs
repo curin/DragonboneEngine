@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Dragonbones.Native;
 
 namespace Dragonbones.Collections
 {
@@ -558,23 +559,14 @@ namespace Dragonbones.Collections
 
             public bool MoveNext()
             {
-                if (_next == -1)
-                    return false;
-                Entry ent;
-                if (_next == -2)
-                {
-                    _current = _reg._start;
-                    if (_current == -1)
-                        return false;
-                    ent = _reg._entries[_current];
-                    _next = ent.NextEnumerator;
-                    return true;
-                }
+                int iConditional = NativeMath.ToInt(_next == -2);
+                _current = MathHelper.FastConditional(_reg._start, _next, iConditional);
 
-                _current = _next;
-                ent = _reg._entries[_current];
-                _next = ent.NextEnumerator;
-                return true;
+                bool ret = _current != -1;
+                int iCon2 = NativeMath.ToInt(ret);
+                Entry ent = _reg._entries[MathHelper.FastConditional(0, _current, iCon2)];
+                _next = MathHelper.FastConditional(-1, ent.NextEnumerator, iCon2);
+                return ret;
             }
 
             public void Reset()

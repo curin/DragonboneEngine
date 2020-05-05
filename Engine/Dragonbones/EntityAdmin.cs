@@ -280,18 +280,14 @@ namespace Dragonbones
                 LogicTimer.Start();
 
                 float renderTime = RenderDeltaTime;
-                if (LogicTime < LogicInterval)
+                bool condition = LogicTime < LogicInterval;
+                if (condition || renderTime < MaxRenderInterval)
                 {
-                    float percent = LogicTime / LogicInterval;
-                    int count = _logicLaneCount - 1;
-                    _logicLaneCount = (int)(MathF.Ceiling(percent * count)) + 1;
-                    _renderLaneCount = _totalLaneCount - _logicLaneCount;
-                }
-                else if (renderTime < MaxRenderInterval)
-                {
-                    float percent = LogicTime / renderTime;
-                    int count = _totalLaneCount - 2;
-                    _logicLaneCount = (int)(_totalLaneCount * count) + 1;
+                    int iConditional = NativeMath.ToInt(condition);
+                    float fConditional = NativeMath.ToFloat(condition);
+                    float percent = MathHelper.FastConditional(LogicTime / LogicInterval, LogicTime / renderTime, fConditional);
+                    int count = MathHelper.FastConditional(_logicLaneCount - 1, _totalLaneCount - 2, iConditional);
+                    _logicLaneCount = (int)MathHelper.FastConditional(MathF.Ceiling(percent * count), MathF.Truncate(percent * count), fConditional) + 1;
                     _renderLaneCount = _totalLaneCount - _logicLaneCount;
                 }
 
@@ -400,14 +396,11 @@ namespace Dragonbones
                 RenderTimer.Start();
 
                 if (_renderLaneCount < RenderBarrier.ParticipantCount)
-                {
                     RenderBarrier.RemoveParticipants(RenderBarrier.ParticipantCount - _renderLaneCount);
-                }
 
                 if (_renderLaneCount > RenderBarrier.ParticipantCount)
-                {
                     RenderBarrier.AddParticipants(_renderLaneCount - RenderBarrier.ParticipantCount);
-                }
+
 
                 SystemRun(laneID, CurrentRenderSchedule, RenderTimer, MaxRenderInterval, RenderDeltaTime);
 
@@ -443,10 +436,7 @@ namespace Dragonbones
             while (result == ScheduleResult.Conflict)
             {
                 _events[laneID].WaitOne();
-                if (time.ElapsedSecondsF < interval)
-                    result = schedule.NextSystem(laneID, out sysInf);
-                else
-                    result = ScheduleResult.Finished;
+                result = (ScheduleResult)MathHelper.FastConditional((int)schedule.NextSystem(laneID, out sysInf), (int)ScheduleResult.Finished, time.ElapsedSecondsF < interval);
             }
 
             while (result == ScheduleResult.Supplied)
@@ -460,25 +450,18 @@ namespace Dragonbones
                 sysInf.Update(_laneTimers[laneID].ElapsedSeconds);
                 _laneTimers[laneID].Reset();
 
-                if (time.ElapsedSecondsF < interval)
-                    result = schedule.NextSystem(laneID, out sysInf);
-                else
-                    result = ScheduleResult.Finished;
-                if (result != ScheduleResult.Conflict)
-                    if (laneID < _logicLaneCount)
-                        for (int i = 0; i < _logicLaneCount; i++)
-                            _events[i].Set();
-                    else
-                        for (int i = _logicLaneCount; i < _events.Length; i++)
-                            _events[i].Set();
+                result = (ScheduleResult)MathHelper.FastConditional((int)schedule.NextSystem(laneID, out sysInf), (int)ScheduleResult.Finished, time.ElapsedSecondsF < interval);
+
+                int iConditional = NativeMath.ToInt(laneID < _logicLaneCount);
+                int count = MathHelper.FastConditional(0, MathHelper.FastConditional(_logicLaneCount, _events.Length, iConditional), result == ScheduleResult.Conflict);
+
+                for(int i = MathHelper.FastConditional(0, _logicLaneCount, iConditional); i < count; i++)
+                    _events[i].Set();
 
                 while (result == ScheduleResult.Conflict)
                 {
                     _events[laneID].WaitOne();
-                    if (time.ElapsedSecondsF < interval)
-                        result = schedule.NextSystem(laneID, out sysInf);
-                    else
-                        result = ScheduleResult.Finished;
+                    result = (ScheduleResult)MathHelper.FastConditional((int)schedule.NextSystem(laneID, out sysInf), (int)ScheduleResult.Finished, time.ElapsedSecondsF < interval);
                 }
             }
         }
@@ -504,13 +487,12 @@ namespace Dragonbones
                 system.Initialize();
 
                 result = schedule.NextSystem(laneID, out sysInf);
-                if (result == ScheduleResult.Supplied)
-                    if (laneID < _logicLaneCount)
-                        for (int i = 0; i < _logicLaneCount; i++)
-                            _events[i].Set();
-                    else
-                        for (int i = _logicLaneCount; i < _events.Length; i++)
-                            _events[i].Set();
+
+                int iConditional = NativeMath.ToInt(laneID < _logicLaneCount);
+                int count = MathHelper.FastConditional(0, MathHelper.FastConditional(_logicLaneCount, _events.Length, iConditional), result == ScheduleResult.Conflict);
+
+                for (int i = MathHelper.FastConditional(0, _logicLaneCount, iConditional); i < count; i++)
+                    _events[i].Set();
 
                 while (result == ScheduleResult.Conflict)
                 {
@@ -541,13 +523,12 @@ namespace Dragonbones
                 system.Dispose();
 
                 result = schedule.NextSystem(laneID, out sysInf);
-                if (result == ScheduleResult.Supplied)
-                    if (laneID < _logicLaneCount)
-                        for (int i = 0; i < _logicLaneCount; i++)
-                            _events[i].Set();
-                    else
-                        for (int i = _logicLaneCount; i < _events.Length; i++)
-                            _events[i].Set();
+
+                int iConditional = NativeMath.ToInt(laneID < _logicLaneCount);
+                int count = MathHelper.FastConditional(0, MathHelper.FastConditional(_logicLaneCount, _events.Length, iConditional), result == ScheduleResult.Conflict);
+
+                for (int i = MathHelper.FastConditional(0, _logicLaneCount, iConditional); i < count; i++)
+                    _events[i].Set();
 
                 while (result == ScheduleResult.Conflict)
                 {
