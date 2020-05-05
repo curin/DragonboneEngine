@@ -913,13 +913,11 @@ namespace Dragonbones.Collections
 
             public bool MoveNext()
             {
-                int iConditional = NativeMath.ToInt(_next == -2);
-                _current = MathHelper.FastConditional(_buff._start[_type], _next, iConditional);
+                _current = _next == -2 ? _buff._start[_type] : _next;
                 
                 bool ret = _current != -1;
-                int iCon2 = NativeMath.ToInt(ret);
-                Entry ent = _buff._buffer[_type, MathHelper.FastConditional(0, _current, iCon2)].Item2;
-                _next = MathHelper.FastConditional(-1, ent.NextIterator, iCon2);
+                Entry ent = _buff._buffer[_type, ret ? _current: 0].Item2;
+                _next = ret ? ent.NextIterator : -1;
                 return ret;
             }
 

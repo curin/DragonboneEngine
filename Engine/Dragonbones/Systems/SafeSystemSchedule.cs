@@ -287,7 +287,7 @@ namespace Dragonbones.Systems
                 if (_searcher.NextEntry == -1)
                 {
                     _lock.Release();
-                    return (ScheduleResult)MathHelper.FastConditional(1,2,_searcher.CacheIndex == _current.CacheIndex);
+                    return _searcher.CacheIndex == _current.CacheIndex ? ScheduleResult.Finished : ScheduleResult.Conflict; 
                 }
 
                 _searcher = _entries[_searcher.NextEntry];

@@ -72,55 +72,5 @@ namespace Dragonbones
             remainder = dividend & (divisor - 1);
             return dividend >> shiftCount;
         }
-
-        /// <summary>
-        /// Faster way to do a value conditional for ints
-        /// </summary>
-        /// <param name="trueVal">the value to return on true</param>
-        /// <param name="falseVal">the value to return on false</param>
-        /// <param name="condition">the conditional</param>
-        /// <returns></returns>
-        public static int FastConditional(int trueVal, int falseVal, bool condition)
-        {
-            int iCondition = NativeMath.ToInt(condition);
-            return trueVal * iCondition + falseVal * (1 - iCondition);
-        }
-
-        /// <summary>
-        /// Faster way to do a value conditional for ints
-        /// </summary>
-        /// <param name="trueVal">the value to return on true</param>
-        /// <param name="falseVal">the value to return on false</param>
-        /// <param name="condition">the conditional</param>
-        /// <returns></returns>
-        public static float FastConditional(float trueVal, float falseVal, bool condition)
-        {
-            float iCondition = NativeMath.ToFloat(condition);
-            return trueVal * iCondition + falseVal * (1 - iCondition);
-        }
-
-        /// <summary>
-        /// Faster way to do a value conditional for ints
-        /// </summary>
-        /// <param name="trueVal">the value to return on true</param>
-        /// <param name="falseVal">the value to return on false</param>
-        /// <param name="condition">the conditional</param>
-        /// <returns></returns>
-        public static int FastConditional(int trueVal, int falseVal, int condition)
-        {
-            return trueVal * condition + falseVal * (1 - condition);
-        }
-
-        /// <summary>
-        /// Faster way to do a value conditional for ints
-        /// </summary>
-        /// <param name="trueVal">the value to return on true</param>
-        /// <param name="falseVal">the value to return on false</param>
-        /// <param name="condition">the conditional</param>
-        /// <returns></returns>
-        public static float FastConditional(float trueVal, float falseVal, float condition)
-        {
-            return trueVal * condition + falseVal * (1 - condition);
-        }
     }
 }

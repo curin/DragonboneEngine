@@ -298,8 +298,14 @@
             <summary>Returns an enumerator that iterates through a collection.</summary>
             <returns>An <see cref="T:System.Collections.IEnumerator"></see> object that can be used to iterate through the collection.</returns>
         </member>
+        <member name="M:Dragonbones.Collections.DoubleDataBuffer`2.Dispose(System.Boolean)">
+            <summary>
+            Disposes this object
+            </summary>
+            <param name="disposing">should the managed objects also be disposed</param>
+        </member>
         <member name="M:Dragonbones.Collections.DoubleDataBuffer`2.Dispose">
-            <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+            <inheritdoc/>
         </member>
         <member name="T:Dragonbones.Collections.IDataBuffer">
             <summary>
@@ -1196,8 +1202,14 @@
             Should be done when finished writing
             </summary>
         </member>
+        <member name="M:Dragonbones.Collections.ValueBuffer`1.Dispose(System.Boolean)">
+            <summary>
+            Disposes this object
+            </summary>
+            <param name="disposing">should the managed objects also be disposed</param>
+        </member>
         <member name="M:Dragonbones.Collections.ValueBuffer`1.Dispose">
-            <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+            <inheritdoc/>
         </member>
     </members>
 </doc>

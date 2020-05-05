@@ -55,41 +55,5 @@
             <param name="remainder">the returned remainder from division</param>
             <returns>the result of the division</returns>
         </member>
-        <member name="M:Dragonbones.MathHelper.FastConditional(System.Int32,System.Int32,System.Boolean)">
-            <summary>
-            Faster way to do a value conditional for ints
-            </summary>
-            <param name="trueVal">the value to return on true</param>
-            <param name="falseVal">the value to return on false</param>
-            <param name="condition">the conditional</param>
-            <returns></returns>
-        </member>
-        <member name="M:Dragonbones.MathHelper.FastConditional(System.Single,System.Single,System.Boolean)">
-            <summary>
-            Faster way to do a value conditional for ints
-            </summary>
-            <param name="trueVal">the value to return on true</param>
-            <param name="falseVal">the value to return on false</param>
-            <param name="condition">the conditional</param>
-            <returns></returns>
-        </member>
-        <member name="M:Dragonbones.MathHelper.FastConditional(System.Int32,System.Int32,System.Int32)">
-            <summary>
-            Faster way to do a value conditional for ints
-            </summary>
-            <param name="trueVal">the value to return on true</param>
-            <param name="falseVal">the value to return on false</param>
-            <param name="condition">the conditional</param>
-            <returns></returns>
-        </member>
-        <member name="M:Dragonbones.MathHelper.FastConditional(System.Single,System.Single,System.Single)">
-            <summary>
-            Faster way to do a value conditional for ints
-            </summary>
-            <param name="trueVal">the value to return on true</param>
-            <param name="falseVal">the value to return on false</param>
-            <param name="condition">the conditional</param>
-            <returns></returns>
-        </member>
     </members>
 </doc>

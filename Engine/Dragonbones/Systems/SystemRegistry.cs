@@ -152,7 +152,7 @@ namespace Dragonbones.Systems
         /// <inheritdoc />
         public int GetTypeCount(SystemType type)
         {
-            return MathHelper.FastConditional(_typeCounts[type], 0, _typeCounts.ContainsKey(type));
+            return _typeCounts.ContainsKey(type) ? _typeCounts[type] : 0;
         }
 
         /// <inheritdoc />

@@ -98,7 +98,7 @@ namespace Dragonbones.Collections
         /// <param name="length">the length of the new buffer</param>
         public DoubleDataBuffer(DoubleDataBuffer<TPrimary, TSecondary> copy, int length = -1)
         {
-            length = MathHelper.FastConditional(copy.GetLength(), length, length == -1);
+            length = length == -1 ? copy.GetLength() : length;
 
             if (length > copy._value1s.Length)
             {
@@ -360,13 +360,40 @@ namespace Dragonbones.Collections
             return _value1s[2].GetEnumerator();
         }
 
-        /// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        /// <summary>
+        /// Disposes this object
+        /// </summary>
+        /// <param name="disposing">should the managed objects also be disposed</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _dirtyMarks = null;
+                    _value1s = null;
+                    _dirtyEntries = null;
+                    _value2s = null;
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                disposedValue = true;
+            }
+        }
+
+        ///<inheritdoc/>
         public void Dispose()
         {
-            _dirtyMarks = null;
-            _value1s = null;
-            _dirtyEntries = null;
-            _value2s = null;
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            //GC.SuppressFinalize(this);
         }
+        #endregion
     }
 }

@@ -44,13 +44,13 @@ namespace Dragonbones.Collections
                 if (value == ent.NumericValue)
                     return true;
 
-                
-                next = GetChild(index, MathHelper.FastConditional(1, 0, value < ent.NumericValue));
+
+                next = GetChild(index, value < ent.NumericValue ? 1 : 0);
             }
 
             ent = _entries[next];
 
-            index = MathHelper.FastConditional(next, index, value == ent.NumericValue);
+            index = value == ent.NumericValue ? next : index;
             return value == ent.NumericValue;
         }
 

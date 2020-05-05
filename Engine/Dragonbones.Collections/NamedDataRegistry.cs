@@ -559,13 +559,11 @@ namespace Dragonbones.Collections
 
             public bool MoveNext()
             {
-                int iConditional = NativeMath.ToInt(_next == -2);
-                _current = MathHelper.FastConditional(_reg._start, _next, iConditional);
+                _current = _next == -2 ? _reg._start : _next;
 
                 bool ret = _current != -1;
-                int iCon2 = NativeMath.ToInt(ret);
-                Entry ent = _reg._entries[MathHelper.FastConditional(0, _current, iCon2)];
-                _next = MathHelper.FastConditional(-1, ent.NextEnumerator, iCon2);
+                Entry ent = _reg._entries[ret ? _current : 0];
+                _next = ret ? ent.NextEnumerator : -1;
                 return ret;
             }
 

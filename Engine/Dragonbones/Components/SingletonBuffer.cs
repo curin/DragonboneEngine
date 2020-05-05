@@ -321,7 +321,7 @@ namespace Dragonbones.Components
         /// <returns>the ID associated with the component or -1 if not found in the buffer</returns>
         public int GetID(SystemType systemType, TComponent value)
         {
-            return MathHelper.FastConditional(0, 1, _buffer[(BufferTransactionType)systemType].Equals(value));
+            return _buffer[(BufferTransactionType)systemType].Equals(value) ? 0 : 1;
         }
 
         /// <summary>
