@@ -16,7 +16,7 @@ namespace Dragonbones.Collections
         /// <summary>
         /// Constructor for the PagedArray
         /// </summary>
-        /// <param name="pagePower">the power of two for the size of pages (example: </param>
+        /// <param name="pagePower">the power of two for the size of pages (example: 8 = 256) </param>
         /// <param name="initialPageCount"></param>
         public PagedArray(int pagePower, int initialPageCount)
         {
@@ -40,7 +40,7 @@ namespace Dragonbones.Collections
         public TValue Get(int index)
         {
             int page = MathHelper.MathShiftRem(index, _pageSize, _pageShiftSize, out int id);
-            if (page > _pageCount)
+            if (page >= _pageCount)
                 return default;
             return _pages[page][id];
         }
@@ -48,7 +48,7 @@ namespace Dragonbones.Collections
         public bool TryGet(int index, out TValue value)
         {
             int page = MathHelper.MathShiftRem(index, _pageSize, _pageShiftSize, out int id);
-            if (page > _pageCount)
+            if (page >= _pageCount)
             {
                 value = default;
                 return false;
@@ -60,9 +60,9 @@ namespace Dragonbones.Collections
         public void Set(int index, TValue value)
         {
             int page = Math.DivRem(index, _pageSize, out int id);
-            if (page > _pageCount)
+            if (page >= _pageCount)
             {
-                if (page > _pages.Length)
+                if (page >= _pages.Length)
                 {
                     int pageCount = _pages.Length << 1;
                     while (pageCount < page)
@@ -73,7 +73,7 @@ namespace Dragonbones.Collections
                 }
                 for (int i = _pageCount; i <= page; i++)
                     _pages[i] = new TValue[_pageSize];
-                _pageCount = page;
+                _pageCount = page + 1;
             }
             _pages[page][id] = value;
         }
@@ -236,12 +236,12 @@ namespace Dragonbones.Collections
 
         public IEnumerator<TValue> GetEnumerator()
         {
-            throw new NotImplementedException();
+            return new Enumerator(this);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            throw new NotImplementedException();
+            return new Enumerator(this);
         }
 
         public class Enumerator : IEnumerator<TValue>
@@ -278,6 +278,7 @@ namespace Dragonbones.Collections
                 return true;
             }
 
+            ///<inheritdoc/>
             public void Reset()
             {
                 _index = 0;

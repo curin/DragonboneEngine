@@ -13,6 +13,8 @@ namespace ConsoleTest
     {
         private static void Main()
         {
+            BinarySearchTest.Run();
+            TreeWalkTest.Run();
             ConditionalTest.Run();
             PagingTest.Run();
             AdminTest.Run();

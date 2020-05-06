@@ -72,5 +72,11 @@ namespace Dragonbones
             remainder = dividend & (divisor - 1);
             return dividend >> shiftCount;
         }
+
+        public static int ZeroIndex(int value)
+        {
+            value = ~value;
+            return (int)MathF.Log((value & -value), 2);
+        }
     }
 }

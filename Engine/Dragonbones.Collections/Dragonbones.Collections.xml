@@ -19,6 +19,42 @@
             WriteRead transactions read and write to the write buffer
             </summary>
         </member>
+        <member name="M:Dragonbones.Collections.CompleteBinarySearchTree`1.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Constructs a CompleteBinarySearchTree
+            </summary>
+            <param name="pagePower">the size of the pages in the Array expressed as a power of 2</param>
+            <param name="initialPageCount">the initial number of pages to be added</param>
+        </member>
+        <member name="M:Dragonbones.Collections.CompleteBinarySearchTree`1.Get(System.Int32)">
+            <summary>
+            Get a value from the tree
+            </summary>
+            <param name="ID">the ID of the value to find</param>
+            <returns>the value found or default</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.CompleteBinarySearchTree`1.TryGet(System.Int32,`0@)">
+            <summary>
+            Attempt to get a value from the tree
+            </summary>
+            <param name="ID">the ID of the value to find</param>
+            <param name="value">the value found</param>
+            <returns>whether the ID had a value stored in the tree</returns>
+        </member>
+        <member name="M:Dragonbones.Collections.CompleteBinarySearchTree`1.Set(System.Int32,`0)">
+            <summary>
+            Sets a value in the tree at the given ID
+            </summary>
+            <param name="ID">the ID of the value</param>
+            <param name="value">the value to place at the ID</param>
+        </member>
+        <member name="M:Dragonbones.Collections.CompleteBinarySearchTree`1.Add(System.Int32,`0)">
+            <summary>
+            Add a value to the tree
+            </summary>
+            <param name="ID">the number value used in the sort</param>
+            <param name="value">the value to store</param>
+        </member>
         <member name="T:Dragonbones.Collections.DataBuffer`1">
              <summary>
              A Databuffer is a multithreaded structure to store data in an array format.
@@ -1154,8 +1190,11 @@
             <summary>
             Constructor for the PagedArray
             </summary>
-            <param name="pagePower">the power of two for the size of pages (example: </param>
+            <param name="pagePower">the power of two for the size of pages (example: 8 = 256) </param>
             <param name="initialPageCount"></param>
+        </member>
+        <member name="M:Dragonbones.Collections.PagedArray`1.Enumerator.Reset">
+            <inheritdoc/>
         </member>
         <member name="M:Dragonbones.Collections.PagedArray`1.Enumerator.Dispose">
             <inheritdoc/>
