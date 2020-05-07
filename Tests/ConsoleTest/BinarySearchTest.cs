@@ -11,25 +11,43 @@ namespace ConsoleTest
         public static void Run()
         {
             PrecisionTimer timer = new PrecisionTimer();
-            CompleteBinarySearchTree<int> test = new CompleteBinarySearchTree<int>(8, 1);
+            //CompleteBinarySearchTree<int> test = new CompleteBinarySearchTree<int>(10, 1);
 
-            timer.Start();
-            for (int i = 0; i < 10000; i++)
-                    test.Add(i, i);
-            timer.Stop();
+            int count = 16384;
 
-            Console.WriteLine(timer.ElapsedSeconds / 10000);
-            Console.WriteLine(timer.ElapsedSeconds);
-            Console.WriteLine(timer.ElapsedSeconds / (1.0 / 60.0) / 500);
+            //timer.Start();
+            //for (int i = 0; i < count; i++)
+            //        test.Add(i, i);
+            //timer.Stop();
 
+            
+
+            double time = timer.ElapsedSeconds / count;
+
+            int[] testArray = new int[count];
+            PagedArray<int> testPaged = new PagedArray<int>(12, 1);
+            testPaged[count - 1] = 1;
             int a = 0;
+            IEnumerator<int> enumer = testPaged.GetEnumerator();
             timer.Reset();
+            Console.ReadLine();
             timer.Start();
-            foreach (int i in test)
-                a = i;
+            while (enumer.MoveNext())
+            //foreach (int i in testArray)
+            {
+                //timer.Stop();
+                //Console.WriteLine(i);
+                //timer.Start();
+                //a = enumer.Current;
+                //a = i;
+            }
             timer.Stop();
-            Console.WriteLine(a);
-            Console.WriteLine(timer.ElapsedSeconds / 10000);
+            //Console.WriteLine(a);
+            
+            //Console.WriteLine(time);
+            //Console.WriteLine(time * count);
+            //Console.WriteLine(time / (1.0 / 60.0) * 100);
+            Console.WriteLine(timer.ElapsedSeconds / count);
             Console.WriteLine(timer.ElapsedSeconds);
             Console.WriteLine(timer.ElapsedSeconds / (1.0/60.0) * 100);
             Console.WriteLine(1.0/60.0);

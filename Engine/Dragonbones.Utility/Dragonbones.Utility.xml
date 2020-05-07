@@ -50,10 +50,26 @@
             Fast Division and remainder if divisor is a power of two
             </summary>
             <param name="dividend">the number to be divided</param>
-            <param name="divisor">the number to be divided by (must be a power of two)</param>
+            <param name="divisorMinusOne">the number to be divided by (must be a power of two) minus 1</param>
             <param name="shiftCount">the power of two the divisor is (or number of shifts left from 1)</param>
             <param name="remainder">the returned remainder from division</param>
             <returns>the result of the division</returns>
+        </member>
+        <member name="M:Dragonbones.MathHelper.BitScanForward(System.Int64)">
+            <summary>
+            Search the mask data from least significant bit (LSB) to the most significant bit (MSB) for a set bit (1)
+            using De Bruijn sequence approach. Warning: Will return zero for b = 0.
+            </summary>
+            <param name="b">Target number.</param>
+            <returns>Zero-based position of LSB (from right to left).</returns>
+        </member>
+        <member name="M:Dragonbones.MathHelper.BitScanForward(System.Int32)">
+            <summary>
+            Search the mask data from least significant bit (LSB) to the most significant bit (MSB) for a set bit (1)
+            using De Bruijn sequence approach. Warning: Will return zero for b = 0.
+            </summary>
+            <param name="b">Target number.</param>
+            <returns>Zero-based position of LSB (from right to left).</returns>
         </member>
     </members>
 </doc>

@@ -10,6 +10,7 @@ namespace Dragonbones.Collections
     {
         private TValue[][] _pages;
         private int _pageSize;
+        private int _shiftVal;
         private int _pageShiftSize;
         private int _pageCount;
 
@@ -24,6 +25,7 @@ namespace Dragonbones.Collections
             _pageShiftSize = pagePower;
             _pageSize = 1;
             _pageSize <<= pagePower;
+            _shiftVal = _pageSize - 1;
 
             _pages[0] = new TValue[_pageSize];
             _pageCount = 1;
@@ -39,7 +41,7 @@ namespace Dragonbones.Collections
 
         public TValue Get(int index)
         {
-            int page = MathHelper.MathShiftRem(index, _pageSize, _pageShiftSize, out int id);
+            int page = MathHelper.MathShiftRem(index, _shiftVal, _pageShiftSize, out int id);
             if (page >= _pageCount)
                 return default;
             return _pages[page][id];
@@ -47,7 +49,7 @@ namespace Dragonbones.Collections
 
         public bool TryGet(int index, out TValue value)
         {
-            int page = MathHelper.MathShiftRem(index, _pageSize, _pageShiftSize, out int id);
+            int page = MathHelper.MathShiftRem(index, _shiftVal, _pageShiftSize, out int id);
             if (page >= _pageCount)
             {
                 value = default;
@@ -59,7 +61,7 @@ namespace Dragonbones.Collections
 
         public void Set(int index, TValue value)
         {
-            int page = Math.DivRem(index, _pageSize, out int id);
+            int page = MathHelper.MathShiftRem(index, _shiftVal, _pageShiftSize, out int id);
             if (page >= _pageCount)
             {
                 if (page >= _pages.Length)
@@ -83,9 +85,9 @@ namespace Dragonbones.Collections
             if (startIndex == shiftTo)
                 return;
 
-            int srcPage = MathHelper.MathShiftRem(startIndex, _pageSize, _pageShiftSize, out int srcIndex);
-            int destPage = MathHelper.MathShiftRem(shiftTo, _pageSize, _pageShiftSize, out int destIndex);
-            int destEndPage = MathHelper.MathShiftRem(shiftTo + length, _pageSize, _pageShiftSize, out int destEndIndex);
+            int srcPage = MathHelper.MathShiftRem(startIndex, _shiftVal, _pageShiftSize, out int srcIndex);
+            int destPage = MathHelper.MathShiftRem(shiftTo, _shiftVal, _pageShiftSize, out int destIndex);
+            int destEndPage = MathHelper.MathShiftRem(shiftTo + length, _shiftVal, _pageShiftSize, out int destEndIndex);
 
             if (srcPage == destEndPage)
             {
@@ -93,7 +95,7 @@ namespace Dragonbones.Collections
                 return;
             }
 
-            int srcEndPage = MathHelper.MathShiftRem(startIndex + length, _pageSize, _pageShiftSize, out int srcEndIndex);
+            int srcEndPage = MathHelper.MathShiftRem(startIndex + length, _pageSize - 1, _pageShiftSize, out int srcEndIndex);
 
             if (startIndex < shiftTo)
             {
@@ -244,7 +246,7 @@ namespace Dragonbones.Collections
             return new Enumerator(this);
         }
 
-        public class Enumerator : IEnumerator<TValue>
+        private class Enumerator : IEnumerator<TValue>
         {
             PagedArray<TValue> _array;
             int _index;
@@ -268,14 +270,15 @@ namespace Dragonbones.Collections
                     return true;
                 }
 
-                _index++;
-                if (_index > _array._pageSize)
-                {
-                    _page++;
-                    if (_page > _array._pageCount)
-                        return false;
-                }
-                return true;
+                //_index++;
+                _index = (_index >= _array._pageSize) ? 0 : _index++;
+                _page = (_index >= _array._pageSize) ? _page++ : _page;
+                //if (_index >= _array._pageSize)
+                //{
+                //    _page++;
+                //    _index = 0;
+                //}
+                return _page >= _array._pageCount;
             }
 
             ///<inheritdoc/>

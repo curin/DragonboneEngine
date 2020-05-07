@@ -12,6 +12,7 @@ namespace Dragonbones.Collections
         int _topContinuous;
         int _topLayer;
         int _topLayerIndex;
+        int _count;
         
         /// <summary>
         /// Constructs a CompleteBinarySearchTree
@@ -24,8 +25,6 @@ namespace Dragonbones.Collections
             _entries[0] = new Entry(-1, default, int.MinValue);
             _top = -1;
             _topContinuous = -1;
-            _topLayer = 0;
-            _topLayerIndex = 0;
         }
 
         /// <summary>
@@ -82,7 +81,7 @@ namespace Dragonbones.Collections
             if (FindLeaf(ref ent, out int index, out int parent))
             {
                 ent.Index = index;
-                _entries[index] = ent;
+                _entries.Set(index, ent);
             }
 
             Add(index, ref ent);
@@ -90,17 +89,17 @@ namespace Dragonbones.Collections
 
         private void Add(int location, ref Entry add)
         {
-            Entry ent = _entries[location];
+            Entry ent = _entries.Get(location);
             if (ent.Index != location)
             {
                 add.Index = location;
-                _entries[location] = add;
+                _entries.Set(location, add);
 
                 if (location > _top)
                     _top = location;
                 if (location == _topContinuous + 1)
                 {
-                    while (_entries[location + 1].Index == location + 1)
+                    while (_entries.Get(location + 1).Index == location + 1)
                         location++;
                     _topContinuous = location;
                     if ((location = GetLayerIndex(_topLayer + 1)) - 1 == _topContinuous)
@@ -109,6 +108,7 @@ namespace Dragonbones.Collections
                         _topLayerIndex = location;
                     }
                 }
+                _count++;
                 return;
             }
 
@@ -116,12 +116,14 @@ namespace Dragonbones.Collections
             int free = 0;
             int max = GetLayerIndex(_topLayer + 1);
             Entry tempEnt;
-            for (int i = _topLayerIndex; i < max;i++)
+            for (int i = _topContinuous + 1; i < max;i++)
             {
                 int nDist = Math.Abs(i - location);
                 if (nDist > dist)
                     break;
-                tempEnt = _entries[i];
+
+                tempEnt = _entries.Get(i);
+
                 if (tempEnt.Index != i)
                 {
                     dist = nDist;
@@ -134,7 +136,7 @@ namespace Dragonbones.Collections
                 if (ent < add)
                 {
                     add.Index = location;
-                    _entries[location] = add;
+                    _entries.Set(location, add);
                     add = ent;
                 }
 
@@ -145,9 +147,10 @@ namespace Dragonbones.Collections
                     walkIndex--;
                     location = GetIndex(walkIndex);
 
-                    ent = _entries[location];
+                    ent = _entries.Get(location);
+
                     add.Index = location;
-                    _entries[location] = add;
+                    _entries.Set(location, add);
                     add = ent;
                 }
             }
@@ -155,7 +158,7 @@ namespace Dragonbones.Collections
             {
                 if (ent > add)
                 {
-                    _entries[location] = add;
+                    _entries.Set(location, add);
                     add = ent;
                 }
 
@@ -166,8 +169,9 @@ namespace Dragonbones.Collections
                     walkIndex++;
                     location = GetIndex(walkIndex);
 
-                    ent = _entries[location];
-                    _entries[location] = add;
+                    ent = _entries.Get(location);
+
+                    _entries.Set(location, add);
                     add = ent;
                 }
             }
@@ -176,7 +180,7 @@ namespace Dragonbones.Collections
                 _top = location;
             if (location == _topContinuous + 1)
             {
-                while (_entries[location + 1].Index == location + 1)
+                while (_entries.Get(location + 1).Index == location + 1)
                     location++;
                 _topContinuous = location;
                 if ((location = GetLayerIndex(_topLayer + 1)) - 1 == _topContinuous)
@@ -185,6 +189,7 @@ namespace Dragonbones.Collections
                     _topLayerIndex = location;
                 }
             }
+            _count++;
         }
 
         private int GetLayerIndex(int layer)
@@ -224,7 +229,7 @@ namespace Dragonbones.Collections
 
         private int GetIndex(int walkIndex)
         {
-            int next = MathHelper.ZeroIndex(walkIndex) + 1;
+            int next = MathHelper.BitScanForward(~walkIndex) + 1;
             return ((1 << (_topLayer + 1 - next)) - 1 + (walkIndex - ((1 << (next - 1)) - 1) >> (next)));
         }
 
@@ -241,7 +246,7 @@ namespace Dragonbones.Collections
             index = 0;
             while (index < _topLayerIndex)
             {
-                ent = _entries[index];
+                ent = _entries.Get(index);
 
                 if (value == ent)
                     return true;
@@ -250,20 +255,20 @@ namespace Dragonbones.Collections
                 index = GetChild(index, value < ent ? 1 : 2);
             }
 
-            ent = _entries[index];
+            ent = _entries.Get(index);
 
             return value == ent;
         }
 
         private bool Find(int value, out Entry ent)
         {
-            ent = _entries[0];
+            ent = _entries.Get(0);
             while (ent.Index < _topLayerIndex)
             {
                 if (value == ent)
                     return true;
 
-                ent = _entries[GetChild(ent.Index, value < ent ? 1 : 2)];
+                ent = _entries.Get(GetChild(ent.Index, value < ent ? 1 : 2));
             }
             return value == ent;
         }
@@ -283,6 +288,7 @@ namespace Dragonbones.Collections
             CompleteBinarySearchTree<TValue> _tree;
             int _walkIndex;
             int index;
+            Entry ent;
 
             public Enumerator(CompleteBinarySearchTree<TValue> tree)
             {
@@ -290,9 +296,9 @@ namespace Dragonbones.Collections
                 _walkIndex = -1;
             }
 
-            public TValue Current => _tree._entries[index].Value;
+            public TValue Current => ent.Value;
 
-            object IEnumerator.Current => _tree._entries[index].Value;
+            object IEnumerator.Current => ent.Value;
 
             public void Dispose()
             {
@@ -301,7 +307,6 @@ namespace Dragonbones.Collections
 
             public bool MoveNext()
             {
-                Entry ent;
                 do
                 {
                     _walkIndex++;
@@ -310,7 +315,7 @@ namespace Dragonbones.Collections
                     if (index > _tree._top)
                         return false;
 
-                    ent = _tree._entries[index];
+                    ent = _tree._entries.Get(index);
                 } while (ent.Index != index);
                 return true;
             }
