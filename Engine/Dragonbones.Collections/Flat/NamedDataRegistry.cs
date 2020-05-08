@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Dragonbones.Native;
 
-namespace Dragonbones.Collections
+namespace Dragonbones.Collections.Flat
 {
     /// <summary>
     /// A class which stores values by a string name, but also gives an ID for fast lookup

@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.Text;
 using Dragonbones.Native;
 
-namespace Dragonbones.Collections
+namespace Dragonbones.Collections.Flat
 {
     /// <summary>
     /// A Data buffer which takes in a name for every element

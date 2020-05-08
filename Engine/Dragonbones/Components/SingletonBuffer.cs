@@ -107,15 +107,6 @@ namespace Dragonbones.Components
         }
 
         /// <summary>
-        /// Expands the buffer to the new capacity
-        /// </summary>
-        /// <param name="newCapacity">the capacity to expand to</param>
-        public void Expand(int newCapacity)
-        {
-            
-        }
-
-        /// <summary>
         /// Checks if there is a stored component associated with the given ID
         /// </summary>
         /// <param name="id">the ID to check</param>

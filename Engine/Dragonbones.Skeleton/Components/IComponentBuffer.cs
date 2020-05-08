@@ -53,11 +53,6 @@ namespace Dragonbones.Components
         /// </summary>
         /// <param name="newCapacity">the capacity to attempt to shrink to</param>
         void Constrict(int newCapacity);
-        /// <summary>
-        /// Expands the buffer to the new capacity
-        /// </summary>
-        /// <param name="newCapacity">the capacity to expand to</param>
-        void Expand(int newCapacity);
 
         /// <summary>
         /// Checks if there is a stored component associated with the given ID

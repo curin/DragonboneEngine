@@ -11,7 +11,7 @@ namespace ConsoleTest
         {
             for (int i  = 0; i < 7; i++)
             {
-                int next = MathHelper.ZeroIndex(i) + 1;
+                int next = MathHelper.BitScanForward(~i) + 1;
                 int rem = i - ((1 << (next - 1)) - 1) >> (next);
                 int ind = ((1 << (3 - next)) - 1 + rem);
                 int layer = (int)Math.Log(ind + 1, 2);

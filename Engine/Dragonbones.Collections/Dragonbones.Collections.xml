@@ -19,6 +19,14 @@
             WriteRead transactions read and write to the write buffer
             </summary>
         </member>
+        <member name="T:Dragonbones.Collections.CompleteBinarySearchTree`1">
+            <summary>
+            A Complete Binary Tree which is also a Binary Search Tree. This tree is fast for lookup, and decently fast for adding.
+            This tree is slow for walking when the tree becomes large (>4,000 entries)
+            It will walk in order from smallest to largest entry
+            </summary>
+            <typeparam name="TValue">the value stored in the tree</typeparam>
+        </member>
         <member name="M:Dragonbones.Collections.CompleteBinarySearchTree`1.#ctor(System.Int32,System.Int32)">
             <summary>
             Constructs a CompleteBinarySearchTree
@@ -54,6 +62,17 @@
             </summary>
             <param name="ID">the number value used in the sort</param>
             <param name="value">the value to store</param>
+        </member>
+        <member name="M:Dragonbones.Collections.CompleteBinarySearchTree`1.Remove(System.Int32)">
+            <summary>
+            Removes a value from the tree with the specified ID
+            </summary>
+            <param name="ID">The ID to remove</param>
+        </member>
+        <member name="M:Dragonbones.Collections.CompleteBinarySearchTree`1.Clear">
+            <summary>
+            Clears the tree
+            </summary>
         </member>
         <member name="T:Dragonbones.Collections.DataBuffer`1">
              <summary>

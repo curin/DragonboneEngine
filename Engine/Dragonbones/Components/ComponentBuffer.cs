@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using Dragonbones.Collections.Paged;
 using Dragonbones.Collections;
 using Dragonbones.Systems;
 
@@ -115,15 +116,6 @@ namespace Dragonbones.Components
         public void Constrict(int newCapacity)
         {
             _buffer.Constrict(newCapacity);
-        }
-
-        /// <summary>
-        /// Expands the buffer to the new capacity
-        /// </summary>
-        /// <param name="newCapacity">the capacity to expand to</param>
-        public void Expand(int newCapacity)
-        {
-            _buffer.Expand(newCapacity);
         }
 
         /// <summary>

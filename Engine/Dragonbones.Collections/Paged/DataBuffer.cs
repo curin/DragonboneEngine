@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text;
 
-namespace Dragonbones.Collections
+namespace Dragonbones.Collections.Paged
 {
     /// <summary>
     /// A Databuffer is a multithreaded structure to store data in an array format.
@@ -17,22 +17,23 @@ namespace Dragonbones.Collections
     /// <typeparam name="TValue">the type of value stored in the buffer</typeparam>
     public class DataBuffer<TValue> : IDataBuffer, IEnumerable<TValue>
     {
-        private TValue[][] _values = new TValue[3][];
+        private PagedArray<TValue>[] _values = new PagedArray<TValue>[3];
         private Queue<int>[] _dirtyEntries = new Queue<int>[2];
-        private bool[][] _dirtyMarks = new bool[2][];
+        private PagedArray<bool>[] _dirtyMarks = new PagedArray<bool>[2];
 
         /// <summary>
         /// Constructs a data buffer of the specified length.
         /// </summary>
-        /// <param name="length">the length of the buffer</param>
-        public DataBuffer(int length)
+        /// <param name="pagePower">the size of pages as a power of 2</param>
+        /// <param name="pageCount">the initial number of pages, may affect early adds if new pages need to be added</param>
+        public DataBuffer(int pagePower = 8, int pageCount = 1)
         {
             for (int i = 0; i < 3; i++)
-                _values[i] = new TValue[length];
+                _values[i] = new PagedArray<TValue>(pagePower, pageCount);
 
             for (int i = 0; i < 2; i++)
             {
-                _dirtyMarks[i] = new bool[length];
+                _dirtyMarks[i] = new PagedArray<bool>(pagePower, pageCount);
                 _dirtyEntries[i] = new Queue<int>();
             }
         }
@@ -40,45 +41,22 @@ namespace Dragonbones.Collections
         /// <summary>
         /// Constructs a data buffer of the specified length.
         /// </summary>
-        /// <param name="length">the length of the buffer</param>
+        /// <param name="pagePower">the size of pages as a power of 2</param>
+        /// <param name="pageCount">the initial number of pages, may affect early adds if new pages need to be added</param>
         /// <param name="initialValue">the value to start each entry at</param>
-        public DataBuffer(int length, TValue initialValue)
+        public DataBuffer(TValue initialValue, int pagePower = 8, int pageCount = 1)
         {
             for (int i = 0; i < 3; i++)
             {
-                _values[i] = new TValue[length];
-                for (int j = 0; j < length; j++)
-                    _values[i][j] = initialValue;
+                _values[i] = new PagedArray<TValue>(pagePower, pageCount);
+                for (int j = 0; j < _values[i].Length; j++)
+                    _values[i].Set(j, initialValue);
             }
 
             for (int i = 0; i < 2; i++)
             {
-                _dirtyMarks[i] = new bool[length];
+                _dirtyMarks[i] = new PagedArray<bool>(pagePower, pageCount);
                 _dirtyEntries[i] = new Queue<int>();
-            }
-        }
-
-        /// <summary>
-        /// Perform a deep copy of a DataBuffer
-        /// </summary>
-        /// <param name="copy">buffer to copy</param>
-        /// <param name="length">the length of the new buffer</param>
-        public DataBuffer(DataBuffer<TValue> copy, int length = -1)
-        {
-            length = length == -1 ? copy.GetLength() : length;
-
-            for (int i = 0; i < 3; i++)
-            {
-                _values[i] = new TValue[length];
-                copy._values[i].CopyTo(_values[i], 0);
-            }
-
-            for (int i = 0; i < 2; i++)
-            {
-                _dirtyMarks[i] = new bool[length];
-                copy._dirtyMarks[i].CopyTo(_dirtyMarks[i], 0);
-
-                _dirtyEntries[i] = new Queue<int>(copy._dirtyEntries[i]);
             }
         }
 
@@ -102,7 +80,7 @@ namespace Dragonbones.Collections
         /// <returns>the value at the given index from the corresponding buffer</returns>
         public TValue Get(BufferTransactionType type, int index)
         {
-            return _values[(int)type][index];
+            return _values[(int)type].Get(index);
         }
 
         /// <summary>
@@ -118,9 +96,11 @@ namespace Dragonbones.Collections
             if (type == BufferTransactionType.ReadOnly)
                 return;
 
-            _values[0][index] = value;
-            if (_dirtyMarks[0][index]) return;
-            _dirtyMarks[0][index] = true;
+            int page = MathHelper.MathShiftRem(index, _values[(int)type].PageSizeMinusOne, _values[(int)type].PagePower, out int id);
+
+            _values[0].Set(page, id, value);
+            if (_dirtyMarks[0].Get(page, id)) return;
+            _dirtyMarks[0].Set(page, id, true);
             _dirtyEntries[0].Enqueue(index);
         }
 
@@ -132,15 +112,12 @@ namespace Dragonbones.Collections
         /// <param name="startIndex">the index to start the shift from</param>
         /// <param name="length">the number of elements to move</param>
         /// <param name="shiftTo">the index to shift to</param>
-        public void ShiftData(BufferTransactionType type, int startIndex, int length, int shiftTo)
+        public void CopyData(BufferTransactionType type, int startIndex, int length, int shiftTo)
         {
             if (type == BufferTransactionType.ReadOnly)
                 return;
-            TValue[] temp = new TValue[length];
 
-            Array.Copy(_values[(int)type], startIndex, temp, 0, length);
-
-            Array.Copy(temp, 0, _values[(int)type], shiftTo, length);
+            _values[(int)type].CopyData(startIndex, length, shiftTo);
         }
 
         /// <summary>
@@ -149,7 +126,7 @@ namespace Dragonbones.Collections
         /// <returns>the buffer entries count</returns>
         public long GetLongLength()
         {
-            return _values[0].GetLongLength(0);
+            return _values[0].LongLength;
         }
 
         /// <summary>
@@ -181,7 +158,7 @@ namespace Dragonbones.Collections
         /// <param name="length">the number of entries to copy</param>
         public void CopyTo(BufferTransactionType type, TValue[] array, int index, int length)
         {
-            Array.Copy(_values[(int)type], 0, array, index, length);
+            _values[(int)type].CopyTo(array, index, length);
         }
 
         /// <summary>
@@ -194,8 +171,9 @@ namespace Dragonbones.Collections
                 while (_dirtyEntries[1].Count > 0)
                 {
                     int val = _dirtyEntries[1].Dequeue();
-                    _values[2][val] = _values[1][val];
-                    _dirtyMarks[1][val] = false;
+                    int page = MathHelper.MathShiftRem(val, _values[1].PageSizeMinusOne, _values[1].PagePower, out int id);
+                    _values[2].Set(page, id, _values[1][page, id]);
+                    _dirtyMarks[1].Set(page, id, false);
                 }
             }
         }
@@ -210,14 +188,35 @@ namespace Dragonbones.Collections
                 while (_dirtyEntries[0].Count > 0)
                 {
                     int val = _dirtyEntries[0].Dequeue();
-                    _values[1][val] = _values[0][val];
-                    _dirtyMarks[0][val] = false;
+                    int page = MathHelper.MathShiftRem(val, _values[1].PageSizeMinusOne, _values[1].PagePower, out int id);
 
-                    if (_dirtyMarks[1][val]) continue;
+                    _values[1].Set(page, id, _values[0].Get(page, id));
+                    _dirtyMarks[0].Set(page, id, false);
 
-                    _dirtyMarks[1][val] = true;
+                    if (_dirtyMarks[1].Get(page, id)) continue;
+
+                    _dirtyMarks[1].Set(page, id, true);
                     _dirtyEntries[1].Enqueue(val);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Shrinks the buffer to the given index
+        /// </summary>
+        /// <param name="index">index to shrink to</param>
+        public void ShrinkTo(int index)
+        {
+            for (int i = 0; i < 3; i++)
+                _values[i].ShrinkTo(index);
+
+            for (int i = 0; i < 2; i++)
+            {
+                _dirtyMarks[i].ShrinkTo(index);
+                int val;
+                for (int j = 0; j < _dirtyEntries.Length; j++)
+                    if ((val = _dirtyEntries[i].Dequeue()) <= index)
+                        _dirtyEntries[i].Enqueue(val);
             }
         }
 

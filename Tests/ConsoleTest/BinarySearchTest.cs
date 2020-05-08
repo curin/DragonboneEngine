@@ -25,12 +25,12 @@ namespace ConsoleTest
             double time = timer.ElapsedSeconds / count;
 
             int[] testArray = new int[count];
-            PagedArray<int> testPaged = new PagedArray<int>(12, 1);
-            testPaged[count - 1] = 1;
+            PagedArray<int> testPaged = new PagedArray<int>(14, 1);
+            testPaged[int.MaxValue] = 1;
             int a = 0;
             IEnumerator<int> enumer = testPaged.GetEnumerator();
             timer.Reset();
-            Console.ReadLine();
+            //Console.ReadLine();
             timer.Start();
             while (enumer.MoveNext())
             //foreach (int i in testArray)
@@ -38,7 +38,7 @@ namespace ConsoleTest
                 //timer.Stop();
                 //Console.WriteLine(i);
                 //timer.Start();
-                //a = enumer.Current;
+                a = enumer.Current;
                 //a = i;
             }
             timer.Stop();

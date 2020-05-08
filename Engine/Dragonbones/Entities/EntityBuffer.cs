@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
+using Dragonbones.Collections.Flat;
 using Dragonbones.Collections;
 using Dragonbones.Systems;
 using System.Threading;

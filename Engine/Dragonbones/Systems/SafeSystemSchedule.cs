@@ -296,7 +296,7 @@ namespace Dragonbones.Systems
                 invalid = !(systemBatch.Active || systemBatch.Run);
                 for (int i = 0; i < _laneCount; i++)
                     if (_running[i])
-                        if (systemBatch.GetComponentsUsedIDs().Any((val) => { return _lanes[i].GetComponentsUsedIDs().Contains(val); }))
+                        if (systemBatch.Components.Any((val) => { return _lanes[i].Components.Any((val2) => { return val.TypeID == val2.TypeID; }); }))
                             invalid = true;
 
                 if (invalid)

@@ -142,8 +142,8 @@ namespace ConsoleTest
 
         public void Run(float deltaTime)
         {
-            List<EntityComponentLink[]> entityLinks = _links.GetLinks(_sysInf.Type, _sysInf.GetComponentsUsedIDs());
-            IComponentBuffer<TestComponent> tests = _components.Get<TestComponent>(_sysInf.GetComponentsUsedIDs()[0]);
+            List<EntityComponentLink[]> entityLinks = _links.GetLinks(_sysInf.Type, _sysInf.GetComponents());
+            IComponentBuffer<TestComponent> tests = _components.Get<TestComponent>(_sysInf.GetComponents()[0]);
             foreach (EntityComponentLink[] links in entityLinks)
             {
                 Console.WriteLine(_entities.GetName(_sysInf.Type, links[0].EntityID) + ": " + tests.Get(_sysInf.Type, links[0].ComponentID).Test);
@@ -196,7 +196,7 @@ namespace ConsoleTest
             _components.Set(_sysInf.Type, 0, new TestComponent() { Test = "Hello Lewis!" });
             _components.Set(_sysInf.Type, 1, new TestComponent() { Test = "Hello Lewis!" });
             int c = _components.Add(_sysInf.Type, "Lewis.Test", new TestComponent() { Test = "Sharky and Palp!" });
-            _links.Add(_sysInf.Type, _sysInf.GetComponentsUsedIDs()[0], e, c);
+            _links.Add(_sysInf.Type, _sysInf.GetComponents()[0], e, c);
             _timer.Stop();
             Console.WriteLine(_timer.ElapsedSecondsF);
             _timer.Reset();

@@ -16,11 +16,11 @@ namespace Dragonbones.Systems
         /// <param name="type">the type of the system</param>
         /// <param name="priority">the priority of the system. Higher number is higher priority</param>
         /// <param name="active">is this system currently active</param>
-        /// <param name="componentsUsed">the names of the components used by this system</param>
-        public SystemInfo(string name, SystemType type, int priority, bool active = true, params string[] componentsUsed)
+        /// <param name="components">the components used by this system</param>
+        public SystemInfo(string name, SystemType type, int priority, bool active = true, params SystemComponent[] components)
         {
-            _name = name;
-            _id = -1;
+            Name = name;
+            ID = -1;
             Active = active;
             Priority = priority;
             Type = type;
@@ -28,8 +28,7 @@ namespace Dragonbones.Systems
             RunRecurrenceInterval = 0;
             AverageRunTime = 0;
             RunCount = 0;
-            _componentsUsed = componentsUsed;
-            _componentIDs = new int[componentsUsed.Length];
+            Components = components;
             Age = 0;
         }
 
@@ -41,11 +40,11 @@ namespace Dragonbones.Systems
         /// <param name="runRecurrenceInterval">the frame interval between runs</param>
         /// <param name="active">is this system currently active</param>
         /// <param name="priority">the priority of the system. Higher number is higher priority</param>
-        /// <param name="componentsUsed">the names of the components used by this system</param>
-        public SystemInfo(string name, int runRecurrenceInterval, int priority, SystemType type, bool active = true, params string[] componentsUsed)
+        /// <param name="components">the components used by this system</param>
+        public SystemInfo(string name, int runRecurrenceInterval, int priority, SystemType type, bool active = true, params SystemComponent[] components)
         {
-            _name = name;
-            _id = -1;
+            Name = name;
+            ID = -1;
             Active = active;
             Priority = priority;
             Type = type;
@@ -53,14 +52,10 @@ namespace Dragonbones.Systems
             RunRecurrenceInterval = runRecurrenceInterval;
             AverageRunTime = 0;
             RunCount = 0;
-            _componentsUsed = componentsUsed;
-            _componentIDs = new int[componentsUsed.Length];
+            Components = components;
             Age = 0;
         }
 
-        private readonly string _name;
-        private int _id;
-        private int[] _componentIDs;
 
         /// <summary>
         /// The controlling <see cref="IEntityAdmin"/>
@@ -73,29 +68,18 @@ namespace Dragonbones.Systems
         /// <summary>
         /// What is the name of this system?
         /// </summary>
-        public string Name => _name;
+        public string Name { get; }
         /// <summary>
         /// The ID for the system
         /// </summary>
-        public int ID => _id;
+        public int ID { get; private set; }
 
         /// <summary>
-        /// The ids of the component types used by this system
+        /// The components used by this system
+        /// Do not change this after creation
+        /// This is available for the engine to set the ID values when registering
         /// </summary>
-        public int[] GetComponentsUsedIDs()
-        {
-            return _componentIDs;
-        }
-
-        private readonly string[] _componentsUsed;
-
-        /// <summary>
-        /// The types of components this system uses
-        /// </summary>
-        public string[] GetComponentsUsed()
-        {
-            return _componentsUsed;
-        }
+        public SystemComponent[] Components;
 
         /// <summary>
         /// Is this system currently active?
@@ -143,7 +127,7 @@ namespace Dragonbones.Systems
         /// <param name="id">the system's ID</param>
         public void SetID(int id)
         {
-            _id = id;
+            ID = id;
         }
 
         /// <summary>
@@ -153,14 +137,6 @@ namespace Dragonbones.Systems
         public void SetAdmin(IEntityAdmin admin)
         {
             Admin = admin;
-        }
-        /// <summary>
-        /// Method so system can set the component ids from the names
-        /// </summary>
-        /// <param name="ids"></param>
-        public void SetComponentIDs(int[] ids)
-        {
-            _componentIDs = ids;
         }
 
         /// <inheritdoc />

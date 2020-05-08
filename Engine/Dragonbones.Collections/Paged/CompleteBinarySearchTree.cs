@@ -3,8 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Dragonbones.Collections
+namespace Dragonbones.Collections.Paged
 {
+    /// <summary>
+    /// A Complete Binary Tree which is also a Binary Search Tree. This tree is fast for lookup, and decently fast for adding.
+    /// This tree is slow for walking when the tree becomes large (>4,000 entries)
+    /// It will walk in order from smallest to largest entry
+    /// </summary>
+    /// <typeparam name="TValue">the value stored in the tree</typeparam>
     public class CompleteBinarySearchTree<TValue> : IEnumerable<TValue>
     {
         PagedArray<Entry> _entries;
@@ -26,6 +32,11 @@ namespace Dragonbones.Collections
             _top = -1;
             _topContinuous = -1;
         }
+
+        /// <summary>
+        /// The number of Items stored in this binary tree
+        /// </summary>
+        public int Count => _count;
 
         /// <summary>
         /// Get a value from the tree
@@ -85,6 +96,119 @@ namespace Dragonbones.Collections
             }
 
             Add(index, ref ent);
+        }
+
+        /// <summary>
+        /// Removes a value from the tree with the specified ID
+        /// </summary>
+        /// <param name="ID">The ID to remove</param>
+        public void Remove(int ID)
+        {
+            if (!Find(ID, out Entry ent))
+                return;
+            while (true)
+            {
+                if (ent.Index >= _topLayerIndex)
+                {
+                    ID = ent.Index;
+                    if (_top == ent.Index)
+                    {
+                        if (_topContinuous == _top)
+                            _top--;
+                        while (_entries.Get(ID - 1).Index == ID - 1)
+                            ID--;
+                        _top = ID;
+                    }
+                    if (_topContinuous >= ent.Index)
+                        _topContinuous = ent.Index - 1;
+
+                    ent.Index = -1;
+                    _entries[ID] = ent;
+                    _count--;
+                    return;
+                }
+                int count = 1 << _topLayer - 1;
+                int walk = GetWalkIndex(ent.Index);
+                int diff;
+                Entry temp;
+                for (diff = 1; diff < count; diff += 2)
+                {
+                    ID = GetIndex(walk - diff);
+                    temp = _entries[ID];
+                    if (temp.Index == ID)
+                        break;
+
+                    ID = GetIndex(walk + diff);
+                    temp = _entries[ID];
+                    if (temp.Index == ID)
+                        break;
+                }
+
+                if (diff >= count)
+                {
+                    _topLayer--;
+                    _topLayerIndex = GetLayerIndex(_topLayer);
+                    continue;
+                }
+
+                int index = -1;
+                if (diff > 0)
+                {
+                    while (index != ID)
+                    {
+                        walk++;
+                        index = GetIndex(walk);
+
+                        temp = _entries[index];
+                        temp.Index = ent.Index;
+                        _entries[index] = temp;
+                        ent.Index = index;
+                    }
+                }
+                else
+                {
+                    while (index != ID)
+                    {
+                        walk--;
+                        index = GetIndex(walk);
+
+                        temp = _entries[index];
+                        temp.Index = ent.Index;
+                        _entries[index] = temp;
+                        ent.Index = index;
+                    }
+                }
+
+                ID = ent.Index;
+                if (_top == ent.Index)
+                {
+                    if (_topContinuous == _top)
+                        _top--;
+                    while (_entries.Get(ID - 1).Index == ID - 1)
+                        ID--;
+                    _top = ID;
+                }
+                if (_topContinuous >= ent.Index)
+                    _topContinuous = ent.Index - 1;
+
+                ent.Index = -1;
+                _entries[ID] = ent;
+                _count--;
+                return;
+            }
+        }
+
+        /// <summary>
+        /// Clears the tree
+        /// </summary>
+        public void Clear()
+        {
+            Entry ent = new Entry(-1, default, 0);
+            for (int i = 0; i < _top; i++)
+                _entries[i] = ent;
+            _count = _topLayer = _topLayerIndex = 0;
+            _top = -1;
+            _topContinuous = -1;
         }
 
         private void Add(int location, ref Entry add)

@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using Dragonbones.Collections;
+using Dragonbones.Collections.Paged;
 
 namespace Dragonbones.Systems
 {

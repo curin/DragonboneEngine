@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Dragonbones.Collections
+namespace Dragonbones.Collections.Flat
 {
     /// <summary>
     /// Similar in concept to <see cref="DataBuffer{TValue}"/> this is meant for multithreaded use.
@@ -332,7 +332,7 @@ namespace Dragonbones.Collections
         /// <param name="startIndex">the index to start the shift from</param>
         /// <param name="length">the number of elements to move</param>
         /// <param name="shiftTo">the index to shift to</param>
-        public void ShiftData(BufferTransactionType type, int startIndex, int length, int shiftTo)
+        public void CopyData(BufferTransactionType type, int startIndex, int length, int shiftTo)
         {
             if (type == BufferTransactionType.ReadOnly)
                 return;

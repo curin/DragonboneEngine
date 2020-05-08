@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Dragonbones.Collections.Flat;
 using Dragonbones.Collections;
 using Dragonbones.Systems;
 using System.Threading;
@@ -92,7 +93,7 @@ namespace Dragonbones.Entities
             if (!FindIndex(type, ent, entityID, out int index))
             {
                 ent.Lock.EnterWriteLock();
-                ent.Links.ShiftData(type, index, ent.Top[type] - index, index + 1);
+                ent.Links.CopyData(type, index, ent.Top[type] - index, index + 1);
             }
             ent.Links.Set(type, index, new EntityComponentLink(entityID, componentID));
             ent.Top[type]++;
@@ -298,7 +299,7 @@ namespace Dragonbones.Entities
             {
                 ent.Lock.EnterWriteLock();
 
-                ent.Links.ShiftData(type, index + 1, ent.Top[type] - index - 1, index);
+                ent.Links.CopyData(type, index + 1, ent.Top[type] - index - 1, index);
                 ent.Top[type]--;
 
                 ent.Lock.ExitWriteLock();
@@ -329,7 +330,7 @@ namespace Dragonbones.Entities
                     EntityComponentLink link = ent.Links.Get(type, i);
                     if (link.ComponentID == componentID)
                     {
-                        ent.Links.ShiftData(type, i + 1, ent.Top[type] - i - 1, i);
+                        ent.Links.CopyData(type, i + 1, ent.Top[type] - i - 1, i);
                         ent.Top[type]--;
                         i--;
                     }
@@ -359,7 +360,7 @@ namespace Dragonbones.Entities
                 {
                     lock (ent.Lock)
                     {
-                        ent.Links.ShiftData(type, index + 1, ent.Top[type] - index - 1, index);
+                        ent.Links.CopyData(type, index + 1, ent.Top[type] - index - 1, index);
                         ent.Top[type]--;
                     }
                 }

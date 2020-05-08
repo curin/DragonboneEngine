@@ -73,9 +73,32 @@ namespace Dragonbones
             return dividend >> shiftCount;
         }
 
-        public static int ZeroIndex(int value)
+        /// <summary>
+        /// Fast Division and remainder if divisor is a power of two
+        /// </summary>
+        /// <param name="dividend">the number to be divided</param>
+        /// <param name="divisorMinusOne">the number to be divided by (must be a power of two) minus 1</param>
+        /// <param name="shiftCount">the power of two the divisor is (or number of shifts left from 1)</param>
+        /// <param name="remainder">the returned remainder from division</param>
+        /// <returns>the result of the division</returns>
+        public static long MathShiftRem(long dividend, long divisorMinusOne, int shiftCount, out long remainder)
         {
-            return BitScanForward(~value);
+            remainder = dividend & (divisorMinusOne);
+            return dividend >> shiftCount;
+        }
+
+        /// <summary>
+        /// Fast Division and remainder if divisor is a power of two
+        /// </summary>
+        /// <param name="dividend">the number to be divided</param>
+        /// <param name="divisorMinusOne">the number to be divided by (must be a power of two) minus 1</param>
+        /// <param name="shiftCount">the power of two the divisor is (or number of shifts left from 1)</param>
+        /// <param name="remainder">the returned remainder from division</param>
+        /// <returns>the result of the division</returns>
+        public static int MathShiftRem(long dividend, long divisorMinusOne, int shiftCount, out int remainder)
+        {
+            remainder = (int)(dividend & (divisorMinusOne));
+            return (int)(dividend >> shiftCount);
         }
 
         private const ulong DeBruijnSequence = 0x37E84A99DAE458F;
