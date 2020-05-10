@@ -396,10 +396,6 @@ namespace Dragonbones
                 if (_renderLaneCount > RenderBarrier.ParticipantCount)
                     RenderBarrier.AddParticipants(_renderLaneCount - RenderBarrier.ParticipantCount);
 
-                float t = LogicTime / LogicInterval * 100;
-                if (t > 1)
-                    Console.WriteLine(t);
-
                 SystemRun(laneID, CurrentRenderSchedule, RenderTimer, MaxRenderInterval, RenderDeltaTime);
 
                 RenderBarrier.SignalAndWait();
