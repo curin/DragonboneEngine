@@ -14,9 +14,9 @@ namespace Dragonbones.Collections.Paged
     public class PagedArray<TValue> : IEnumerable<TValue>
     {
         private TValue[][] _pages;
-        private int _pageSize;
-        private int _shiftVal;
-        private int _pageShiftSize;
+        private readonly int _pageSize;
+        private readonly int _shiftVal;
+        private readonly int _pageShiftSize;
         private int _pageCount;
 
         /// <summary>

@@ -1220,17 +1220,18 @@
             uses a priority list to sort ahead of time
             </summary>
         </member>
-        <member name="M:Dragonbones.Systems.SystemSchedule.#ctor(Dragonbones.Systems.SystemType,System.Int32,System.Int32)">
+        <member name="M:Dragonbones.Systems.SystemSchedule.#ctor(Dragonbones.Systems.SystemType,System.Int32,System.Int32,System.Int32)">
             <summary>
-            constructs an instance of <see cref="T:Dragonbones.Systems.SystemSchedule"/>
+            constructs an instance of <see cref="T:Dragonbones.Systems.SafeSystemSchedule"/>
             </summary>
             <param name="laneCount">the number of concurrent systems that can be run</param>
-            <param name="maxSize">the maximum number of systems to be stored</param>
             <param name="type">the type of systems for this schedule</param>
+            <param name="pagePower">the size of the storage pages as a power of 2, larger is closer to a flat array, but costs more memory</param>
+            <param name="pageCount">the number of pages to initialize to start</param>
         </member>
         <member name="M:Dragonbones.Systems.SystemSchedule.#ctor(Dragonbones.Systems.SystemSchedule)">
             <summary>
-            copies an instance of <see cref="T:Dragonbones.Systems.SystemSchedule"/>
+            copies an instance of <see cref="T:Dragonbones.Systems.SafeSystemSchedule"/>
             </summary>
             <param name="copy">the schedule to copy</param>
         </member>

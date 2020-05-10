@@ -42,5 +42,26 @@ namespace Dragonbones.Systems
         {
             TypeID = ID;
         }
+
+        ///<inheritdoc/>
+        public override bool Equals(object obj)
+        {
+            return base.Equals(obj);
+        }
+
+        ///<inheritdoc/>
+        public override int GetHashCode() => TypeName.GetHashCode();
+
+        ///<inheritdoc/>
+        public static bool operator ==(SystemComponent left, SystemComponent right)
+        {
+            return left.TypeID == right.TypeID;
+        }
+
+        ///<inheritdoc/>
+        public static bool operator !=(SystemComponent left, SystemComponent right)
+        {
+            return left.TypeID != right.TypeID;
+        }
     }
 }
