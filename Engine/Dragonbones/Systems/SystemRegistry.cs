@@ -11,8 +11,9 @@ namespace Dragonbones.Systems
     ///
     /// This uses a <see cref="NamedDataRegistry{ISystem}"/> to store the systems
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1710:Identifiers should have correct suffix", Justification = "This is not just a collection, but smarter so a registry")]
+#pragma warning disable CA1710 // Identifiers should have correct suffix
     public class SystemRegistry : ISystemRegistry
+#pragma warning restore CA1710 // Identifiers should have correct suffix
     {
         private readonly NamedDataRegistry<ISystem> _systems;
         private Dictionary<SystemType, int> _typeCounts = new Dictionary<SystemType, int>();
@@ -21,11 +22,12 @@ namespace Dragonbones.Systems
         /// <summary>
         /// Constructs an instance of <see cref="SystemRegistry"/>
         /// </summary>
-        /// <param name="maxSystemCount">the maximum number of systems to every be added to the registry</param>
+        /// <param name="systemPagePower">the size of the system pages as a power of 2</param>
+        /// <param name="systemPageCount">the number of pages to start with, larger values decrease early performance hits but increase memory cost</param>
         /// <param name="hashSize">the hash size used by the internal hashtable. Higher makes for faster searching but increases memory usage</param>
-        public SystemRegistry(int maxSystemCount, int hashSize = 47)
+        public SystemRegistry(int systemPagePower, int systemPageCount, int hashSize = 47)
         {
-            _systems = new NamedDataRegistry<ISystem>(maxSystemCount, hashSize);
+            _systems = new NamedDataRegistry<ISystem>(systemPagePower, systemPageCount, hashSize);
         }
 
         /// <inheritdoc />

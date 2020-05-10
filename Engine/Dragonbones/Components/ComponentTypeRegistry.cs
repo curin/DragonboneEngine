@@ -19,11 +19,12 @@ namespace Dragonbones.Components
         /// <summary>
         /// Constructor for <see cref="ComponentTypeRegistry"/>
         /// </summary>
-        /// <param name="componentTypeCount">the number of component types that will be registerered here</param>
+        /// <param name="pagePower">the size of pages as a power of 2</param>
+        /// <param name="pageCount">the number of initial pages, has an affect on early performance but a memory impact</param>
         /// <param name="hashSize">the size of the hash table, the larger the faster the name search, the more memory it will use</param>
-        public ComponentTypeRegistry(int componentTypeCount, int hashSize = 47)
+        public ComponentTypeRegistry(int pagePower = 8, int pageCount = 1, int hashSize = 47)
         {
-            _registry = new NamedDataRegistry<IComponentBuffer>(componentTypeCount, hashSize);
+            _registry = new NamedDataRegistry<IComponentBuffer>(pagePower, pageCount, hashSize);
         }
 
         ///<inheritdoc />
