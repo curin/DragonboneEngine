@@ -13,13 +13,13 @@ namespace Dragonbones.Collections.Paged
     /// <typeparam name="TValue">the value stored in the tree</typeparam>
     public class BufferedBinarySearchTree<TValue> : IEnumerable<TValue>, IDataBuffer, IEquatable<BufferedBinarySearchTree<TValue>>
     {
-        DataBuffer<Entry> _entries;
+        readonly DataBuffer<Entry> _entries;
         int _id;
         int _top;
         int _topContinuous;
         int _topLayer;
         int _topLayerIndex;
-        ValueBuffer<int> _count;
+        readonly ValueBuffer<int> _count;
 
         /// <summary>
         /// The Tree's ID value
@@ -35,6 +35,7 @@ namespace Dragonbones.Collections.Paged
         /// <param name="initialPageCount">the initial number of pages to be added</param>
         public BufferedBinarySearchTree(int ID, int pagePower, int initialPageCount)
         {
+            _id = ID;
             _entries = new DataBuffer<Entry>(pagePower, initialPageCount);
             _entries[BufferTransactionType.WriteRead, 0] = new Entry(-1, default, int.MinValue);
             _entries.SwapWriteBuffer();
@@ -113,7 +114,7 @@ namespace Dragonbones.Collections.Paged
             if (type == BufferTransactionType.ReadOnly)
                 return;
             Entry ent = new Entry(-1, value, ID);
-            if (FindLeaf(type, ref ent, out int index, out int parent))
+            if (FindLeaf(type, ref ent, out int index, out _))
             {
                 ent.Index = index;
                 _entries.Set(type, index, ent);
@@ -378,16 +379,6 @@ namespace Dragonbones.Collections.Paged
         private int GetParent(int child)
         {
             return (child - 1) >> 1;
-        }
-
-        private int Next(int index)
-        {
-            return GetIndex(GetWalkIndex(index) + 1);
-        }
-
-        private int Previous(int index)
-        {
-            return GetIndex(GetWalkIndex(index) - 1);
         }
 
         private int GetIndex(int walkIndex)

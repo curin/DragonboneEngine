@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using Dragonbones;
 
-namespace Dragonbones.Collections
+namespace Dragonbones.Collections.Paged
 {
     /// <summary>
     /// A self growing structure designed to house large lists which can grow frequently

@@ -39,6 +39,10 @@ namespace Dragonbones.Entities
         /// <returns>the number of entities contained within this buffer</returns>
         int Count { get; }
         /// <summary>
+        /// The entities flagged for removal
+        /// </summary>
+        List<int> RemovedEntities { get; }
+        /// <summary>
         /// Add a new entity to this buffer
         /// </summary>
         /// <param name="systemType">The type of system accessing this buffer

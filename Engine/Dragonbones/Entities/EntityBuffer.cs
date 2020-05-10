@@ -20,21 +20,21 @@ namespace Dragonbones.Entities
     public class EntityBuffer : IEntityBuffer
 #pragma warning restore CA1710 // Identifiers should have correct suffix
     {
-        NamedDataRegistry<BufferedBinarySearchTree<EntityLink>> _entities;
+        readonly NamedDataRegistry<BufferedBinarySearchTree<EntityLink>> _entities;
         PagedArray<SystemLink> _links;
         PagedArray<EntityList> _lists;
-        int[] _starts;
-        int[] _ends;
+        readonly int[] _starts;
+        readonly int[] _ends;
         int _topLink;
         int _topList;
-        int _hashVal;
+        readonly int _hashVal;
         Queue<int> _freeEntriesList = new Queue<int>();
         Queue<int> _freeEntriesLink = new Queue<int>();
-        IComponentTypeRegistry _componentTypes;
-        ReaderWriterLockSlim _systemLock = new ReaderWriterLockSlim(), _entityLock = new ReaderWriterLockSlim();
-        int _listPower, _listPages, _entityPower, _entityPages;
+        readonly IComponentTypeRegistry _componentTypes;
+        readonly ReaderWriterLockSlim _systemLock = new ReaderWriterLockSlim(), _entityLock = new ReaderWriterLockSlim();
+        readonly int _listPower, _listPages, _entityPower, _entityPages;
         bool _waitingClear = false;
-        Queue<int> _removeQueue;
+        readonly List<int> _removal = new List<int>();
 
         /// <summary>
         /// Constructs an entity buffer
@@ -63,6 +63,9 @@ namespace Dragonbones.Entities
             _entityPower = entityComponentPagePower;
             _entityPages = entityComponentPageCount;
         }
+
+        /// <inheritdoc/>
+        public List<int> RemovedEntities => _removal;
 
         /// <inheritdoc/>
         public int Count => _entities.Count;
@@ -109,7 +112,7 @@ namespace Dragonbones.Entities
             if (systemType == SystemType.Render)
                 return;
 
-            _removeQueue.Enqueue(entity);
+            _removal.Add(entity);
         }
 
         private void Remove(int entity)
@@ -541,9 +544,13 @@ namespace Dragonbones.Entities
         {
             if (_waitingClear)
                 _entities.Clear();
-            else
-                while (_removeQueue.TryDequeue(out int entity))
+            else if (_removal.Count > 0)
+            {
+                foreach (int entity in _removal)
                     Remove(entity);
+                _removal.Clear();
+            }
+            
 
             IEnumerator<EntityList> enumerator = _lists.GetEnumerator();
             EntityList list;
@@ -635,7 +642,7 @@ namespace Dragonbones.Entities
                 {
                     _entities?.Dispose();
                     _entityLock?.Dispose();
-                    _componentTypes = null;
+                    _systemLock?.Dispose();
                     _freeEntriesLink = null;
                     _freeEntriesList = null;
                     _links = null;

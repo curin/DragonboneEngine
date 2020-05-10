@@ -704,6 +704,13 @@
         <member name="M:Dragonbones.Components.SingletonBuffer`1.Enumerator.Dispose">
             <inheritdoc/>
         </member>
+        <member name="T:Dragonbones.Entities.EntityBuffer">
+            <summary>
+            A basic implementation of <see cref="T:Dragonbones.Entities.IEntityBuffer"/>
+            This is designed for consistent speed especially as the number of entities and components get large
+            Larger entities(ones which have many components) will be slowed in this implementation
+            </summary>
+        </member>
         <member name="M:Dragonbones.Entities.EntityBuffer.#ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32)">
             <summary>
             Constructs an entity buffer
@@ -718,6 +725,9 @@
             <param name="entityListPageCount">the initial number of entity pages, this has a small affect on early performance</param>
             <param name="systemLinkPagePower">the size of the systemlink pages in the form of a power of 2</param>
             <param name="systemLinkPageCount">the initial number of entity pages, this has a small affect on early performance</param>
+        </member>
+        <member name="P:Dragonbones.Entities.EntityBuffer.RemovedEntities">
+            <inheritdoc/>
         </member>
         <member name="P:Dragonbones.Entities.EntityBuffer.Count">
             <inheritdoc/>
@@ -1016,13 +1026,14 @@
             Checks for conflicts in components to avoid parallel access
             </summary>
         </member>
-        <member name="M:Dragonbones.Systems.SafeSystemSchedule.#ctor(Dragonbones.Systems.SystemType,System.Int32,System.Int32)">
+        <member name="M:Dragonbones.Systems.SafeSystemSchedule.#ctor(Dragonbones.Systems.SystemType,System.Int32,System.Int32,System.Int32)">
             <summary>
             constructs an instance of <see cref="T:Dragonbones.Systems.SafeSystemSchedule"/>
             </summary>
             <param name="laneCount">the number of concurrent systems that can be run</param>
-            <param name="maxSize">the maximum number of systems to be stored</param>
             <param name="type">the type of systems for this schedule</param>
+            <param name="pagePower">the size of the storage pages as a power of 2, larger is closer to a flat array, but costs more memory</param>
+            <param name="pageCount">the number of pages to initialize to start</param>
         </member>
         <member name="M:Dragonbones.Systems.SafeSystemSchedule.#ctor(Dragonbones.Systems.SafeSystemSchedule)">
             <summary>

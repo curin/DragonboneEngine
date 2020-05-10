@@ -13,11 +13,11 @@ namespace ConsoleTest
     {
         private static void Main()
         {
-            SetEquivalenceTest.Run();
-            BinarySearchTest.Run();
-            TreeWalkTest.Run();
-            ConditionalTest.Run();
-            PagingTest.Run();
+            //SetEquivalenceTest.Run();
+            //BinarySearchTest.Run();
+            //TreeWalkTest.Run();
+            //ConditionalTest.Run();
+            //PagingTest.Run();
             AdminTest.Run();
             ThreadingTest.Run();
             EntityTest.Run(100000, 10000);

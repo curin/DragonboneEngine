@@ -2387,14 +2387,14 @@
             The enumerator for <see cref="T:Dragonbones.Collections.Paged.NamedDataRegistry`1"/>
             </summary>
         </member>
-        <member name="T:Dragonbones.Collections.PagedArray`1">
+        <member name="T:Dragonbones.Collections.Paged.PagedArray`1">
             <summary>
             A self growing structure designed to house large lists which can grow frequently
             and shrink without wasting as much space before the garbage collector runs
             </summary>
             <typeparam name="TValue">the type of value stored in this array</typeparam>
         </member>
-        <member name="M:Dragonbones.Collections.PagedArray`1.#ctor(System.Int32,System.Int32)">
+        <member name="M:Dragonbones.Collections.Paged.PagedArray`1.#ctor(System.Int32,System.Int32)">
             <summary>
             Constructor for the PagedArray
             </summary>
@@ -2402,55 +2402,55 @@
             The larger this number the closer it will function to a flat array, but the more blank space it can use</param>
             <param name="initialPageCount">how many pages should be created to start (only one will be initialized to begin)</param>
         </member>
-        <member name="P:Dragonbones.Collections.PagedArray`1.Length">
+        <member name="P:Dragonbones.Collections.Paged.PagedArray`1.Length">
             <summary>
             The size of the array 
             (is always a multiple of the page size)
             </summary>
         </member>
-        <member name="P:Dragonbones.Collections.PagedArray`1.PagePower">
+        <member name="P:Dragonbones.Collections.Paged.PagedArray`1.PagePower">
             <summary>
             The page size as a power of 2
             </summary>
         </member>
-        <member name="P:Dragonbones.Collections.PagedArray`1.PageSizeMinusOne">
+        <member name="P:Dragonbones.Collections.Paged.PagedArray`1.PageSizeMinusOne">
             <summary>
             The page size minus one
             this can be used for fast page index calculations
             </summary>
         </member>
-        <member name="P:Dragonbones.Collections.PagedArray`1.LongLength">
+        <member name="P:Dragonbones.Collections.Paged.PagedArray`1.LongLength">
             <summary>
             The size of the array as a 64-bit value
             (is always a multiple of the page size)
             This is safer as the array may be longer than max int.
             </summary>
         </member>
-        <member name="P:Dragonbones.Collections.PagedArray`1.PageCount">
+        <member name="P:Dragonbones.Collections.Paged.PagedArray`1.PageCount">
             <summary>
             The number of initialized pages
             </summary>
         </member>
-        <member name="P:Dragonbones.Collections.PagedArray`1.PageLength">
+        <member name="P:Dragonbones.Collections.Paged.PagedArray`1.PageLength">
             <summary>
             The number of elements in a single page
             </summary>
         </member>
-        <member name="P:Dragonbones.Collections.PagedArray`1.Item(System.Int32)">
+        <member name="P:Dragonbones.Collections.Paged.PagedArray`1.Item(System.Int32)">
             <summary>
             Access a value at a given index
             </summary>
             <param name="index">the index of the value to access</param>
             <returns>the value at the index</returns>
         </member>
-        <member name="P:Dragonbones.Collections.PagedArray`1.Item(System.Int64)">
+        <member name="P:Dragonbones.Collections.Paged.PagedArray`1.Item(System.Int64)">
             <summary>
             Access a value at a given index
             </summary>
             <param name="index">the index of the value to access</param>
             <returns>the value at the index</returns>
         </member>
-        <member name="P:Dragonbones.Collections.PagedArray`1.Item(System.Int32,System.Int32)">
+        <member name="P:Dragonbones.Collections.Paged.PagedArray`1.Item(System.Int32,System.Int32)">
             <summary>
             Access a value at a given page and index
             </summary>
@@ -2458,7 +2458,7 @@
             <param name="index">the index of the value</param>
             <returns>the value at the given index on the given page</returns>
         </member>
-        <member name="M:Dragonbones.Collections.PagedArray`1.Get(System.Int32,System.Int32)">
+        <member name="M:Dragonbones.Collections.Paged.PagedArray`1.Get(System.Int32,System.Int32)">
             <summary>
             Get a value at a given index
             </summary>
@@ -2466,7 +2466,7 @@
             <param name="index">the index of the value to retrieve</param>
             <returns>the value at that index</returns>
         </member>
-        <member name="M:Dragonbones.Collections.PagedArray`1.TryGet(System.Int32,System.Int32,`0@)">
+        <member name="M:Dragonbones.Collections.Paged.PagedArray`1.TryGet(System.Int32,System.Int32,`0@)">
             <summary>
             Attempt to get a value at the given index
             </summary>
@@ -2475,14 +2475,14 @@
             <param name="value">the value retrieved</param>
             <returns>if there exists a page containing this index</returns>
         </member>
-        <member name="M:Dragonbones.Collections.PagedArray`1.Get(System.Int32)">
+        <member name="M:Dragonbones.Collections.Paged.PagedArray`1.Get(System.Int32)">
             <summary>
             Get a value at a given index
             </summary>
             <param name="index">the index of the value to retrieve</param>
             <returns>the value at that index</returns>
         </member>
-        <member name="M:Dragonbones.Collections.PagedArray`1.TryGet(System.Int32,`0@)">
+        <member name="M:Dragonbones.Collections.Paged.PagedArray`1.TryGet(System.Int32,`0@)">
             <summary>
             Attempt to get a value at the given index
             </summary>
@@ -2490,14 +2490,14 @@
             <param name="value">the value retrieved</param>
             <returns>if there exists a page containing this index</returns>
         </member>
-        <member name="M:Dragonbones.Collections.PagedArray`1.Get(System.Int64)">
+        <member name="M:Dragonbones.Collections.Paged.PagedArray`1.Get(System.Int64)">
             <summary>
             Get a value at a given index
             </summary>
             <param name="index">the index of the value to retrieve</param>
             <returns>the value at that index</returns>
         </member>
-        <member name="M:Dragonbones.Collections.PagedArray`1.TryGet(System.Int64,`0@)">
+        <member name="M:Dragonbones.Collections.Paged.PagedArray`1.TryGet(System.Int64,`0@)">
             <summary>
             Attempt to get a value at the given index
             </summary>
@@ -2505,14 +2505,14 @@
             <param name="value">the value retrieved</param>
             <returns>if there exists a page containing this index</returns>
         </member>
-        <member name="M:Dragonbones.Collections.PagedArray`1.Set(System.Int32,`0)">
+        <member name="M:Dragonbones.Collections.Paged.PagedArray`1.Set(System.Int32,`0)">
             <summary>
             Set a particular value at a particular index
             </summary>
             <param name="index">the index to set</param>
             <param name="value">the value to set</param>
         </member>
-        <member name="M:Dragonbones.Collections.PagedArray`1.Set(System.Int32,System.Int32,`0)">
+        <member name="M:Dragonbones.Collections.Paged.PagedArray`1.Set(System.Int32,System.Int32,`0)">
             <summary>
             Set a particular value at a particular index
             </summary>
@@ -2520,26 +2520,26 @@
             <param name="index">the index to set</param>
             <param name="value">the value to set</param>
         </member>
-        <member name="M:Dragonbones.Collections.PagedArray`1.Set(System.Int64,`0)">
+        <member name="M:Dragonbones.Collections.Paged.PagedArray`1.Set(System.Int64,`0)">
             <summary>
             Set a particular value at a particular index
             </summary>
             <param name="index">the index to set</param>
             <param name="value">the value to set</param>
         </member>
-        <member name="M:Dragonbones.Collections.PagedArray`1.ShrinkTo(System.Int32)">
+        <member name="M:Dragonbones.Collections.Paged.PagedArray`1.ShrinkTo(System.Int32)">
             <summary>
             Shrinks the array to the given index
             </summary>
             <param name="index"></param>
         </member>
-        <member name="M:Dragonbones.Collections.PagedArray`1.ShrinkTo(System.Int64)">
+        <member name="M:Dragonbones.Collections.Paged.PagedArray`1.ShrinkTo(System.Int64)">
             <summary>
             Shrinks the array to the given index
             </summary>
             <param name="index"></param>
         </member>
-        <member name="M:Dragonbones.Collections.PagedArray`1.CopyData(System.Int32,System.Int32,System.Int32)">
+        <member name="M:Dragonbones.Collections.Paged.PagedArray`1.CopyData(System.Int32,System.Int32,System.Int32)">
             <summary>
             Copy data from one index to another
             </summary>
@@ -2547,7 +2547,7 @@
             <param name="length">the number of elements to copy</param>
             <param name="destination">the index the destination of the copy starts at</param>
         </member>
-        <member name="M:Dragonbones.Collections.PagedArray`1.CopyData(System.Int64,System.Int32,System.Int64)">
+        <member name="M:Dragonbones.Collections.Paged.PagedArray`1.CopyData(System.Int64,System.Int32,System.Int64)">
             <summary>
             Copy data from one index to another
             </summary>
@@ -2555,7 +2555,7 @@
             <param name="length">the number of elements to copy</param>
             <param name="destination">the index the destination of the copy starts at</param>
         </member>
-        <member name="M:Dragonbones.Collections.PagedArray`1.CopyTo(System.Array,System.Int32)">
+        <member name="M:Dragonbones.Collections.Paged.PagedArray`1.CopyTo(System.Array,System.Int32)">
             <summary>
             Copies all the elements of the current one-dimensional array to the specified
                 one-dimensional array starting at the specified destination array index. The
@@ -2565,7 +2565,7 @@
                 the current array.</param>
             <param name="index">A 32-bit integer that represents the index in array at which copying begins.</param>
         </member>
-        <member name="M:Dragonbones.Collections.PagedArray`1.CopyTo(System.Array,System.Int32,System.Int32)">
+        <member name="M:Dragonbones.Collections.Paged.PagedArray`1.CopyTo(System.Array,System.Int32,System.Int32)">
             <summary>
             Copies all the elements of the current one-dimensional array to the specified
                 one-dimensional array starting at the specified destination array index. The
@@ -2576,13 +2576,13 @@
             <param name="index">A 32-bit integer that represents the index in array at which copying begins.</param>
             <param name="length">the number of elements to copy</param>
         </member>
-        <member name="M:Dragonbones.Collections.PagedArray`1.GetEnumerator">
+        <member name="M:Dragonbones.Collections.Paged.PagedArray`1.GetEnumerator">
             <inheritdoc/>
         </member>
-        <member name="M:Dragonbones.Collections.PagedArray`1.Enumerator.Reset">
+        <member name="M:Dragonbones.Collections.Paged.PagedArray`1.Enumerator.Reset">
             <inheritdoc/>
         </member>
-        <member name="M:Dragonbones.Collections.PagedArray`1.Enumerator.Dispose">
+        <member name="M:Dragonbones.Collections.Paged.PagedArray`1.Enumerator.Dispose">
             <inheritdoc/>
         </member>
         <member name="T:Dragonbones.Collections.ValueBuffer`1">

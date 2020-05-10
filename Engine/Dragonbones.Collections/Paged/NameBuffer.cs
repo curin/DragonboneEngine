@@ -14,7 +14,7 @@ namespace Dragonbones.Collections.Paged
     /// </summary>
     public class NameBuffer: IDataBuffer,  IEnumerable<Tuple<int,string>>
     {
-        private DataBuffer<Entry> _buffer;
+        private readonly DataBuffer<Entry> _buffer;
         private readonly DataBuffer<int> _hashStarts;
         private readonly ValueBuffer<int> _count = new ValueBuffer<int>();
         private readonly ValueBuffer<int> _start = new ValueBuffer<int>(-1);

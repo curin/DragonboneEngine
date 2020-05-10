@@ -64,7 +64,7 @@ namespace Dragonbones.Systems
         {
             if (type == SystemType.Logic)
             {
-                SafeSystemSchedule schedule = new SafeSystemSchedule(type, lanes, (int)((GetTypeCount(type)) + 1));
+                SafeSystemSchedule schedule = new SafeSystemSchedule(type, lanes);
 
                 schedule.AddFromRegistry(this);
 

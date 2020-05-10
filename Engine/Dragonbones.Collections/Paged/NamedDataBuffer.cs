@@ -15,7 +15,7 @@ namespace Dragonbones.Collections.Paged
     /// <typeparam name="TValue"></typeparam>
     public class NamedDataBuffer<TValue>: IDataBuffer,  IEnumerable<TValue>
     {
-        private DoubleDataBuffer<TValue, Entry> _buffer;
+        private readonly DoubleDataBuffer<TValue, Entry> _buffer;
         private readonly DataBuffer<int> _hashStarts;
         private readonly ValueBuffer<int> _count = new ValueBuffer<int>();
         private readonly ValueBuffer<int> _start = new ValueBuffer<int>(-1);

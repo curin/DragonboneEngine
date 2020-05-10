@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using System.Threading;
+using Dragonbones.Collections.Paged;
 
 namespace Dragonbones.Systems
 {
@@ -13,12 +14,13 @@ namespace Dragonbones.Systems
     public class SystemSchedule : ISystemSchedule
     {
         /// <summary>
-        /// constructs an instance of <see cref="SystemSchedule"/>
+        /// constructs an instance of <see cref="SafeSystemSchedule"/>
         /// </summary>
         /// <param name="laneCount">the number of concurrent systems that can be run</param>
-        /// <param name="maxSize">the maximum number of systems to be stored</param>
         /// <param name="type">the type of systems for this schedule</param>
-        public SystemSchedule(SystemType type, int laneCount, int maxSize)
+        /// <param name="pagePower">the size of the storage pages as a power of 2, larger is closer to a flat array, but costs more memory</param>
+        /// <param name="pageCount">the number of pages to initialize to start</param>
+        public SystemSchedule(SystemType type, int laneCount, int pagePower = 8, int pageCount = 1)
         {
             //initialize all fields
             _laneCount = laneCount;
@@ -26,13 +28,12 @@ namespace Dragonbones.Systems
             _running = new bool[laneCount];
             _type = type;
 
-            _maxSize = maxSize;
-            _systemCache = new SystemInfo[_maxSize];
-            _entries = new Entry[_maxSize];
+            _systemCache = new PagedArray<SystemInfo>(pagePower, pageCount);
+            _entries = new PagedArray<Entry>(pagePower, pageCount);
         }
 
         /// <summary>
-        /// copies an instance of <see cref="SystemSchedule"/>
+        /// copies an instance of <see cref="SafeSystemSchedule"/>
         /// </summary>
         /// <param name="copy">the schedule to copy</param>
         public SystemSchedule(SystemSchedule copy)
@@ -61,11 +62,10 @@ namespace Dragonbones.Systems
             }
 
             //copy storage arrays
-            _maxSize = copy._maxSize;
-            _systemCache = new SystemInfo[_maxSize];
-            _entries = new Entry[_maxSize];
+            _systemCache = new PagedArray<SystemInfo>(copy._entries.PagePower, copy._entries.PageCount);
+            _entries = new PagedArray<Entry>(copy._entries.PagePower, copy._entries.PageCount);
 
-            for (int i = 0; i < _maxSize; i++)
+            for (int i = 0; i < _top; i++)
             {
                 _systemCache[i] = copy._systemCache[i];
                 _entries[i] = copy._entries[i];
@@ -89,10 +89,9 @@ namespace Dragonbones.Systems
         private int _count = 0, _next = 0, _top = 0;
         private int _start = -1, _end = -1;
         private int _rrStart, _rrEnd;
-        private readonly int _maxSize;
         private readonly int _laneCount;
-        private readonly SystemInfo[] _systemCache;
-        private readonly Entry[] _entries;
+        private readonly PagedArray<SystemInfo> _systemCache;
+        private readonly PagedArray<Entry> _entries;
         private readonly List<RREntry> _runRecurrences = new List<RREntry>();
         private readonly Queue<int> freeSpace = new Queue<int>();
         private readonly SystemType _type;

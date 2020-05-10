@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Dragonbones.Collections;
+using Dragonbones.Collections.Paged;
 using Dragonbones.Native;
 
 namespace ConsoleTest

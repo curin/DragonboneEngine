@@ -137,7 +137,7 @@ namespace Dragonbones
             return MultiplyDeBruijnBitPosition[((ulong)(b & -b) * DeBruijnSequence) >> 58];
         }
 
-        private static int[] deBruijnTable = {
+        private static readonly int[] deBruijnTable = {
          0,  0,  0,  1,  0, 16,  2,  0, 29,  0, 17,  0,  0,  3,  0, 22,
         30,  0,  0, 20, 18,  0, 11,  0, 13,  0,  0,  4,  0,  7,  0, 23,
         31,  0, 15,  0, 28,  0,  0, 21,  0, 19,  0, 10, 12,  0,  6,  0,

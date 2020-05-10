@@ -376,7 +376,8 @@
         <member name="T:Dragonbones.Entities.IEntityBuffer">
             <summary>
             The buffer designed to hold entity data
-            Entities are simply a name tied to an ID
+            This buffer also holds the ties between entities and their components
+            and is responsible for giving this data to systems when they need it
             Some interactions like remove should be postponed until the end of a frame
             (when SwapWriteBuffer is called)
             </summary>
@@ -402,6 +403,11 @@
             <param name="systemType">The type of system accessing this buffer
             This determines where the information comes from</param>
             <returns>the number of entities contained within this buffer</returns>
+        </member>
+        <member name="P:Dragonbones.Entities.IEntityBuffer.RemovedEntities">
+            <summary>
+            The entities flagged for removal
+            </summary>
         </member>
         <member name="M:Dragonbones.Entities.IEntityBuffer.Add(Dragonbones.Systems.SystemType,System.String)">
             <summary>
