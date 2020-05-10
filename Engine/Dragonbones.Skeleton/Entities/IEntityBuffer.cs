@@ -154,6 +154,14 @@ namespace Dragonbones.Entities
         /// <param name="componentType">the id of the type of component being unlinked</param>
 
         void RemoveLink(SystemType systemType, int entity, int componentType);
+        /// <summary>
+        /// Retrieves a list of components linked to an entity
+        /// </summary>
+        /// <param name="entity">the ID of the entity</param>
+        /// <param name="type">the type of buffer to access, this affects the data being returned</param>
+        /// <returns>The list of components linked</returns>
+        IEnumerable<EntityLink> GetComponents(int entity, BufferTransactionType type = BufferTransactionType.ReadOnly);
+
 
         /// <summary>
         /// Registers a system in this buffer (doing this ahead of time can speed up the first attempt to retrieve entities that match this system)

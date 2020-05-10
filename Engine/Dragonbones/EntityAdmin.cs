@@ -122,6 +122,11 @@ namespace Dragonbones
         /// </summary>
         protected float RenderDeltaTime { get; set; }
         /// <summary>
+        /// The amount of time since the last logic update
+        /// Used in render systems
+        /// </summary>
+        protected float LogicDeltaTimeRender { get; set; }
+        /// <summary>
         /// The timer used to time logic threads
         /// </summary>
         protected PrecisionTimer LogicTimer { get; set; }
@@ -352,7 +357,7 @@ namespace Dragonbones
                 }
                 else
                 {
-                    SystemRun(lane, CurrentRenderSchedule, RenderTimer, MaxRenderInterval, RenderDeltaTime);
+                    SystemRun(lane, CurrentRenderSchedule, RenderTimer, MaxRenderInterval, LogicDeltaTimeRender);
                     RenderBarrier.SignalAndWait();
                     RenderBarrier.SignalAndWait();
                 }
@@ -385,6 +390,7 @@ namespace Dragonbones
 
                 RenderTimer.Stop();
                 RenderDeltaTime = RenderTimer.ElapsedSecondsF;
+                LogicDeltaTimeRender = LogicTimer.ElapsedSecondsF;
                 RenderTimer.Reset();
 
                 RenderBarrier.SignalAndWait();
@@ -396,7 +402,7 @@ namespace Dragonbones
                 if (_renderLaneCount > RenderBarrier.ParticipantCount)
                     RenderBarrier.AddParticipants(_renderLaneCount - RenderBarrier.ParticipantCount);
 
-                SystemRun(laneID, CurrentRenderSchedule, RenderTimer, MaxRenderInterval, RenderDeltaTime);
+                SystemRun(laneID, CurrentRenderSchedule, RenderTimer, MaxRenderInterval, LogicDeltaTimeRender);
 
                 RenderBarrier.SignalAndWait();
 

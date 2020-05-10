@@ -180,6 +180,15 @@ namespace Dragonbones.Entities
         }
 
         /// <inheritdoc/>
+        public IEnumerable<EntityLink> GetComponents(int entity, BufferTransactionType type = BufferTransactionType.ReadOnly)
+        {
+            if (!_entities.TryGet(entity, out BufferedBinarySearchTree<EntityLink> links))
+                throw new ArgumentException("No entity with ID " + entity);
+
+            return links;
+        }
+
+        /// <inheritdoc/>
         public void SetLink(SystemType systemType, int entity, int componentType, int componentID)
         {
             if (systemType == SystemType.Render)
@@ -285,7 +294,7 @@ namespace Dragonbones.Entities
                 throw new ArgumentNullException(nameof(system));
 
             AddSystem(system.Info, out SystemLink link);
-            return _lists.Get(link.Index).Entities;
+            return _lists.Get(link.Index);
         }
 
         /// <inheritdoc/>
@@ -595,7 +604,7 @@ namespace Dragonbones.Entities
             public int Previous;
         }
 
-        struct EntityList
+        struct EntityList : IEnumerable<int>
         {
             public EntityList(int index, int[] componentTypes, int pagePower, int pageCount)
             {
@@ -613,18 +622,54 @@ namespace Dragonbones.Entities
             public Queue<int> FreeEntries;
             public DataBuffer<int> Entities;
             public int[] ComponentTypes;
-        }
 
-        struct EntityLink
-        {
-            public EntityLink(int componentTypeID, int componentID)
+            public IEnumerator<int> GetEnumerator()
             {
-                ComponentType = componentTypeID;
-                Component = componentID;
+                return new Enumerator(this);
             }
 
-            public int ComponentType;
-            public int Component;
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return new Enumerator(this);
+            }
+
+            class Enumerator : IEnumerator<int>
+            {
+                EntityList _list;
+                IEnumerator<int> _enumer;
+                int i;
+                public Enumerator(EntityList list)
+                {
+                    _list = list;
+                    _enumer = list.GetEnumerator();
+                    i = 0;
+                }
+                public int Current => _enumer.Current;
+
+                object IEnumerator.Current => _enumer.Current;
+
+                public void Dispose()
+                {
+                    _enumer = null;
+                }
+
+                public bool MoveNext()
+                {
+                    do
+                    {
+                        i++;
+                        _enumer.MoveNext();
+                    } while (_enumer.Current == -1);
+
+                    return _list.Top > i;
+                }
+
+                public void Reset()
+                {
+                    i = 0;
+                    _enumer.Reset();
+                }
+            }
         }
 
         #region IDisposable Support

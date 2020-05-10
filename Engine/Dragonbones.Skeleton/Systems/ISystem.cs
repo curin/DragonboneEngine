@@ -21,7 +21,7 @@ namespace Dragonbones.Systems
         /// <summary>
         /// The method run for this system
         /// </summary>
-        /// <param name="deltaTime">time since last run</param>
+        /// <param name="deltaTime">time since last logic update (this should be consistent for logic systems and variable for render)</param>
         void Run(float deltaTime);
     }
 }
