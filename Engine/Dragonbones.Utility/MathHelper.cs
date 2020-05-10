@@ -101,6 +101,17 @@ namespace Dragonbones
             return (int)(dividend >> shiftCount);
         }
 
+        /// <summary>
+        /// A form of modulus that ensures that the result is positive
+        /// </summary>
+        /// <param name="dividend">the number to be divided</param>
+        /// <param name="divisor">the number to be divided by</param>
+        /// <returns></returns>
+        public static int MathMod(int dividend, int divisor)
+        {
+            return ((dividend % divisor) + divisor) % divisor;
+        }
+
         private const ulong DeBruijnSequence = 0x37E84A99DAE458F;
 
         private static readonly int[] MultiplyDeBruijnBitPosition =

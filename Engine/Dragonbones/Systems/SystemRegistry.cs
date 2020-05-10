@@ -42,14 +42,14 @@ namespace Dragonbones.Systems
         {
             if (system == null)
                 throw new ArgumentNullException(nameof(system));
-            int id = _systems.Add(system.SystemInfo.Name, system);
+            int id = _systems.Add(system.Info.Name, system);
             if (id == -1)
                 return false;
-            system.SystemInfo.SetID(id);
-            system.SystemInfo.SetAdmin(_admin);
-            if (!_typeCounts.ContainsKey(system.SystemInfo.Type))
-                _typeCounts.Add(system.SystemInfo.Type, 0);
-            _typeCounts[system.SystemInfo.Type]++;
+            system.Info.SetID(id);
+            system.Info.SetAdmin(_admin);
+            if (!_typeCounts.ContainsKey(system.Info.Type))
+                _typeCounts.Add(system.Info.Type, 0);
+            _typeCounts[system.Info.Type]++;
             return true;
         }
 
@@ -108,7 +108,7 @@ namespace Dragonbones.Systems
         {
             if (system == null)
                 throw new ArgumentNullException(nameof(system));
-            return Contains(system.SystemInfo.Name);
+            return Contains(system.Info.Name);
         }
 
         /// <inheritdoc />
@@ -128,13 +128,13 @@ namespace Dragonbones.Systems
         {
             if (system == null)
                 throw new ArgumentNullException(nameof(system));
-            return _systems.GetIDFromName(system.SystemInfo.Name);
+            return _systems.GetIDFromName(system.Info.Name);
         }
 
         /// <inheritdoc />
         public string GetName(int id)
         {
-            return _systems[id].SystemInfo.Name;
+            return _systems[id].Info.Name;
         }
 
         /// <inheritdoc />
@@ -161,8 +161,8 @@ namespace Dragonbones.Systems
             int preCount = _systems.Count;
             ISystem system = _systems.PopAt(systemName);
             if (preCount < _systems.Count)
-                _typeCounts[system.SystemInfo.Type]--;
-            system.SystemInfo.SetID(-1);
+                _typeCounts[system.Info.Type]--;
+            system.Info.SetID(-1);
         }
 
         /// <inheritdoc />
@@ -171,8 +171,8 @@ namespace Dragonbones.Systems
             int preCount = _systems.Count;
             ISystem system = _systems.PopAt(id);
             if (preCount < _systems.Count)
-                _typeCounts[system.SystemInfo.Type]--;
-            system.SystemInfo.SetID(-1);
+                _typeCounts[system.Info.Type]--;
+            system.Info.SetID(-1);
         }
 
         /// <inheritdoc />
@@ -181,10 +181,10 @@ namespace Dragonbones.Systems
             if (system == null)
                 throw new ArgumentNullException(nameof(system));
             int preCount = _systems.Count;
-            _systems.PopAt(system.SystemInfo.Name);
+            _systems.PopAt(system.Info.Name);
             if (preCount < _systems.Count)
-                _typeCounts[system.SystemInfo.Type]--;
-            system.SystemInfo.SetID(-1);
+                _typeCounts[system.Info.Type]--;
+            system.Info.SetID(-1);
         }
 
         /// <summary>

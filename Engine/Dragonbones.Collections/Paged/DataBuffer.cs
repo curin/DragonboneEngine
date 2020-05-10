@@ -224,7 +224,7 @@ namespace Dragonbones.Collections.Paged
         /// <returns>An enumerator that can be used to iterate through the collection.</returns>
         public IEnumerator<TValue> GetEnumerator()
         {
-            return (IEnumerator<TValue>)_values[2].GetEnumerator();
+            return _values[2].GetEnumerator();
         }
 
         /// <summary>Returns an enumerator that iterates through a collection.</summary>
@@ -232,6 +232,14 @@ namespace Dragonbones.Collections.Paged
         IEnumerator IEnumerable.GetEnumerator()
         {
             return _values[2].GetEnumerator();
+        }
+
+        /// <summary>Returns an enumerator that iterates through the collection.</summary>
+        /// <param name="type">the type of transaction which affects the data returned</param>
+        /// <returns>An enumerator that can be used to iterate through the collection.</returns>
+        public IEnumerator<TValue> GetEnumerator(BufferTransactionType type)
+        {
+            return _values[(int)type].GetEnumerator();
         }
 
         #region IDisposable Support

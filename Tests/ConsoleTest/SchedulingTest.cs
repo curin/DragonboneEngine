@@ -271,7 +271,6 @@ namespace ConsoleTest
             for (int i = 0; i < components.Length; i++)
                 components[i] = random.Next(1, 3);
             inf.Update(random.Next(1, 100) / (double)Stopwatch.Frequency);
-            inf.SetComponentIDs(components);
             inf.SetID(nextID);
             nextID++;
             return inf;

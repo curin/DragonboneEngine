@@ -380,6 +380,64 @@ namespace Dragonbones.Collections.Paged
         }
 
         /// <summary>
+        /// Rename the value in the buffer associated with the given id
+        /// (only works in WriteRead transaction types)
+        /// </summary>
+        /// <param name="type">The transaction type</param>
+        /// <param name="id">the id associated with the value to replace</param>
+        /// <param name="newName">the new name to set</param>
+        public void Rename(BufferTransactionType type, int id, string newName)
+        {
+            if (id < 0)
+                throw new ArgumentOutOfRangeException(nameof(id));
+
+            Entry entry = _buffer.GetSecondary(type, id);
+            if (entry.ID != id)
+                throw new ArgumentException("There is no value in the NamedDataBuffer associated with ID " + id);
+
+            if (entry.Name == newName)
+                return;
+
+            int originalHash = GetHashIndex(entry.Name.GetHashCode());
+            Entry tempEnt;
+            if (entry.Previous != -1)
+            {
+                tempEnt = _buffer.GetSecondary(type, entry.Previous);
+                tempEnt.Next = entry.Next;
+                _buffer.SetSecondary(type, entry.Previous, tempEnt);
+            }
+            else
+            {
+                _hashStarts[type, originalHash] = entry.Next;
+            }
+
+            if (entry.Next != -1)
+            {
+                tempEnt = _buffer.GetSecondary(type, entry.Next);
+                tempEnt.Previous = entry.Previous;
+                _buffer.SetSecondary(type, entry.Next, tempEnt);
+            }
+            else
+            {
+                _hashEnds[originalHash] = entry.Previous;
+            }
+
+            int hash = GetHashIndex(newName.GetHashCode());
+            int end = _hashEnds[hash];
+
+            entry.Next = -1;
+            entry.Previous = end;
+            entry.Name = newName;
+
+            _buffer.SetSecondary(type, id, entry);
+
+            tempEnt = _buffer.GetSecondary(type, end);
+            tempEnt.Next = id;
+            _buffer.SetSecondary(type, end, tempEnt);
+            _hashEnds[hash] = id;
+        }
+
+        /// <summary>
         /// Removes an entry from the buffer
         /// </summary>
         /// <param name="type">the transaction type, Readonly transactions cannot remove values</param>
@@ -698,7 +756,7 @@ namespace Dragonbones.Collections.Paged
         /// <returns>the index in the hashtable for the hashcode to be placed in</returns>
         private int GetHashIndex(int hashCode)
         {
-            return ((hashCode % _hashSize) + _hashSize) % _hashSize;
+            return MathHelper.MathMod(hashCode, _hashSize); ;
         }
 
         /// <summary>
@@ -735,64 +793,6 @@ namespace Dragonbones.Collections.Paged
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
-        }
-
-        /// <summary>
-        /// Rename the value in the buffer associated with the given id
-        /// (only works in WriteRead transaction types)
-        /// </summary>
-        /// <param name="type">The transaction type</param>
-        /// <param name="id">the id associated with the value to replace</param>
-        /// <param name="newName">the new name to set</param>
-        public void Rename(BufferTransactionType type, int id, string newName)
-        {
-
-            if (id < 0)
-                throw new ArgumentOutOfRangeException(nameof(id));
-
-            NamedDataBuffer<TValue>.Entry entry = _buffer.GetSecondary(type, id);
-            if (entry.ID != id)
-                throw new ArgumentException("There is no value in the NamedDataBuffer associated with ID " + id);
-
-            if (entry.Name == newName)
-                return;
-
-            int originalHash = GetHashIndex(entry.Name.GetHashCode());
-            NamedDataBuffer<TValue>.Entry tempEnt;
-            if (entry.Previous != -1)
-            {
-                tempEnt = _buffer.GetSecondary(type, entry.Previous);
-                tempEnt.Next = entry.Next;
-                _buffer.SetSecondary(type, entry.Previous, tempEnt);
-            }
-            else
-            {
-                _hashStarts[type, originalHash] = entry.Next;
-            }
-
-            if (entry.Next != -1)
-            {
-                tempEnt = _buffer.GetSecondary(type, entry.Next);
-                tempEnt.Previous = entry.Previous;
-                _buffer.SetSecondary(type, entry.Next, tempEnt);
-            }
-            else
-            {
-                _hashEnds[originalHash] = entry.Previous;
-            }
-
-            int hash = GetHashIndex(newName.GetHashCode());
-            int end = _hashEnds[hash];
-
-            entry.Next = -1;
-            entry.Previous = end;
-            entry.Name = newName;
-
-            _buffer.SetSecondary(type, id, entry);
-
-            tempEnt = _buffer.GetSecondary(type, end);
-            tempEnt.Next = id;
-            _buffer.SetSecondary(type, end, tempEnt);
         }
 
         /// <summary>
@@ -848,6 +848,7 @@ namespace Dragonbones.Collections.Paged
             tempEnt = _buffer.GetSecondary(type, end);
             tempEnt.Next = id;
             _buffer.SetSecondary(type, end, tempEnt);
+            _hashEnds[hash] = id;
         }
 
         /// <summary>

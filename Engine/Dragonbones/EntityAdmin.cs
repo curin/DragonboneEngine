@@ -136,8 +136,7 @@ namespace Dragonbones
         public ISystemRegistry Systems { get; set; }
         /// <inheritdoc/>
         public IEntityBuffer Entities { get; set; }
-        /// <inheritdoc/>
-        public ILinkBuffer Links { get; set; }
+
         ///<inheritdoc/>
         public ISystemSchedule LogicSchedule
         {
@@ -189,14 +188,13 @@ namespace Dragonbones
         /// <param name="systems">the <see cref="ISystemRegistry"/> to use to store systems</param>
         /// <param name="entities">the <see cref="IEntityBuffer"/> to use to store entities</param>
         /// <param name="links">the <see cref="ILinkBuffer"/> to use to store links between entities and components</param>
-        public EntityAdmin(float logicUpdateInterval, float maxRenderInterval, IComponentTypeRegistry components, ISystemRegistry systems, IEntityBuffer entities, ILinkBuffer links)
+        public EntityAdmin(float logicUpdateInterval, float maxRenderInterval, IComponentTypeRegistry components, ISystemRegistry systems, IEntityBuffer entities)
         {
             MaxRenderInterval = maxRenderInterval;
             LogicInterval = logicUpdateInterval;
             Components = components;
             Systems = systems;
             Entities = entities;
-            Links = links;
 #pragma warning disable CA1062 // Validate arguments of public methods
             Systems.SetAdmin(this);
 #pragma warning restore CA1062 // Validate arguments of public methods
@@ -271,7 +269,6 @@ namespace Dragonbones
 
             Components.SwapWriteBuffer();
             Entities.SwapWriteBuffer();
-            Links.SwapWriteBuffer();
             SystemBarrier.SignalAndWait();
 
             do
@@ -313,7 +310,6 @@ namespace Dragonbones
 
                 Components.SwapWriteBuffer();
                 Entities.SwapWriteBuffer();
-                Links.SwapWriteBuffer();
                 LogicTime = LogicTimer.ElapsedSecondsF;
                 SpinWait.SpinUntil(() => { return LogicTimer.ElapsedSecondsF >= LogicInterval; });
             } while (Running);
@@ -386,7 +382,6 @@ namespace Dragonbones
 
                 Components.SwapReadBuffer();
                 Entities.SwapReadBuffer();
-                Links.SwapReadBuffer();
 
                 RenderTimer.Stop();
                 RenderDeltaTime = RenderTimer.ElapsedSecondsF;

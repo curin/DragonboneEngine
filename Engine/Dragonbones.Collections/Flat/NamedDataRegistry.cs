@@ -489,7 +489,7 @@ namespace Dragonbones.Collections.Flat
         /// </summary>
         /// <param name="hashCode">the hashcode of an entry</param>
         /// <returns>the hash index of the entry</returns>
-        private int GetHashIndex(int hashCode) { return ((hashCode % _hashSize) + _hashSize) % _hashSize; }
+        private int GetHashIndex(int hashCode) { return MathHelper.MathMod(hashCode, _hashSize); }
 
         /// <inheritdoc/>
         public IEnumerator<TValue> GetEnumerator()

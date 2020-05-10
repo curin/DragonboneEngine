@@ -13,7 +13,7 @@ namespace Dragonbones.Systems
         /// <summary>
         /// The system's header info
         /// </summary>
-        SystemInfo SystemInfo { get; }
+        SystemInfo Info { get; }
         /// <summary>
         /// Method for required setup period prior to system run
         /// </summary>

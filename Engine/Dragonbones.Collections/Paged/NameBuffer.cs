@@ -234,6 +234,7 @@ namespace Dragonbones.Collections.Paged
             tempEnt = _buffer.Get(type, end);
             tempEnt.Next = id;
             _buffer.Set(type, end, tempEnt);
+            _hashEnds[hash] = id;
         }
 
         /// <summary>
@@ -515,7 +516,7 @@ namespace Dragonbones.Collections.Paged
         /// <returns>the index in the hashtable for the hashcode to be placed in</returns>
         private int GetHashIndex(int hashCode)
         {
-            return ((hashCode % _hashSize) + _hashSize) % _hashSize;
+            return MathHelper.MathMod(hashCode, _hashSize);
         }
 
         /// <summary>

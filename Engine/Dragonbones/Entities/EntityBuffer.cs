@@ -1,297 +1,662 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
+using System.Linq;
 using System.Text;
-using Dragonbones.Collections.Flat;
-using Dragonbones.Collections;
-using Dragonbones.Systems;
 using System.Threading;
+using Dragonbones.Collections;
+using Dragonbones.Collections.Paged;
+using Dragonbones.Components;
+using Dragonbones.Systems;
 
 namespace Dragonbones.Entities
 {
     /// <summary>
-    /// A Default implementation of <see cref="IEntityBuffer"/>
+    /// A basic implementation of <see cref="IEntityBuffer"/>
+    /// This is designed for consistent speed especially as the number of entities and components get large
+    /// Larger entities(ones which have many components) will be slowed in this implementation
     /// </summary>
 #pragma warning disable CA1710 // Identifiers should have correct suffix
     public class EntityBuffer : IEntityBuffer
 #pragma warning restore CA1710 // Identifiers should have correct suffix
     {
-        private NameBuffer _buffer;
-        private List<int> _removeList = new List<int>();
-        private bool _clearCall;
-        private ReaderWriterLockSlim _logicLock = new ReaderWriterLockSlim();
+        NamedDataRegistry<BufferedBinarySearchTree<EntityLink>> _entities;
+        PagedArray<SystemLink> _links;
+        PagedArray<EntityList> _lists;
+        int[] _starts;
+        int[] _ends;
+        int _topLink;
+        int _topList;
+        int _hashVal;
+        Queue<int> _freeEntriesList = new Queue<int>();
+        Queue<int> _freeEntriesLink = new Queue<int>();
+        IComponentTypeRegistry _componentTypes;
+        ReaderWriterLockSlim _systemLock = new ReaderWriterLockSlim(), _entityLock = new ReaderWriterLockSlim();
+        int _listPower, _listPages, _entityPower, _entityPages;
+        bool _waitingClear = false;
+        Queue<int> _removeQueue;
 
         /// <summary>
-        /// Constructor for Entity buffer
+        /// Constructs an entity buffer
         /// </summary>
-        /// <param name="initialCapacity">the initial capacity for the buffer</param>
-        /// <param name="hashSize">the size of the buffer's hashtable the larger the quicker name searches are but the more memory used</param>
-        public EntityBuffer(int initialCapacity = 64, int hashSize = 47)
+        /// <param name="entityHash">the hash value for the entity hash table, larger means faster name searches but more memory</param>
+        /// <param name="systemLinkHash">the hash value for system link hash table, larger means faster search but more memory</param>
+        /// <param name="entityPagePower">the size of the entity pages in the form of a power of 2</param>
+        /// <param name="entityPageCount">the initial number of entity pages, this has a small affect on early performance</param>
+        /// <param name="entityComponentPagePower">the size of the entity component pages in the form of a power of 2</param>
+        /// <param name="entityComponentPageCount">the initial number of entity pages, this has a small affect on early performance</param>
+        /// <param name="entityListPagePower">the size of the entity list pages in the form of a power of 2</param>
+        /// <param name="entityListPageCount">the initial number of entity pages, this has a small affect on early performance</param>
+        /// <param name="systemLinkPagePower">the size of the systemlink pages in the form of a power of 2</param>
+        /// <param name="systemLinkPageCount">the initial number of entity pages, this has a small affect on early performance</param>
+        public EntityBuffer(int entityHash = 47, int systemLinkHash = 47, int entityPagePower = 8, int entityComponentPagePower = 8, int entityListPagePower = 8, 
+            int systemLinkPagePower = 8, int entityPageCount = 1, int entityComponentPageCount = 1, int entityListPageCount = 1, int systemLinkPageCount = 1)
         {
-            _buffer = new NameBuffer(initialCapacity, hashSize);
+            _entities = new NamedDataRegistry<BufferedBinarySearchTree<EntityLink>>(entityPagePower, entityPageCount, entityHash);
+            _links = new PagedArray<SystemLink>(systemLinkPagePower, systemLinkPageCount);
+            _lists = new PagedArray<EntityList>(systemLinkPagePower, systemLinkPageCount);
+            _hashVal = systemLinkHash;
+            _starts = new int[_hashVal];
+            _ends = new int[_hashVal];
+            _listPower = entityListPagePower;
+            _listPages = entityListPageCount;
+            _entityPower = entityComponentPagePower;
+            _entityPages = entityComponentPageCount;
         }
 
-        /// <inheritdoc />
-        public List<int> RemovedEntities => _removeList;
-        
-        /// <summary>
-        /// Swaps the data buffer for reading
-        /// </summary>
-        public void SwapReadBuffer()
-        {
-            _buffer.SwapReadBuffer();
-        }
+        /// <inheritdoc/>
+        public int Count => _entities.Count;
 
-        /// <summary>
-        /// Swaps the data buffer for writing
-        /// Should be done when finished writing
-        /// </summary>
-        public void SwapWriteBuffer()
-        {
-            if (_clearCall)
-            {
-                _buffer.Clear(BufferTransactionType.WriteRead);
-                _clearCall = false;
-            }
-            else
-            {
-                foreach (int remove in _removeList)
-                    _buffer.RemoveAt(BufferTransactionType.WriteRead, remove);
-                _removeList.Clear();
-            }
-            _buffer.SwapWriteBuffer();
-        }
+        /// <inheritdoc/>
+        public string this[int id] { get => GetName(id); }
 
-        /// <summary>Returns an enumerator that iterates through the collection.</summary>
-        /// <returns>An enumerator that can be used to iterate through the collection.</returns>
-        public IEnumerator<Tuple<int, string>> GetEnumerator()
-        {
-            return _buffer.GetEnumerator();
-        }
+        /// <inheritdoc/>
+        public int this[string name] => GetID(name);
 
-        /// <summary>Returns an enumerator that iterates through a collection.</summary>
-        /// <returns>An <see cref="IEnumerator" /> object that can be used to iterate through the collection.</returns>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        /// <summary>
-        /// Get the ID associated with a specific entity
-        /// </summary>
-        /// <param name="systemType">The type of system accessing this buffer
-        /// This determines where the information comes from</param>
-        /// <param name="name">the name of the entity</param>
-        /// <returns>the ID associated with the entity</returns>
-        public int this[SystemType systemType, string name] => GetID(systemType, name);
-
-        /// <summary>
-        /// Access the name associated with an entity
-        /// </summary>
-        /// <param name="systemType">The type of system accessing this buffer
-        /// This determines where the information comes from</param>
-        /// <param name="id">the ID associated with the entity</param>
-        /// <returns>the name of the entity</returns>
-        public string this[SystemType systemType, int id]
-        {
-            get => GetName(systemType, id);
-            set => Rename(systemType, id, value);
-        }
-
-        /// <summary>
-        /// retrieve the number of entities contained within this buffer
-        /// </summary>
-        /// <param name="systemType">The type of system accessing this buffer
-        /// This determines where the information comes from</param>
-        /// <returns>the number of entities contained within this buffer</returns>
-        public int Count(SystemType systemType)
-        {
-            if (systemType == SystemType.Render)
-                return _buffer.Count((BufferTransactionType) systemType);
-            _logicLock.EnterReadLock();
-            int count = _buffer.Count((BufferTransactionType)systemType);
-            _logicLock.ExitReadLock();
-            return count;
-        }
-
-        /// <summary>
-        /// Add a new entity to this buffer
-        /// </summary>
-        /// <param name="systemType">The type of system accessing this buffer
-        /// Render systems cannot create new entities</param>
-        /// <param name="name">the name of the new entity</param>
-        /// <returns>the ID associated with the new entity</returns>
+        /// <inheritdoc/>
         public int Add(SystemType systemType, string name)
         {
             if (systemType == SystemType.Render)
-                return -1;
-            _logicLock.EnterWriteLock();
-            int id = _buffer.Add((BufferTransactionType) systemType, name);
-            _logicLock.ExitWriteLock();
-            return id;
+                return _entities.GetIDFromName(name);
+            BufferedBinarySearchTree<EntityLink> links = new BufferedBinarySearchTree<EntityLink>(-1, _entityPower, _entityPages);
+            links.SetID( _entities.Add(name, links));
+            return links.ID;
         }
 
-        /// <summary>
-        /// Get the ID associated with an entity
-        /// </summary>
-        /// <param name="systemType">The type of system accessing this buffer
-        /// This determines where the information comes from</param>
-        /// <param name="name">the name of the entity</param>
-        /// <returns>the ID associated with the entity or -1 if not found</returns>
-        public int GetID(SystemType systemType, string name)
+        /// <inheritdoc/>
+        public int GetID(string name)
         {
-            if (systemType == SystemType.Render)
-                return _buffer.GetIDFromName((BufferTransactionType)systemType, name);
-            _logicLock.EnterReadLock();
-            int id = _buffer.GetIDFromName((BufferTransactionType)systemType, name);
-            _logicLock.ExitReadLock();
-            return id;
+            return _entities.GetIDFromName(name);
         }
 
-        /// <summary>
-        /// Get the name of an entity
-        /// </summary>
-        /// <param name="systemType">The type of system accessing this buffer
-        /// This determines where the information comes from</param>
-        /// <param name="id">the ID associated with the entity</param>
-        /// <returns>the name of the entity</returns>
-        public string GetName(SystemType systemType, int id)
+        /// <inheritdoc/>
+        public string GetName(int entity)
         {
-            if (systemType == SystemType.Render)
-                return _buffer.Get((BufferTransactionType)systemType, id);
-            _logicLock.EnterReadLock();
-            string name = _buffer.Get((BufferTransactionType)systemType, id);
-            _logicLock.ExitReadLock();
-            return name;
+            return _entities.GetNameFromID(entity);
         }
 
-        /// <summary>
-        /// Does the buffer contain an entity
-        /// </summary>
-        /// <param name="systemType">The type of system accessing this buffer
-        /// This determines where the information comes from</param>
-        /// <param name="name">the name of the entity</param>
-        /// <returns>Whether the buffer contains the entity</returns>
-        public bool Contains(SystemType systemType, string name)
-        {
-            if (systemType == SystemType.Render)
-                return _buffer.ContainsName((BufferTransactionType)systemType, name);
-            _logicLock.EnterReadLock();
-            bool ret = _buffer.ContainsName((BufferTransactionType)systemType, name);
-            _logicLock.ExitReadLock();
-            return ret;
-        }
-
-        /// <summary>
-        /// Does the buffer contain an entity
-        /// </summary>
-        /// <param name="systemType">The type of system accessing this buffer
-        /// This determines where the information comes from</param>
-        /// <param name="id">the ID associated with the entity</param>
-        /// <returns>Whether the buffer contains the entity</returns>
-        public bool Contains(SystemType systemType, int id)
-        {
-            if (systemType == SystemType.Render)
-                return _buffer.ContainsID((BufferTransactionType)systemType, id);
-            _logicLock.EnterReadLock();
-            bool ret = _buffer.ContainsID((BufferTransactionType)systemType, id);
-            _logicLock.ExitReadLock();
-            return ret;
-        }
-
-        /// <summary>
-        /// Rename an entity
-        /// </summary>
-        /// <param name="systemType">The type of system accessing this buffer
-        /// Render systems cannot rename entities</param>
-        /// <param name="oldName">the current name of the entity</param>
-        /// <param name="newName">the new name of the entity</param>
-        public void Rename(SystemType systemType, string oldName, string newName)
-        {
-            if (systemType == SystemType.Render)
-                return;
-            _logicLock.EnterWriteLock();
-            _buffer.Rename((BufferTransactionType)systemType, oldName, newName);
-            _logicLock.ExitWriteLock();
-        }
-
-        /// <summary>
-        /// Rename an entity
-        /// </summary>
-        /// <param name="systemType">The type of system accessing this buffer
-        /// Render systems cannot rename entities</param>
-        /// <param name="id">the ID associated with the entity</param>
-        /// <param name="newName">the new name of the entity</param>
+        /// <inheritdoc/>
         public void Rename(SystemType systemType, int id, string newName)
         {
             if (systemType == SystemType.Render)
                 return;
-            _logicLock.EnterWriteLock();
-            _buffer.Rename((BufferTransactionType)systemType, id, newName);
-            _logicLock.ExitWriteLock();
+            _entities.Rename(id, newName);
         }
 
-        /// <summary>
-        /// Remove an entity
-        /// </summary>
-        /// <param name="systemType">The type of system accessing this buffer
-        /// Render systems cannot remove entities</param>
-        /// <param name="name">the name of the entity to remove</param>
-        public void Remove(SystemType systemType, string name)
+        /// <inheritdoc/>
+        public void Remove(SystemType systemType, int entity)
         {
             if (systemType == SystemType.Render)
                 return;
-            _logicLock.EnterReadLock();
-            int id = _buffer.GetIDFromName((BufferTransactionType)systemType, name);
-            _logicLock.ExitReadLock();
-            _removeList.Add(id);
+
+            _removeQueue.Enqueue(entity);
         }
 
-        /// <summary>
-        /// Remove an entity
-        /// </summary>
-        /// <param name="systemType">The type of system accessing this buffer
-        /// Render systems cannot remove entities</param>
-        /// <param name="id">the id associated with the entity</param>
-        public void Remove(SystemType systemType, int id)
+        private void Remove(int entity)
+        {
+            if (!_entities.TryGet(entity, out BufferedBinarySearchTree<EntityLink> links))
+                throw new ArgumentException("No entity with ID " + entity);
+
+            BufferTransactionType type = BufferTransactionType.WriteRead;
+            IEnumerator<EntityList> enumerator = _lists.GetEnumerator();
+            EntityList list;
+            int i = 0;
+
+            while (enumerator.MoveNext())
+            {
+                if (i == _topLink)
+                    break;
+                i++;
+                list = enumerator.Current;
+                if (list.ReferenceCount == 0)
+                    continue;
+
+                if (!links.Any((link) => { return !list.ComponentTypes.Contains(link.ComponentType); }))
+                {
+                    IEnumerator<int> listWalk = list.Entities.GetEnumerator(type);
+                    int j = 0;
+                    while (listWalk.MoveNext())
+                    {
+                        if (j == list.Top)
+                            break;
+                        j++;
+
+                        if (list.Entities.Get(type, j) == entity)
+                        {
+                            if (j == list.Top - 1)
+                            {
+                                list.Top--;
+                                _lists.Set(list.Index, list);
+                            }
+                            else
+                                list.FreeEntries.Enqueue(j);
+                            list.Entities.Set(type, j, -1);
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <inheritdoc/>
+        public bool ContainsComponent(int entity, int componentType, BufferTransactionType type = BufferTransactionType.ReadOnly)
+        {
+            if (!_entities.TryGet(entity, out BufferedBinarySearchTree<EntityLink> links))
+                throw new ArgumentException("No entity with ID " + entity);
+            return links.Contains(type, componentType);
+        }
+
+        /// <inheritdoc/>
+        public int GetComponent(int entity, int componentType, BufferTransactionType type = BufferTransactionType.ReadOnly)
+        {
+            if (!_entities.TryGet(entity, out BufferedBinarySearchTree<EntityLink> links))
+                throw new ArgumentException("No entity with ID " + entity);
+
+            if (links.TryGet(type, componentType, out EntityLink link))
+                return -1;
+            return link.Component;
+        }
+
+        /// <inheritdoc/>
+        public void SetLink(SystemType systemType, int entity, int componentType, int componentID)
         {
             if (systemType == SystemType.Render)
                 return;
-            _removeList.Add(id);
+            if (!_entities.TryGet(entity, out BufferedBinarySearchTree<EntityLink> links))
+                throw new ArgumentException("No entity with ID " + entity);
+
+            BufferTransactionType type = (BufferTransactionType)systemType;
+            links.Add(type, componentType, new EntityLink(componentType, componentID));
+
+            IEnumerator<EntityList> enumerator = _lists.GetEnumerator();
+            EntityList list;
+            int i = 0;
+
+            while (enumerator.MoveNext())
+            {
+                if (i == _topLink)
+                    break;
+                i++;
+                list = enumerator.Current;
+                if (list.ReferenceCount == 0)
+                    continue;
+
+                if (list.ComponentTypes.Length <= links.Count(type))
+                {
+                    if (!list.ComponentTypes.Any((comp) => { return !links.Contains(type, comp); }))
+                    {
+                        int listNext = (list.FreeEntries.Count == 0) ? list.Top : list.FreeEntries.Dequeue();
+                        list.Entities.Set(type, listNext, links.ID);
+                        if (listNext == list.Top)
+                        {
+                            list.Top++;
+                            _lists.Set(list.Index, list);
+                        }
+                    }
+                }
+            }
         }
 
-        /// <summary>
-        /// Clears the entity buffer
-        /// !!! This destroys all entities !!!
-        /// </summary>
-        /// <param name="systemType">The type of system accessing this buffer
-        /// Render systems cannot clear the buffer</param>
+        /// <inheritdoc/>
+        public void RemoveLink(SystemType systemType, int entity, int componentType)
+        {
+            if (systemType == SystemType.Render)
+                return;
+            if (!_entities.TryGet(entity, out BufferedBinarySearchTree<EntityLink> links))
+                throw new ArgumentException("No entity with ID " + entity);
+
+            BufferTransactionType type = (BufferTransactionType)systemType;
+            links.Remove(type, componentType);
+
+            IEnumerator<EntityList> enumerator = _lists.GetEnumerator();
+            EntityList list;
+            int i = 0;
+
+            while (enumerator.MoveNext())
+            {
+                if (i == _topLink)
+                    break;
+                i++;
+                list = enumerator.Current;
+                if (list.ReferenceCount == 0)
+                    continue;
+
+                if (list.ComponentTypes.Contains(componentType))
+                {
+                    IEnumerator<int> listWalk = list.Entities.GetEnumerator(type);
+                    int j = 0;
+                    while (listWalk.MoveNext())
+                    {
+                        if (j == list.Top)
+                            break;
+                        j++;
+
+                        if (list.Entities.Get(type, j) == entity)
+                        {
+                            if (j == list.Top - 1)
+                            {
+                                list.Top--;
+                                _lists.Set(list.Index, list);
+                            }
+                            else
+                                list.FreeEntries.Enqueue(j);
+                            list.Entities.Set(type, j, -1);
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <inheritdoc/>
+        public void RegisterSystem(ISystem system)
+        {
+            if (system == null)
+                throw new ArgumentNullException(nameof(system));
+
+            AddSystem(system.Info, out _);
+        }
+
+        /// <inheritdoc/>
+        public IEnumerable<int> GetEntities(ISystem system)
+        {
+            if (system == null)
+                throw new ArgumentNullException(nameof(system));
+
+            AddSystem(system.Info, out SystemLink link);
+            return _lists.Get(link.Index).Entities;
+        }
+
+        /// <inheritdoc/>
+        public void RemoveSystem(int systemID)
+        {
+            _systemLock.EnterWriteLock();
+            if (!FindSystem(systemID, out SystemLink link))
+            {
+                _systemLock.ExitWriteLock();
+                return;
+            }
+
+            int hash = GetHashIndex(systemID);
+            int index;
+            SystemLink temp;
+            if (link.Previous == -1)
+            {
+                index = _starts[hash];
+                _starts[hash] = link.Next;
+            }
+            else
+            {
+                temp = _links.Get(link.Previous);
+                index = temp.Next;
+                temp.Next = link.Next;
+                _links.Set(link.Previous, temp);
+            }
+
+            if (link.Next == -1)
+            {
+                _ends[hash] = link.Previous;
+            }
+            else
+            {
+                temp = _links.Get(link.Next);
+                temp.Previous = link.Previous;
+                _links.Set(link.Next, temp);
+            }
+
+            EntityList list = _lists.Get(link.Index);
+            if (list.ReferenceCount == 1)
+            {
+                list.Entities.Dispose();
+                if (link.Index == _topList - 1)
+                    _topList--;
+                else
+                    _freeEntriesList.Enqueue(link.Index);
+            }
+            list.ReferenceCount--;
+            _lists.Set(link.Index, list);
+
+            if (index == _topLink - 1)
+                _topLink--;
+            else
+                _freeEntriesList.Enqueue(index);
+        }
+
+        private void AddSystem(SystemInfo sysInf, out SystemLink link)
+        {
+            _systemLock.EnterWriteLock();
+            if (FindSystem(sysInf.ID, out link))
+            {
+                _systemLock.ExitWriteLock();
+                return;
+            }
+            SystemLink prev = link;
+            
+            List<int> temp = new List<int>();
+            SystemComponent comp;
+            for (int i = 0; i < sysInf.Components.Length; i++)
+            {
+                comp = sysInf.Components[i];
+                if (comp.TypeID == -1)
+                {
+                    comp.SetID(_componentTypes.GetID(comp.TypeName));
+                    sysInf.Components[i] = comp;
+                }
+                if (comp.Required)
+                    temp.Add(comp.TypeID);
+            }
+
+            int[] components = temp.ToArray();
+            int next;
+            int hash = GetHashIndex(sysInf.ID);
+            if (FindList(components, out EntityList list))
+            {
+                link = new SystemLink(sysInf.ID, list.Index, _ends[hash]);
+                list.ReferenceCount++;
+                _lists.Set(list.Index, list);
+            }
+            else
+            {
+                next = (_freeEntriesList.Count == 0) ? _topList : _freeEntriesList.Dequeue();
+                link = new SystemLink(sysInf.ID, next, _ends[hash]);
+                list = new EntityList(next, components, _listPower, _listPages);
+                _entityLock.EnterReadLock();
+                IEnumerator<BufferedBinarySearchTree<EntityLink>> enumer = _entities.GetEnumerator();
+                while (enumer.MoveNext())
+                {
+                    if (!components.Any((component) => { return !enumer.Current.Contains(BufferTransactionType.WriteRead, component); }))
+                    {
+                        int listNext = (list.FreeEntries.Count == 0) ? list.Top : list.FreeEntries.Dequeue();
+                        list.Entities.Set(BufferTransactionType.WriteRead, listNext, enumer.Current.ID);
+                        if (listNext == list.Top)
+                            list.Top++;
+                    }
+                }
+                _entityLock.ExitReadLock();
+
+                list.Entities.SwapWriteBuffer();
+                list.Entities.SwapReadBuffer();
+
+                _lists.Set(next, list);
+                if (next == _topList)
+                    _topList++;
+            }
+
+            next = (_freeEntriesLink.Count == 0) ? _topLink : _freeEntriesLink.Dequeue();
+            if (_ends[hash] != -1)
+            {
+                prev.Next = next;
+                _links.Set(_ends[hash], prev);
+            }
+            _ends[hash] = next;
+            _links.Set(next, link);
+            if (next == _topLink)
+                _topLink++;
+            _systemLock.ExitWriteLock();
+        }
+
+        private bool FindSystem(int systemID, out SystemLink link)
+        {
+            int index = _starts[GetHashIndex(systemID)];
+
+            if (index == -1)
+            {
+                link = default;
+                return false;
+            }
+
+            link = _links.Get(index);
+
+            while (link.SystemID != systemID && link.Next != -1)
+                link = _links.Get(link.Next);
+
+            return link.SystemID == systemID;
+        }
+
+        private bool FindList(int[] components, out EntityList list)
+        {
+            IEnumerator<EntityList> enumerator = _lists.GetEnumerator();
+            list = default;
+            int i = 0;
+
+            while (enumerator.MoveNext())
+            {
+                if (i == _topLink)
+                    break;
+                i++;
+                list = enumerator.Current;
+                if (list.ReferenceCount == 0)
+                    continue;
+
+                
+
+                if (list.ComponentTypes.Length != components.Length)
+                    continue;
+
+                if (!list.ComponentTypes.Any((component) => { return !components.Contains(component); }))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private int GetHashIndex(int value) { return value % _hashVal; }
+
+        /// <inheritdoc/>
+        public bool Contains(string name)
+        {
+            return _entities.ContainsName(name);
+        }
+
+        /// <inheritdoc/>
+        public bool Contains(int id)
+        {
+            return _entities.ContainsID(id);
+        }
+
+        /// <inheritdoc/>
+        public void ClearEntities(SystemType systemType)
+        {
+            if (systemType == SystemType.Render)
+                return;
+
+            _waitingClear = true;
+
+            IEnumerator<EntityList> enumerator = _lists.GetEnumerator();
+            EntityList list;
+            int i = 0;
+
+            while (enumerator.MoveNext())
+            {
+                if (i == _topLink)
+                    break;
+                i++;
+                list = enumerator.Current;
+                if (list.ReferenceCount == 0)
+                    continue;
+
+                list.Top = 0;
+                _lists.Set(list.Index, list);
+            }
+        }
+
+        /// <inheritdoc/>
+        public void ClearSystems(SystemType systemType)
+        {
+            if (systemType == SystemType.Render)
+                return;
+
+            _topList = 0;
+            _topLink = 0;
+            _freeEntriesLink.Clear();
+            _freeEntriesList.Clear();
+        }
+
+        /// <inheritdoc/>
         public void Clear(SystemType systemType)
         {
-            if (systemType == SystemType.Render)
-                return;
-            _clearCall = true;
+            ClearSystems(systemType);
+            ClearEntities(systemType);
         }
 
-        /// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
-        public void Dispose()
+        /// <inheritdoc/>
+        public void SwapReadBuffer()
         {
-            Dispose(true);
+            IEnumerator<EntityList> enumerator = _lists.GetEnumerator();
+            EntityList list;
+            int i = 0;
+            while (enumerator.MoveNext())
+            {
+                if (i == _topLink)
+                    break;
+                i++;
+                list = enumerator.Current;
+                if (list.ReferenceCount == 0)
+                    continue;
 
-            GC.SuppressFinalize(this);
+                list.Entities.SwapReadBuffer();
+            }
         }
+
+        /// <inheritdoc/>
+        public void SwapWriteBuffer()
+        {
+            if (_waitingClear)
+                _entities.Clear();
+            else
+                while (_removeQueue.TryDequeue(out int entity))
+                    Remove(entity);
+
+            IEnumerator<EntityList> enumerator = _lists.GetEnumerator();
+            EntityList list;
+            int i = 0;
+            while (enumerator.MoveNext())
+            {
+                if (i == _topLink)
+                    break;
+                i++;
+                list = enumerator.Current;
+                if (list.ReferenceCount == 0)
+                    continue;
+
+                list.Entities.SwapWriteBuffer();
+            }
+        }
+
+        /// <inheritdoc/>
+        public IEnumerator<Tuple<int, string>> GetEnumerator()
+        {
+            return _entities.GetNameEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return _entities.GetNameEnumerator();
+        }
+
+        struct SystemLink
+        {
+            public SystemLink(int systemID, int index, int previous, int next = -1)
+            {
+                SystemID = systemID;
+                Index = index;
+                Previous = previous;
+                Next = next;
+            }
+
+            public int SystemID;
+            public int Next;
+            public int Index;
+            public int Previous;
+        }
+
+        struct EntityList
+        {
+            public EntityList(int index, int[] componentTypes, int pagePower, int pageCount)
+            {
+                Index = index;
+                ComponentTypes = componentTypes;
+                Top = 0;
+                ReferenceCount = 1;
+                Entities = new DataBuffer<int>(pagePower, pageCount);
+                FreeEntries = new Queue<int>();
+            }
+
+            public int Index;
+            public int ReferenceCount;
+            public int Top;
+            public Queue<int> FreeEntries;
+            public DataBuffer<int> Entities;
+            public int[] ComponentTypes;
+        }
+
+        struct EntityLink
+        {
+            public EntityLink(int componentTypeID, int componentID)
+            {
+                ComponentType = componentTypeID;
+                Component = componentID;
+            }
+
+            public int ComponentType;
+            public int Component;
+        }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
 
         /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// Dispose of this object
         /// </summary>
-        /// <param name="managed">should managed resources be disposed</param>
-        protected virtual void Dispose(bool managed)
+        /// <param name="disposing">should managed objects be disposed</param>
+        protected virtual void Dispose(bool disposing)
         {
-            if (!managed) return;
-            _buffer?.Dispose();
-            _logicLock?.Dispose();
-            _removeList = null;
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _entities?.Dispose();
+                    _entityLock?.Dispose();
+                    _componentTypes = null;
+                    _freeEntriesLink = null;
+                    _freeEntriesList = null;
+                    _links = null;
+                    _lists = null;
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                disposedValue = true;
+            }
         }
+
+        ///<inheritdoc/>
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            GC.SuppressFinalize(this);
+        }
+        #endregion
     }
 }

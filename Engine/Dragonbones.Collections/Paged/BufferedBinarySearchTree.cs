@@ -11,21 +11,29 @@ namespace Dragonbones.Collections.Paged
     /// It will walk in order from smallest to largest entry
     /// </summary>
     /// <typeparam name="TValue">the value stored in the tree</typeparam>
-    public class BufferedBinarySearchTree<TValue> : IEnumerable<TValue>, IDataBuffer
+    public class BufferedBinarySearchTree<TValue> : IEnumerable<TValue>, IDataBuffer, IEquatable<BufferedBinarySearchTree<TValue>>
     {
         DataBuffer<Entry> _entries;
+        int _id;
         int _top;
         int _topContinuous;
         int _topLayer;
         int _topLayerIndex;
         ValueBuffer<int> _count;
+
+        /// <summary>
+        /// The Tree's ID value
+        /// used in comparisons
+        /// </summary>
+        public int ID => _id;
         
         /// <summary>
         /// Constructs a CompleteBinarySearchTree
         /// </summary>
+        /// <param name="ID">an ID used for Equals check</param>
         /// <param name="pagePower">the size of the pages in the Array expressed as a power of 2</param>
         /// <param name="initialPageCount">the initial number of pages to be added</param>
-        public BufferedBinarySearchTree(int pagePower, int initialPageCount)
+        public BufferedBinarySearchTree(int ID, int pagePower, int initialPageCount)
         {
             _entries = new DataBuffer<Entry>(pagePower, initialPageCount);
             _entries[BufferTransactionType.WriteRead, 0] = new Entry(-1, default, int.MinValue);
@@ -34,6 +42,15 @@ namespace Dragonbones.Collections.Paged
             _count = new ValueBuffer<int>();
             _top = -1;
             _topContinuous = -1;
+        }
+
+        /// <summary>
+        /// Allows you to set the ID after creation
+        /// </summary>
+        /// <param name="id">new ID for this tree</param>
+        public void SetID(int id)
+        {
+            _id = id;
         }
 
         /// <summary>
@@ -103,6 +120,17 @@ namespace Dragonbones.Collections.Paged
             }
 
             Add(type, index, ref ent);
+        }
+
+        /// <summary>
+        /// Does the tree contain an ID
+        /// </summary>
+        /// <param name="type">the buffer transaction type which affects where the data comes from</param>
+        /// <param name="ID">the ID of the value being searched for</param>
+        /// <returns>Whether the ID is in the tree</returns>
+        public bool Contains(BufferTransactionType type, int ID)
+        {
+            return Find(type, ID, out _);
         }
 
         /// <summary>
@@ -584,6 +612,11 @@ namespace Dragonbones.Collections.Paged
             Dispose(true);
             // TODO: uncomment the following line if the finalizer is overridden above.
             GC.SuppressFinalize(this);
+        }
+
+        public bool Equals(BufferedBinarySearchTree<TValue> other)
+        {
+            return _id == other._id;
         }
         #endregion
     }

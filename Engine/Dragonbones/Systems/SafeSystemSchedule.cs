@@ -603,7 +603,7 @@ namespace Dragonbones.Systems
             if (registry == null)
                 throw new ArgumentNullException(nameof(registry));
             foreach (ISystem system in registry)
-                Add(system.SystemInfo);
+                Add(system.Info);
         }
 
         #region IDisposable Support

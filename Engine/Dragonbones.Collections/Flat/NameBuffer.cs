@@ -529,7 +529,7 @@ namespace Dragonbones.Collections.Flat
         /// <returns>the index in the hashtable for the hashcode to be placed in</returns>
         private int GetHashIndex(int hashCode)
         {
-            return ((hashCode % _hashSize) + _hashSize) % _hashSize;
+            return MathHelper.MathMod(hashCode, _hashSize);
         }
 
         /// <summary>

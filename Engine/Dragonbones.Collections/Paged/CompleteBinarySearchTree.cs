@@ -99,6 +99,16 @@ namespace Dragonbones.Collections.Paged
         }
 
         /// <summary>
+        /// Does the tree contain an ID
+        /// </summary>
+        /// <param name="ID">the ID of the value being searched for</param>
+        /// <returns>Whether the ID is in the tree</returns>
+        public bool Contains(int ID)
+        {
+            return Find(ID, out _);
+        }
+
+        /// <summary>
         /// Removes a value from the tree with the specified ID
         /// </summary>
         /// <param name="ID">The ID to remove</param>

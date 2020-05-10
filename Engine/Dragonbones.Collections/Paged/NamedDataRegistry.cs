@@ -33,7 +33,7 @@ namespace Dragonbones.Collections.Paged
         /// <param name="pageCount">the initial number of pages to add</param>
         /// <param name="hashSize">the size of the hashtable used for finding values by name.
         /// The larger this is the faster name lookups but the more memory used</param>
-        public NamedDataRegistry(int pagePower, int pageCount, int hashSize = 47)
+        public NamedDataRegistry(int pagePower = 8, int pageCount = 1, int hashSize = 47)
         {
             _entries = new PagedArray<Entry>(pagePower, pageCount);
             _values = new PagedArray<TValue>(pagePower, pageCount);
@@ -464,16 +464,83 @@ namespace Dragonbones.Collections.Paged
         }
 
         /// <summary>
+        /// Rename the value in the buffer associated with the given id
+        /// (only works in WriteRead transaction types)
+        /// </summary>
+        /// <param name="type">The transaction type</param>
+        /// <param name="id">the id associated with the value to replace</param>
+        /// <param name="newName">the new name to set</param>
+        public void Rename(int id, string newName)
+        {
+            if (id < 0)
+                throw new ArgumentOutOfRangeException(nameof(id));
+
+            Entry entry = _entries.Get(id);
+            if (entry.ID != id)
+                throw new ArgumentException("There is no value in the NamedDataBuffer associated with ID " + id);
+
+            if (entry.Name == newName)
+                return;
+
+            int originalHash = GetHashIndex(entry.Name.GetHashCode());
+            Entry tempEnt;
+            if (entry.PreviousLink != -1)
+            {
+                tempEnt = _entries.Get(entry.PreviousLink);
+                tempEnt.NextLink = entry.NextLink;
+                _entries.Set(entry.PreviousLink, tempEnt);
+            }
+            else
+            {
+                _starts[originalHash] = entry.NextLink;
+            }
+
+            if (entry.NextLink != -1)
+            {
+                tempEnt = _entries.Get(entry.NextLink);
+                tempEnt.PreviousLink = entry.PreviousLink;
+                _entries.Set(entry.NextLink, tempEnt);
+            }
+            else
+            {
+                _ends[originalHash] = entry.PreviousLink;
+            }
+
+            int hash = GetHashIndex(newName.GetHashCode());
+            int end = _ends[hash];
+
+            entry.NextLink = -1;
+            entry.PreviousLink = end;
+            entry.Name = newName;
+
+            _entries.Set(id, entry);
+
+            tempEnt = _entries.Get(end);
+            tempEnt.NextLink = id;
+            _entries.Set(end, tempEnt);
+            _ends[hash] = id;
+        }
+
+        /// <summary>
         /// Gets the hash index of a given hashcode
         /// </summary>
         /// <param name="hashCode">the hashcode of an entry</param>
         /// <returns>the hash index of the entry</returns>
-        private int GetHashIndex(int hashCode) { return ((hashCode % _hashSize) + _hashSize) % _hashSize; }
+        private int GetHashIndex(int hashCode) { return MathHelper.MathMod(hashCode, _hashSize); }
 
         /// <inheritdoc/>
         public IEnumerator<TValue> GetEnumerator()
         {
             return new Enumerator(this);
+        }
+
+        /// <summary>
+        /// Get Name Enumerator
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerator<Tuple<int,string>> GetNameEnumerator()
+        {
+            return new EnumeratorEntry(this);
         }
 
         /// <inheritdoc/>
@@ -507,7 +574,7 @@ namespace Dragonbones.Collections.Paged
                 NextEnumerator = nextEnum;
             }
             public int ID;
-            public readonly string Name;
+            public string Name;
             public int NextLink;
             public int PreviousLink;
             public int NextEnumerator;
@@ -542,6 +609,45 @@ namespace Dragonbones.Collections.Paged
 
                 bool ret = _current != -1;
                 Entry ent = _reg._entries[ret ? _current : 0];
+                _next = ret ? ent.NextEnumerator : -1;
+                return ret;
+            }
+
+            public void Reset()
+            {
+                _next = -2;
+            }
+        }
+
+        /// <summary>
+        /// The enumerator for <see cref="NamedDataRegistry{TValue}"/>
+        /// </summary>
+        private class EnumeratorEntry : IEnumerator<Tuple<int,string>>
+        {
+            private NamedDataRegistry<TValue> _reg;
+            Entry ent;
+            public EnumeratorEntry(NamedDataRegistry<TValue> reg)
+            {
+                _reg = reg;
+                _next = -2;
+            }
+
+            private int _current, _next;
+            public Tuple<int, string> Current => new Tuple<int, string>(ent.ID, ent.Name);
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose()
+            {
+                _reg = null;
+            }
+
+            public bool MoveNext()
+            {
+                _current = _next == -2 ? _reg._start : _next;
+
+                bool ret = _current != -1;
+                ent = _reg._entries[ret ? _current : 0];
                 _next = ret ? ent.NextEnumerator : -1;
                 return ret;
             }

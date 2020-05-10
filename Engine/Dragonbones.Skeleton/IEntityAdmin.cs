@@ -43,11 +43,6 @@ namespace Dragonbones
         /// </summary>
         IEntityBuffer Entities { get; set; }
         /// <summary>
-        /// The container for all the links between entities and components
-        /// This is used to provide systems with component groups to run on
-        /// </summary>
-        ILinkBuffer Links { get; set; }
-        /// <summary>
         /// Starts the engine running
         /// </summary>
         void Run();

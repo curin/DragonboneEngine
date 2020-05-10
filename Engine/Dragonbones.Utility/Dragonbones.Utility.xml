@@ -75,6 +75,14 @@
             <param name="remainder">the returned remainder from division</param>
             <returns>the result of the division</returns>
         </member>
+        <member name="M:Dragonbones.MathHelper.MathMod(System.Int32,System.Int32)">
+            <summary>
+            A form of modulus that ensures that the result is positive
+            </summary>
+            <param name="dividend">the number to be divided</param>
+            <param name="divisor">the number to be divided by</param>
+            <returns></returns>
+        </member>
         <member name="M:Dragonbones.MathHelper.BitScanForward(System.Int64)">
             <summary>
             Search the mask data from least significant bit (LSB) to the most significant bit (MSB) for a set bit (1)
