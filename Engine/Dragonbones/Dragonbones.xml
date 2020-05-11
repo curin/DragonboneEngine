@@ -309,11 +309,12 @@
             The base implementation for <see cref="T:Dragonbones.Components.IComponentTypeRegistry"/>
             </summary>
         </member>
-        <member name="M:Dragonbones.Components.ComponentTypeRegistry.#ctor(System.Int32,System.Int32)">
+        <member name="M:Dragonbones.Components.ComponentTypeRegistry.#ctor(System.Int32,System.Int32,System.Int32)">
             <summary>
             Constructor for <see cref="T:Dragonbones.Components.ComponentTypeRegistry"/>
             </summary>
-            <param name="componentTypeCount">the number of component types that will be registerered here</param>
+            <param name="pagePower">the size of pages as a power of 2</param>
+            <param name="pageCount">the number of initial pages, has an affect on early performance but a memory impact</param>
             <param name="hashSize">the size of the hash table, the larger the faster the name search, the more memory it will use</param>
         </member>
         <member name="M:Dragonbones.Components.ComponentTypeRegistry.Clear">
@@ -704,6 +705,65 @@
         <member name="M:Dragonbones.Components.SingletonBuffer`1.Enumerator.Dispose">
             <inheritdoc/>
         </member>
+        <member name="T:Dragonbones.EngineLoader">
+            <summary>
+            The class which is responsible for starting up the entity admin
+            and adding systems and components prior to the admin starting
+            </summary>
+        </member>
+        <member name="P:Dragonbones.EngineLoader.Admin">
+            <summary>
+            The controlling Entity Admin which will run the engine
+            </summary>
+        </member>
+        <member name="M:Dragonbones.EngineLoader.#ctor(System.Single,System.Single,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Constructs an engine loader with the given parameters using the default admin and default storages
+            </summary>
+            <param name="targetLogicFrameLength">the frame length in seconds of logic updates which the engine will attempt to keep</param>
+            <param name="targetMaxRenderFrameLength">the frame length in seconds of render updates which the engine will try to stay below</param>
+            <param name="componentTypePagePower">the size of component type pages as a power of 2</param>
+            <param name="componentTypePageCount">the number of component type pages to start with, this can affect memory and performance</param>
+            <param name="systemPagePower">the size of system pages as a power of 2</param>
+            <param name="systemPageCount">the number of system pages to start with, this can affect memory and performance</param>
+            <param name="entityPagePower">the size of entity pages as a power of 2</param>
+            <param name="entityPageCount">the number of entity pages to start with, this can affect memory and performance</param>
+            <param name="entityComponentPagePower">the size of entity-component link pages as a power of 2</param>
+            <param name="entityComponentPageCount">the number of entity-component link pages to start with, this can affect memory and performance</param>
+        </member>
+        <member name="M:Dragonbones.EngineLoader.#ctor(Dragonbones.Components.IComponentTypeRegistry,Dragonbones.Systems.ISystemRegistry,Dragonbones.Entities.IEntityBuffer,System.Single,System.Single)">
+            <summary>
+            Constructs an engine loader with the given parameters using the default admin
+            </summary>
+            <param name="targetLogicFrameLength">the frame length in seconds of logic updates which the engine will attempt to keep</param>
+            <param name="targetMaxRenderFrameLength">the frame length in seconds of render updates which the engine will try to stay below</param>
+            <param name="componentTypeRegistry">the component type registry to use to store component types</param>
+            <param name="systemRegistry">the system registry to store systems</param>
+            <param name="entityBuffer">the entity buffer to use to store entities</param>
+        </member>
+        <member name="M:Dragonbones.EngineLoader.#ctor(Dragonbones.IEntityAdmin)">
+            <summary>
+            Construct an engine loader with the given admin
+            </summary>
+            <param name="admin">The admin to run this engine instance</param>
+        </member>
+        <member name="M:Dragonbones.EngineLoader.LoadComponents">
+            <summary>
+            Load component types in to the type buffer and initial components if necessary
+            This runs before systems are loaded
+            </summary>
+        </member>
+        <member name="M:Dragonbones.EngineLoader.LoadSystems">
+            <summary>
+            Load systems into the system registry and initalize necessary variables
+            This runs after components are loaded, but before system initialize
+            </summary>
+        </member>
+        <member name="M:Dragonbones.EngineLoader.Run">
+            <summary>
+            Starts the Engine loading components and systems first
+            </summary>
+        </member>
         <member name="T:Dragonbones.Entities.EntityBuffer">
             <summary>
             A basic implementation of <see cref="T:Dragonbones.Entities.IEntityBuffer"/>
@@ -757,6 +817,9 @@
             <inheritdoc/>
         </member>
         <member name="M:Dragonbones.Entities.EntityBuffer.GetComponent(System.Int32,System.Int32,Dragonbones.Collections.BufferTransactionType)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityBuffer.GetComponents(System.Int32,Dragonbones.Collections.BufferTransactionType)">
             <inheritdoc/>
         </member>
         <member name="M:Dragonbones.Entities.EntityBuffer.SetLink(Dragonbones.Systems.SystemType,System.Int32,System.Int32,System.Int32)">
@@ -915,6 +978,12 @@
             The amount of time in seconds between render runs
             </summary>
         </member>
+        <member name="P:Dragonbones.EntityAdmin.LogicDeltaTimeRender">
+            <summary>
+            The amount of time since the last logic update
+            Used in render systems
+            </summary>
+        </member>
         <member name="P:Dragonbones.EntityAdmin.LogicTimer">
             <summary>
             The timer used to time logic threads
@@ -1019,6 +1088,33 @@
         <member name="M:Dragonbones.EntityAdmin.Dispose">
             <inheritdoc/>
         </member>
+        <member name="T:Dragonbones.Systems.EntityDrivenSystem">
+            <summary>
+            A system which runs for every entity that matches its required components
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Systems.EntityDrivenSystem.Entities">
+            <summary>
+            A link to the entity buffer in the admin
+            Here for quick access
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Systems.EntityDrivenSystem.#ctor(Dragonbones.Systems.SystemInfo)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.Systems.EntityDrivenSystem.Initialize">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.Systems.EntityDrivenSystem.Run(System.Single)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.Systems.EntityDrivenSystem.Run(System.Int32,System.Single)">
+            <summary>
+            Runs this system on the given entity
+            </summary>
+            <param name="entity">the ID of the entity</param>
+            <param name="deltaTime">the time since the last logic update (consistent for logic systems variable for rneder systems)</param>
+        </member>
         <member name="T:Dragonbones.Systems.SafeSystemSchedule">
             <summary>
             A base implementation of <see cref="T:Dragonbones.Systems.ISystemSchedule"/> for Logic Systems
@@ -1122,6 +1218,49 @@
         <member name="M:Dragonbones.Systems.SafeSystemSchedule.Dispose">
             <inheritdoc/>
         </member>
+        <member name="T:Dragonbones.Systems.System">
+            <summary>
+            a basic implementation of <see cref="T:Dragonbones.Systems.ISystem"/>
+            This fills out basic functions which are the same for all systems
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Systems.System.#ctor(Dragonbones.Systems.SystemInfo)">
+            <summary>
+            Constructs a system
+            </summary>
+            <param name="info">the info for the system</param>
+        </member>
+        <member name="P:Dragonbones.Systems.System.Info">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.Systems.System.Equals(Dragonbones.Systems.ISystem)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.Systems.System.Initialize">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.Systems.System.Run(System.Single)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.Systems.System.DisposeManaged">
+            <summary>
+            Dispose of managed objects here
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Systems.System.DisposeNative">
+            <summary>
+            Dispose of Native objects here
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Systems.System.Dispose(System.Boolean)">
+            <summary>
+            Disposes of this object
+            </summary>
+            <param name="disposing">should we dispose of managed objects</param>
+        </member>
+        <member name="M:Dragonbones.Systems.System.Dispose">
+            <inheritdoc/>
+        </member>
         <member name="T:Dragonbones.Systems.SystemRegistry">
              <summary>
              A base version of the <see cref="T:Dragonbones.Systems.SystemRegistry"/>
@@ -1129,11 +1268,12 @@
              This uses a <see cref="T:Dragonbones.Collections.Paged.NamedDataRegistry`1"/> to store the systems
              </summary>
         </member>
-        <member name="M:Dragonbones.Systems.SystemRegistry.#ctor(System.Int32,System.Int32)">
+        <member name="M:Dragonbones.Systems.SystemRegistry.#ctor(System.Int32,System.Int32,System.Int32)">
             <summary>
             Constructs an instance of <see cref="T:Dragonbones.Systems.SystemRegistry"/>
             </summary>
-            <param name="maxSystemCount">the maximum number of systems to every be added to the registry</param>
+            <param name="systemPagePower">the size of the system pages as a power of 2</param>
+            <param name="systemPageCount">the number of pages to start with, larger values decrease early performance hits but increase memory cost</param>
             <param name="hashSize">the hash size used by the internal hashtable. Higher makes for faster searching but increases memory usage</param>
         </member>
         <member name="P:Dragonbones.Systems.SystemRegistry.Item(System.String)">

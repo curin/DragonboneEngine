@@ -255,62 +255,57 @@ namespace Dragonbones.Systems
         /// <summary>
         /// <inheritdoc />
         /// </summary>
-        public ScheduleResult NextSystem(int systemLaneID, out SystemInfo systemBatch)
+        public ScheduleResult NextSystem(int systemLaneID, out SystemInfo system)
         {
             
             if (systemLaneID >= _laneCount)
                 throw new ArgumentOutOfRangeException(nameof(systemLaneID));
             if (_running[systemLaneID])
                 _running[systemLaneID] = false;
+            system = null;
+            bool invalid;
+
+            if (_start == -1)
+                return ScheduleResult.Finished;
+
             lock (_lock)
             {
-                systemBatch = null;
-                _searcher = _current;
-
                 if (!_started)
                 {
-                    if (_start == -1)
-                    {
-                        return ScheduleResult.Finished;
-                    }
                     _current = _entries[_start];
-                    systemBatch = _systemCache[_current.CacheIndex];
+                    system = _systemCache[_current.CacheIndex];
                     _started = true;
                     return ScheduleResult.Supplied;
                 }
 
-                bool invalid;
-                while (systemBatch == null)
+                _searcher = _current;
+
+                do
                 {
                     if (_searcher.NextEntry == -1)
-                    {
                         return _searcher.CacheIndex == _current.CacheIndex ? ScheduleResult.Finished : ScheduleResult.Conflict;
-                    }
 
-                    _searcher = _entries[_searcher.NextEntry];
-                    systemBatch = _systemCache[_searcher.CacheIndex];
+                    do
+                    {
+                        _searcher = _entries[_searcher.NextEntry];
+                        system = _systemCache[_searcher.CacheIndex];
+                    } while (system.Active && !system.Run && _searcher.NextEntry != -1);
 
-                    invalid = !(systemBatch.Active || systemBatch.Run);
+                    invalid = false;
                     for (int i = 0; i < _laneCount; i++)
                         if (_running[i])
-                            if (systemBatch.Components.Any((val) => { return _lanes[i].Components.Contains(val); }))
+                            if (system.Components.Any((val) => { return _lanes[i].Components.Contains(val); }))
                                 invalid = true;
-
-                    if (invalid)
-                    {
-                        systemBatch = null;
-                    }
-                }
+                } while (invalid);
 
                 if (_searcher.CacheIndex == _current.NextEntry)
                     _current = _searcher;
             }
-            systemBatch.Run = true;
-            systemBatch.Age = 0;
-            _lanes[systemLaneID] = systemBatch;
+            system.Run = true;
+            system.Age = 0;
+            _lanes[systemLaneID] = system;
             _running[systemLaneID] = true;
             return ScheduleResult.Supplied;
-
         }
 
         /// <summary>

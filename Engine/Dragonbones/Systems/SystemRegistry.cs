@@ -25,7 +25,7 @@ namespace Dragonbones.Systems
         /// <param name="systemPagePower">the size of the system pages as a power of 2</param>
         /// <param name="systemPageCount">the number of pages to start with, larger values decrease early performance hits but increase memory cost</param>
         /// <param name="hashSize">the hash size used by the internal hashtable. Higher makes for faster searching but increases memory usage</param>
-        public SystemRegistry(int systemPagePower, int systemPageCount, int hashSize = 47)
+        public SystemRegistry(int systemPagePower = 8, int systemPageCount = 1, int hashSize = 47)
         {
             _systems = new NamedDataRegistry<ISystem>(systemPagePower, systemPageCount, hashSize);
         }

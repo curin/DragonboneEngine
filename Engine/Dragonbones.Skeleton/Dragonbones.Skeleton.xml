@@ -373,6 +373,40 @@
             Clears all the registry data
             </summary>
         </member>
+        <member name="T:Dragonbones.Entities.EntityLink">
+            <summary>
+            A link representing a component which is connected to an entity
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityLink.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Constructs an Entity Link
+            </summary>
+            <param name="componentTypeID">the ID of the component type</param>
+            <param name="componentID">the ID of the component</param>
+        </member>
+        <member name="P:Dragonbones.Entities.EntityLink.ComponentType">
+            <summary>
+            The ID of the Component Type
+            </summary>
+        </member>
+        <member name="P:Dragonbones.Entities.EntityLink.Component">
+            <summary>
+            The ID of the Component
+            </summary>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityLink.Equals(System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityLink.GetHashCode">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityLink.op_Equality(Dragonbones.Entities.EntityLink,Dragonbones.Entities.EntityLink)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.Entities.EntityLink.op_Inequality(Dragonbones.Entities.EntityLink,Dragonbones.Entities.EntityLink)">
+            <inheritdoc/>
+        </member>
         <member name="T:Dragonbones.Entities.IEntityBuffer">
             <summary>
             The buffer designed to hold entity data
@@ -528,6 +562,14 @@
             <param name="entity">the id of the entity</param>
             <param name="componentType">the id of the type of component being unlinked</param>
         </member>
+        <member name="M:Dragonbones.Entities.IEntityBuffer.GetComponents(System.Int32,Dragonbones.Collections.BufferTransactionType)">
+            <summary>
+            Retrieves a list of components linked to an entity
+            </summary>
+            <param name="entity">the ID of the entity</param>
+            <param name="type">the type of buffer to access, this affects the data being returned</param>
+            <returns>The list of components linked</returns>
+        </member>
         <member name="M:Dragonbones.Entities.IEntityBuffer.RegisterSystem(Dragonbones.Systems.ISystem)">
             <summary>
             Registers a system in this buffer (doing this ahead of time can speed up the first attempt to retrieve entities that match this system)
@@ -625,7 +667,7 @@
             <summary>
             The method run for this system
             </summary>
-            <param name="deltaTime">time since last run</param>
+            <param name="deltaTime">time since last logic update (this should be consistent for logic systems and variable for render)</param>
         </member>
         <member name="T:Dragonbones.Systems.ISystemRegistry">
             <summary>
@@ -875,6 +917,18 @@
             A Method for the system to set the ComponentTypeID
             </summary>
             <param name="ID">The ID for the component type</param>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemComponent.Equals(System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemComponent.GetHashCode">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemComponent.op_Equality(Dragonbones.Systems.SystemComponent,Dragonbones.Systems.SystemComponent)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Dragonbones.Systems.SystemComponent.op_Inequality(Dragonbones.Systems.SystemComponent,Dragonbones.Systems.SystemComponent)">
+            <inheritdoc/>
         </member>
         <member name="T:Dragonbones.Systems.SystemInfo">
             <summary>
