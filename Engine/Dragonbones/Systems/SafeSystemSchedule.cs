@@ -268,6 +268,8 @@ namespace Dragonbones.Systems
             if (_start == -1)
                 return ScheduleResult.Finished;
 
+            
+
             lock (_lock)
             {
                 if (!_started)
@@ -278,18 +280,21 @@ namespace Dragonbones.Systems
                     return ScheduleResult.Supplied;
                 }
 
+                if (_current.NextEntry == -1)
+                    return _searcher.CacheIndex == _current.CacheIndex ? ScheduleResult.Finished : ScheduleResult.Conflict;
+
                 _searcher = _current;
 
                 do
                 {
-                    if (_searcher.NextEntry == -1)
-                        return _searcher.CacheIndex == _current.CacheIndex ? ScheduleResult.Finished : ScheduleResult.Conflict;
-
                     do
                     {
                         _searcher = _entries[_searcher.NextEntry];
                         system = _systemCache[_searcher.CacheIndex];
                     } while (system.Active && !system.Run && _searcher.NextEntry != -1);
+
+                    if (_searcher.NextEntry == -1)
+                        return _searcher.CacheIndex == _current.CacheIndex ? ScheduleResult.Finished : ScheduleResult.Conflict;
 
                     invalid = false;
                     for (int i = 0; i < _laneCount; i++)

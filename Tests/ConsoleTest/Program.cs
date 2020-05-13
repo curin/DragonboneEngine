@@ -13,6 +13,7 @@ namespace ConsoleTest
     {
         private static void Main()
         {
+            COMTest.Test();
             //SetEquivalenceTest.Run();
             //BinarySearchTest.Run();
             //TreeWalkTest.Run();
