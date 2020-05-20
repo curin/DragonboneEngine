@@ -771,7 +771,7 @@
             Larger entities(ones which have many components) will be slowed in this implementation
             </summary>
         </member>
-        <member name="M:Dragonbones.Entities.EntityBuffer.#ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32)">
+        <member name="M:Dragonbones.Entities.EntityBuffer.#ctor(Dragonbones.Components.IComponentTypeRegistry,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32)">
             <summary>
             Constructs an entity buffer
             </summary>
@@ -785,6 +785,7 @@
             <param name="entityListPageCount">the initial number of entity pages, this has a small affect on early performance</param>
             <param name="systemLinkPagePower">the size of the systemlink pages in the form of a power of 2</param>
             <param name="systemLinkPageCount">the initial number of entity pages, this has a small affect on early performance</param>
+            <param name="componentTypes">The registry for component types which is used to get type IDs if a system is registered before its type ids are filled out</param>
         </member>
         <member name="P:Dragonbones.Entities.EntityBuffer.RemovedEntities">
             <inheritdoc/>

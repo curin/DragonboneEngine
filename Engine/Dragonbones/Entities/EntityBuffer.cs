@@ -49,8 +49,10 @@ namespace Dragonbones.Entities
         /// <param name="entityListPageCount">the initial number of entity pages, this has a small affect on early performance</param>
         /// <param name="systemLinkPagePower">the size of the systemlink pages in the form of a power of 2</param>
         /// <param name="systemLinkPageCount">the initial number of entity pages, this has a small affect on early performance</param>
-        public EntityBuffer(int entityHash = 47, int systemLinkHash = 47, int entityPagePower = 8, int entityComponentPagePower = 8, int entityListPagePower = 8, 
-            int systemLinkPagePower = 8, int entityPageCount = 1, int entityComponentPageCount = 1, int entityListPageCount = 1, int systemLinkPageCount = 1)
+        /// <param name="componentTypes">The registry for component types which is used to get type IDs if a system is registered before its type ids are filled out</param>
+        public EntityBuffer(IComponentTypeRegistry componentTypes, int entityHash = 47, int systemLinkHash = 47, int entityPagePower = 8, 
+            int entityComponentPagePower = 8, int entityListPagePower = 8, int systemLinkPagePower = 8, int entityPageCount = 1, 
+            int entityComponentPageCount = 1, int entityListPageCount = 1, int systemLinkPageCount = 1)
         {
             _entities = new NamedDataRegistry<BufferedBinarySearchTree<EntityLink>>(entityPagePower, entityPageCount, entityHash);
             _links = new PagedArray<SystemLink>(systemLinkPagePower, systemLinkPageCount);
@@ -62,6 +64,7 @@ namespace Dragonbones.Entities
             _listPages = entityListPageCount;
             _entityPower = entityComponentPagePower;
             _entityPages = entityComponentPageCount;
+            _componentTypes = componentTypes;
         }
 
         /// <inheritdoc/>
@@ -650,7 +653,7 @@ namespace Dragonbones.Entities
 
                 public void Dispose()
                 {
-                    _enumer = null;
+                    _enumer?.Dispose();
                 }
 
                 public bool MoveNext()

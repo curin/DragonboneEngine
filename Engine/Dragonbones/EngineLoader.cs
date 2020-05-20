@@ -35,8 +35,9 @@ namespace Dragonbones
             int componentTypePagePower = 8, int componentTypePageCount = 1, int systemPagePower = 8, int systemPageCount = 1,
             int entityPagePower = 8, int entityPageCount = 1, int entityComponentPagePower = 8, int entityComponentPageCount = 1)
         {
-            Admin = new EntityAdmin(targetLogicFrameLength, targetMaxRenderFrameLength, new ComponentTypeRegistry(componentTypePagePower, componentTypePageCount),
-                new SystemRegistry(systemPagePower, systemPageCount), new EntityBuffer(47, 47, entityPagePower, entityComponentPagePower, entityPagePower, systemPagePower,
+            IComponentTypeRegistry registry = new ComponentTypeRegistry(componentTypePagePower, componentTypePageCount);
+            Admin = new EntityAdmin(targetLogicFrameLength, targetMaxRenderFrameLength, registry,
+                new SystemRegistry(systemPagePower, systemPageCount), new EntityBuffer(registry, 47, 47, entityPagePower, entityComponentPagePower, entityPagePower, systemPagePower,
                 entityPageCount, entityComponentPageCount, entityPageCount, systemPageCount));
         }
 

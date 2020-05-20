@@ -13,7 +13,8 @@ namespace ConsoleTest
     {
         public static void Run()
         {
-            EntityAdmin admin = new EntityAdmin(1f/60f, 1f/30f,new ComponentTypeRegistry(64), new SystemRegistry(64), new EntityBuffer());
+            IComponentTypeRegistry registry = new ComponentTypeRegistry();
+            EntityAdmin admin = new EntityAdmin(1f/60f, 1f/30f, registry, new SystemRegistry(), new EntityBuffer(registry));
             admin.Run();
             Console.WriteLine("Done");
             Console.ReadLine();

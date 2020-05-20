@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\DirectX.DXGI\DirectX.DXGI.vcxproj" />
+    <ProjectReference Include="..\..\..\..\Native\DirectX.Net\DirectX.DXGI\DirectX.DXGI.vcxproj" />
     <ProjectReference Include="..\..\..\..\Native\DirectX.Net\DirectX\DirectX.vcxproj" />
   </ItemGroup>
 
