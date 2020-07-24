@@ -3,9 +3,15 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <RootNamespace>Dragonbones.Native</RootNamespace>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>J:\Programming Projects\Dragonbones\DragonboneEngine\Engine\Native\Dragonbones.Native.Common\Dragonbones.Native.Common.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DocumentationFile>J:\Programming Projects\Dragonbones\DragonboneEngine\Engine\Native\Dragonbones.Native.Common\Dragonbones.Native.Common.xml</DocumentationFile>
   </PropertyGroup>

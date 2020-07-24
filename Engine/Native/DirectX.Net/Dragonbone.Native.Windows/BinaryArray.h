@@ -2,6 +2,7 @@
 #include "ByteArray.h"
 
 using namespace System;
+using namespace System::Runtime::InteropServices;
 
 namespace Dragonbone
 {
@@ -40,14 +41,31 @@ namespace Dragonbone
                 }
             }
 
-            void* GetPointer(int index)
+            void* GetPointerTo(int index)
             {
                 return _array->GetPointer(index);
             }
 
-            IntPtr^ GetManagedPointer(int index)
+            void* GetPointer(int index)
             {
-                return gcnew IntPtr(_array->GetPointer(index));
+                return _array->GetValue<void*>(index);
+            }
+
+            generic<typename TValue>
+            TValue GetValue(int index)
+            {
+                GCHandle ghandle = GCHandle::FromIntPtr(GetManagedPointerTo(index));
+                return (TValue)ghandle.Target;
+            }
+
+            IntPtr GetManagedPointerTo(int index)
+            {
+                return IntPtr(_array->GetPointer(index));
+            }
+
+            IntPtr GetManagedPointer(int index)
+            {
+                return IntPtr(_array->GetValue<void*>(index));
             }
 
             Byte GetByteValue(int index)
@@ -65,9 +83,27 @@ namespace Dragonbone
                 _array->SetValue(index, value, size);
             }
 
-            void SetManagedPointer(int index, IntPtr^ value, int size)
+            void SetManagedPointer(int index, IntPtr value, int size)
             {
-                _array->SetValue(index, value->ToPointer(), size);
+                _array->SetValue(index, value.ToPointer(), size);
+            }
+
+            void SetPointer(int index, void* value)
+            {
+                _array->SetValue(index, value);
+            }
+
+            void SetManagedPointer(int index, IntPtr value)
+            {
+                _array->SetValue(index, value.ToPointer());
+            }
+
+            generic<typename TValue>
+            void SetValue(int index, TValue value, int size)
+            {
+                GCHandle handle = GCHandle::Alloc(value);
+                _array->SetValue(index, GCHandle::ToIntPtr(handle).ToPointer(), size);
+                handle.Free();
             }
 
             operator ::ByteArray()

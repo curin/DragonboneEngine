@@ -2,9 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>J:\Programming Projects\Dragonbones\DragonboneEngine\Engine\Dragonbones.Collections\Dragonbones.Collections.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <DocumentationFile>J:\Programming Projects\Dragonbones\DragonboneEngine\Engine\Dragonbones.Collections\Dragonbones.Collections.xml</DocumentationFile>
   </PropertyGroup>
 
