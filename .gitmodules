@@ -1,0 +1,6 @@
+[submodule "Native\\"]
+	path = Native\\
+	url = https://github.com/curin/DirectX.Net.git
+[submodule "Native"]
+	path = Native
+	url = https://github.com/curin/DirectX.Net.git
