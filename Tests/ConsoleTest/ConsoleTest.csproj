@@ -16,7 +16,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Engine\Dragonbones.Collections\Dragonbones.Collections.csproj" />
     <ProjectReference Include="..\..\Engine\Dragonbones\Dragonbones.csproj" />
-    <ProjectReference Include="..\..\Engine\Native\Dragonbones.Native.Common\Dragonbones.Native.Common.csproj" />
+    <ProjectReference Include="..\..\Engine\Native\Dragonbones.Native.Common\Dragonbones.Native.Managed.csproj" />
   </ItemGroup>
 
 </Project>

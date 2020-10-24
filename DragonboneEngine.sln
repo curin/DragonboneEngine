@@ -27,7 +27,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dragonbones.Skeleton", "Eng
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dragonbones.Utility", "Engine\Dragonbones.Utility\Dragonbones.Utility.csproj", "{7DD8834B-CA9A-4271-AD09-FD4670E71F4D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dragonbones.Native.Common", "Engine\Native\Dragonbones.Native.Common\Dragonbones.Native.Common.csproj", "{1D47FD55-60B3-483C-944C-1D2BB4C6AF96}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dragonbones.Native.Managed", "Engine\Native\Dragonbones.Native.Common\Dragonbones.Native.Managed.csproj", "{1D47FD55-60B3-483C-944C-1D2BB4C6AF96}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DirectX", "Native\DirectX.Net\DirectX\DirectX.vcxproj", "{3596591D-09CC-4AF3-A380-EC0D24AF62CD}"
 EndProject
@@ -38,6 +38,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Dragonbone.Native.Windows", "Engine\Native\DirectX.Net\Dragonbone.Native.Windows\Dragonbone.Native.Windows.vcxproj", "{29EE33E0-269C-49EC-AA28-9DE7B29E794D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DirectX.D3D12", "Native\DirectX.Net\DirectX.D3D12\DirectX.D3D12.vcxproj", "{CADAADA5-D49E-460D-8F90-E4F5109C74D4}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Dragonbones.Native.Common", "Native\Dragonbones.Native.Common\Dragonbones.Native.Common.vcxproj", "{0561944E-54F5-4F01-94D7-6BEFE3B33162}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -188,6 +190,16 @@ Global
 		{CADAADA5-D49E-460D-8F90-E4F5109C74D4}.Release|x64.Build.0 = Release|x64
 		{CADAADA5-D49E-460D-8F90-E4F5109C74D4}.Release|x86.ActiveCfg = Release|Win32
 		{CADAADA5-D49E-460D-8F90-E4F5109C74D4}.Release|x86.Build.0 = Release|Win32
+		{0561944E-54F5-4F01-94D7-6BEFE3B33162}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{0561944E-54F5-4F01-94D7-6BEFE3B33162}.Debug|x64.ActiveCfg = Debug|x64
+		{0561944E-54F5-4F01-94D7-6BEFE3B33162}.Debug|x64.Build.0 = Debug|x64
+		{0561944E-54F5-4F01-94D7-6BEFE3B33162}.Debug|x86.ActiveCfg = Debug|Win32
+		{0561944E-54F5-4F01-94D7-6BEFE3B33162}.Debug|x86.Build.0 = Debug|Win32
+		{0561944E-54F5-4F01-94D7-6BEFE3B33162}.Release|Any CPU.ActiveCfg = Release|Win32
+		{0561944E-54F5-4F01-94D7-6BEFE3B33162}.Release|x64.ActiveCfg = Release|x64
+		{0561944E-54F5-4F01-94D7-6BEFE3B33162}.Release|x64.Build.0 = Release|x64
+		{0561944E-54F5-4F01-94D7-6BEFE3B33162}.Release|x86.ActiveCfg = Release|Win32
+		{0561944E-54F5-4F01-94D7-6BEFE3B33162}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -208,6 +220,7 @@ Global
 		{7D7E128E-30DB-4823-9A7E-E6B58A3AEAFD} = {03498CA3-9FAA-4808-B42D-6F4972CA9926}
 		{29EE33E0-269C-49EC-AA28-9DE7B29E794D} = {78391FE8-8124-43C9-8993-6EC7DB99A346}
 		{CADAADA5-D49E-460D-8F90-E4F5109C74D4} = {F402A917-4D04-4D65-B629-BD38EA6076B1}
+		{0561944E-54F5-4F01-94D7-6BEFE3B33162} = {123EF60B-7A14-4D5F-B6E7-DABEB6837072}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {66B535E7-07E5-4D40-B927-DBA3F9F8E3F6}
